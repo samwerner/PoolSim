@@ -26,6 +26,9 @@ public:
   EventQueue& get_event_queue();
   double get_current_time() const;
 
+  void add_miner(std::shared_ptr<Miner> miner);
+  void add_pool(std::shared_ptr<MiningPool> pool);
+
 private:
   Simulation simulation;
   std::shared_ptr<Random> random;

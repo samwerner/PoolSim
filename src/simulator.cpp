@@ -57,3 +57,11 @@ void Simulator::schedule_miner(const std::shared_ptr<Miner> miner) {
   Event miner_next_event(miner->get_address(), current_time + t);
   queue.schedule(miner_next_event);
 }
+
+void Simulator::add_miner(std::shared_ptr<Miner> miner) {
+  miners[miner->get_address()] = miner;
+}
+
+void Simulator::add_pool(std::shared_ptr<MiningPool> pool) {
+  pools.push_back(pool);
+}

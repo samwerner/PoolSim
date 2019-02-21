@@ -7,3 +7,6 @@ public:
 private:
   bool network_share;
 };
+
+bool operator==(const Share& lhs, const Share& rhs);
+bool operator!=(const Share& lhs, const Share& rhs);

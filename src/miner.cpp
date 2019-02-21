@@ -1,7 +1,3 @@
-#include <cmath>
-#include <cassert>
-
-
 #include "miner.h"
 #include "mining_pool.h"
 
@@ -33,7 +29,6 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
 }
 
 void Miner::process_share(const Share& share) {
-
 }
 
 void Miner::set_credits(unsigned long long _credits) {

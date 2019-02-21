@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "miner.h"
+#include "share.h"
 #include "mining_pool.h"
 #include "event_queue.h"
 #include "simulation.h"
@@ -15,10 +16,23 @@ const std::string simulation_string = R"({
 })";
 
 
-class DummyRandom: public Random {
+class MockRandom: public Random {
 public:
   MOCK_METHOD0(drand48, double());
 };
+
+class MockMiner: public Miner {
+public:
+  MockMiner(const std::string& address, double hashrate): Miner(address, hashrate) {}
+  MOCK_METHOD1(process_share, void(const Share& share));
+};
+
+
+TEST(Share, equality) {
+  ASSERT_EQ(Share(true), Share(true));
+  ASSERT_EQ(Share(false), Share(false));
+  ASSERT_NE(Share(true), Share(false));
+}
 
 
 TEST(Miner, accessors) {
@@ -75,10 +89,10 @@ TEST(EventQueue, events_ordering) {
 
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = std::make_shared<MiningPool>(100);
-  auto miner = std::make_shared<Miner>("address", 50);
+  auto pool = std::make_shared<MiningPool>(50);
+  auto miner = std::make_shared<Miner>("address", 25);
   miner->join_pool(pool);
-  auto random = std::make_shared<DummyRandom>();
+  auto random = std::make_shared<MockRandom>();
   Simulator simulator(simulation, random);
   ASSERT_TRUE(simulator.get_event_queue().is_empty());
   EXPECT_CALL(*random, drand48()).Times(1).WillOnce(testing::Return(0.3));
@@ -86,8 +100,32 @@ TEST(Simulator, schedule_miner) {
   ASSERT_FALSE(simulator.get_event_queue().is_empty());
   auto event = simulator.get_event_queue().get_top();
   ASSERT_EQ(event.miner_address, "address");
-  // 50 / 100 = 0.5
+  // 25 / 50 = 0.5
   ASSERT_FLOAT_EQ(event.time, -log(0.3) / 0.5);
+}
+
+TEST(Simulator, process_event) {
+  auto simulation = Simulation::from_string(simulation_string);
+  auto pool = std::make_shared<MiningPool>(50);
+  auto miner = std::make_shared<MockMiner>("address", 25);
+  miner->join_pool(pool);
+  auto random = std::make_shared<MockRandom>();
+  Simulator simulator(simulation, random);
+  simulator.add_miner(miner);
+  Event event(miner->get_address(), 5);
+  // drand48() called once in process_event and once in schedule_miner
+  EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.3));
+  // 0.3 < 0.5 -> network share
+  EXPECT_CALL(*miner, process_share(Share(true))).Times(1);
+  simulator.process_event(event);
+  ASSERT_EQ(simulator.get_current_time(), 5);
+
+  Event event2(miner->get_address(), 10);
+  EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.8));
+  // 0.8 > 0.5 -> not network share
+  EXPECT_CALL(*miner, process_share(Share(false))).Times(1);
+  simulator.process_event(event2);
+  ASSERT_EQ(simulator.get_current_time(), 10);
 }
 
 int main(int argc, char **argv) {
