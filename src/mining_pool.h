@@ -11,7 +11,7 @@
 class MiningPool {
  private:
   // list of miners in pool
-  std::map<std::string, std::shared_ptr<Miner>> miners;
+  std::map<std::string, std::weak_ptr<Miner>> miners;
 
   // share and network difficulty; total hashrate of pool
   unsigned long long share_diff, net_diff, hashrate;
@@ -32,7 +32,9 @@ class MiningPool {
   MiningPool(const std::string& miner_file);
 
   // Returns all the miners currently in the pool
-  std::vector<std::shared_ptr<Miner>> get_miners();
+  std::vector<std::weak_ptr<Miner>> get_miners();
+
+  size_t get_miners_count() const;
 
   // Submit a share to the pool
   // The share can be either a network share or a pool share

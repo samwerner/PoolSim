@@ -17,7 +17,7 @@ SPDLOG_VERSION = 1.3.1
 EXE = build/poolsim
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor -DELPP_NO_DEFAULT_LOG_FILE
+CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor
 LDFLAGS = -lboost_program_options
 
 all: build_dir deps $(EXE)
@@ -29,7 +29,7 @@ $(EXE): $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/%_test: tests/%_test.cpp $(TEST_OBJS)
-	$(CXX) $(CXX_FLAGS) $^ -o $@ $(LDFLAGS) -lgtest
+	$(CXX) $(CXX_FLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS) -lgtest
 
 build/%_test.run: build/%_test
 	./$^
@@ -52,6 +52,7 @@ distclean: clean clean_deps
 	rm -rf vendor
 
 .PHONY: clean
+.SECONDARY: $(TESTS)
 
 deps: $(DEPS)
 

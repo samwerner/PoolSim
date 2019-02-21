@@ -5,15 +5,33 @@
 #include "miner.h"
 #include "mining_pool.h"
 
+Miner::Miner(std::string _address, double _hashrate)
+  : address(_address), hashrate(_hashrate) {
+}
 
 Miner::Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool)
   : address(_address), hashrate(_hashrate), pool(_pool) {
   // initialise member variables to zero
 }
 
+
+std::string Miner::get_address() const { return address; }
+
+double Miner::get_hashrate() const { return hashrate; }
+
+std::shared_ptr<MiningPool> Miner::get_pool() const { return pool; }
+
 void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
+  leave_pool();
   pool = _pool;
-  pool->join(std::shared_ptr<Miner>(this));
+  pool->join(shared_from_this());
+}
+
+void Miner::leave_pool() {
+  if (pool != nullptr) {
+    pool->leave(get_address());
+  }
+  pool = nullptr;
 }
 
 // bool Miner::schedule_share(EventQueue *queue) {
@@ -57,12 +75,4 @@ void Miner::inc_uncles_received() {
 
 void Miner::inc_uncles_mined() {
   uncles_mined++;
-}
-
-void Miner::network_share() {
-  // pool->network_share(this);
-}
-
-void Miner::pool_share() {
-  // pool->pool_share(this);
 }

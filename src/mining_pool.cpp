@@ -17,12 +17,16 @@ void MiningPool::leave(const std::string& miner_address) {
   miners.erase(miner_address);
 }
 
-std::vector<std::shared_ptr<Miner>> MiningPool::get_miners() {
-  std::vector<std::shared_ptr<Miner>> result;
+std::vector<std::weak_ptr<Miner>> MiningPool::get_miners() {
+  std::vector<std::weak_ptr<Miner>> result;
   for (auto it = miners.begin(); it != miners.end(); it++) {
     result.push_back(it->second);
   }
   return result;
+}
+
+size_t MiningPool::get_miners_count() const {
+  return miners.size();
 }
 
 void MiningPool::submit_share(const std::string& miner_address, const Share& share) {

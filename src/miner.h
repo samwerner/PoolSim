@@ -5,7 +5,7 @@
 
 class MiningPool;
 
-class Miner {
+class Miner: public std::enable_shared_from_this<Miner> {
  private:
   std::string address;
   double hashrate;
@@ -14,24 +14,17 @@ class Miner {
   unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
   
  public:
+  Miner(std::string _address, double _hashrate);
   Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool);
 
-  inline std::string get_address() const { return address; }
-
-  inline double get_hashrate() const { return hashrate; }
+  std::string get_address() const;
+  double get_hashrate() const;
+  std::shared_ptr<MiningPool> get_pool() const;
 
 
   void join_pool(std::shared_ptr<MiningPool> pool);
+  void leave_pool();
 
-  // schedules next mining share event in eventqueue
-  // bool schedule_share(EventQueue *queue);
-
-  // miner submits network share to pool
-  void network_share();
-
-  //miner submits normal share to pool
-  void pool_share();
-  
   // sets credit balance of miner to _credits
   void set_credits(unsigned long long _credits);
 
