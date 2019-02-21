@@ -1,3 +1,11 @@
 {
-  "rounds": 10000
+  "rounds": 10000,
+  "networkDifficulty": 100,
+  "pools": [{
+    "difficulty": 10,
+    "miners": {
+      "generator": "csv",
+      "arguments": {"path": "miners.csv"}
+    }
+  }]
 }

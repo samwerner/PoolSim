@@ -8,8 +8,8 @@ EventQueue::EventQueue() {
   blocks = 0;
 }
 
-void EventQueue::schedule(Event *_event) {
-  queue.push(std::move(_event));
+void EventQueue::schedule(Event event) {
+  queue.push(event);
 }
 
 void EventQueue::pop() {
@@ -32,7 +32,7 @@ void EventQueue::reset_time() {
   time = 0;
 }
 
-Event* EventQueue::get_top() {
+Event EventQueue::get_top() {
   return queue.top();
 }
 
@@ -44,12 +44,10 @@ double EventQueue::simulate(unsigned int sim_length) {
   }
   
   while (blocks < sim_length) {
-    Event* event = this->get_top();
+    Event event = this->get_top();
     this->pop();
-    this->set_time(event->get_time());
+    this->set_time(event.time);
     // blocks += event->execute(this);
-    delete event;
-    event = nullptr;
   }
 
   std::cout << "Simulation of " << blocks << " has finished" << std::endl;

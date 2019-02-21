@@ -31,7 +31,8 @@ int main(int argc, char* argv[]) {
 
   std::string config_filepath = vm["config-file"].as<std::string>();
 
-  auto simulator = Simulator::from_config_file(config_filepath);
+  auto simulation = Simulation::from_config_file(config_filepath);
+  Simulator simulator(simulation);
 
   simulator.run();
 

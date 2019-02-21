@@ -9,7 +9,7 @@ class Miner: public std::enable_shared_from_this<Miner> {
  private:
   std::string address;
   double hashrate;
-  std::shared_ptr<MiningPool> pool;
+  std::weak_ptr<MiningPool> pool;
   unsigned long long credits, shares;
   unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
   
@@ -23,7 +23,6 @@ class Miner: public std::enable_shared_from_this<Miner> {
 
 
   void join_pool(std::shared_ptr<MiningPool> pool);
-  void leave_pool();
 
   // sets credit balance of miner to _credits
   void set_credits(unsigned long long _credits);

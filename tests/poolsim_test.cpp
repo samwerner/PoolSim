@@ -2,6 +2,7 @@
 
 #include "miner.h"
 #include "mining_pool.h"
+#include "simulation.h"
 
 
 TEST(Miner, accessors) {
@@ -25,6 +26,12 @@ TEST(Miner, join_pool) {
   ASSERT_EQ(pool1->get_miners_count(), 0);
   ASSERT_EQ(pool2->get_miners_count(), 1);
   ASSERT_EQ(miner->get_pool(), pool2);
+}
+
+TEST(Simulation, from_string) {
+  std::string string_input("{\"rounds\": 5}");
+  auto simulation = Simulation::from_string(string_input);
+  ASSERT_EQ(simulation.rounds, 5);
 }
 
 

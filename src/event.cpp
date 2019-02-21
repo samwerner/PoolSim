@@ -1,7 +1,4 @@
 #include "event.h"
 
-Event::Event(double _time) : time(_time) {}
-
-double Event::get_time() const {
-  return time;
-}
+Event::Event(const std::string& _miner_address, double _time):
+  miner_address(_miner_address), time(_time) {}

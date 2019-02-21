@@ -9,20 +9,16 @@ MiningPool::MiningPool(const std::string& miner_file) {
   // populate pool with miners from file
 }
 
-void MiningPool::join(std::shared_ptr<Miner> miner) {
-  miners[miner->get_address()] = miner;
+void MiningPool::join(const std::string& miner_address) {
+  miners.insert(miner_address);
 }
 
 void MiningPool::leave(const std::string& miner_address) {
   miners.erase(miner_address);
 }
 
-std::vector<std::weak_ptr<Miner>> MiningPool::get_miners() {
-  std::vector<std::weak_ptr<Miner>> result;
-  for (auto it = miners.begin(); it != miners.end(); it++) {
-    result.push_back(it->second);
-  }
-  return result;
+std::set<std::string> MiningPool::get_miners() {
+  return miners;
 }
 
 size_t MiningPool::get_miners_count() const {

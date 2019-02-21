@@ -19,19 +19,17 @@ std::string Miner::get_address() const { return address; }
 
 double Miner::get_hashrate() const { return hashrate; }
 
-std::shared_ptr<MiningPool> Miner::get_pool() const { return pool; }
-
-void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
-  leave_pool();
-  pool = _pool;
-  pool->join(shared_from_this());
+std::shared_ptr<MiningPool> Miner::get_pool() const {
+  return pool.lock();
 }
 
-void Miner::leave_pool() {
-  if (pool != nullptr) {
-    pool->leave(get_address());
+void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
+  if (get_pool() != nullptr) {
+    get_pool()->leave(get_address());
+    pool.reset();
   }
-  pool = nullptr;
+  pool = _pool;
+  get_pool()->join(get_address());
 }
 
 // bool Miner::schedule_share(EventQueue *queue) {

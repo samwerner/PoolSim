@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <map>
+#include <set>
 #include <string>
 #include <memory>
 
@@ -11,7 +10,7 @@
 class MiningPool {
  private:
   // list of miners in pool
-  std::map<std::string, std::weak_ptr<Miner>> miners;
+  std::set<std::string> miners;
 
   // share and network difficulty; total hashrate of pool
   unsigned long long share_diff, net_diff, hashrate;
@@ -32,7 +31,7 @@ class MiningPool {
   MiningPool(const std::string& miner_file);
 
   // Returns all the miners currently in the pool
-  std::vector<std::weak_ptr<Miner>> get_miners();
+  std::set<std::string> get_miners();
 
   size_t get_miners_count() const;
 
@@ -42,7 +41,7 @@ class MiningPool {
 
   // Joins this mining pool
   // This method does not update the miner state
-  void join(std::shared_ptr<Miner> miner);
+  void join(const std::string& miner);
 
   // Leaves this mining pool
   // This method does not update the miner state
