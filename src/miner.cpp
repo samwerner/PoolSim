@@ -4,7 +4,6 @@
 
 #include "miner.h"
 #include "mining_pool.h"
-#include "share_events.h"
 
 
 Miner::Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool)

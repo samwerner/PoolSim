@@ -1,20 +1,24 @@
-SRCS = $(wildcard src/*.cpp)
+SRCS = $(subst src/main.cpp,,$(wildcard src/*.cpp))
 OBJ = $(SRCS:src/%.cpp=build/%.o)
+MAIN_OBJ = src/main.o
 
-CC_VENDOR_SRCS = $(wildcard vendor/*/*.cc)
-CC_VENDOR_OBJ = $(CC_VENDOR_SRCS:vendor/%.cc=build/%.o)
 
-ALL_OBJS = $(OBJ) $(CC_VENDOR_OBJ)
+TEST_SRCS = $(wildcard tests/*.cpp)
+TESTS = $(patsubst tests/%_test.cpp,build/%_test,$(TEST_SRCS))
+RUN_TESTS = $(addsuffix .run, $(TESTS))
 
-DEPS = vendor/nlohmann vendor/easyloggingpp
-EASYLOGGING_VERSION = 9.96.7
+
+TEST_OBJS = $(OBJ)
+ALL_OBJS = $(TEST_OBJS) $(MAIN_OBJ)
+
+DEPS = vendor/nlohmann vendor/spdlog
+SPDLOG_VERSION = 1.3.1
 
 EXE = build/poolsim
 
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor -DELPP_NO_DEFAULT_LOG_FILE
 LDFLAGS = -lboost_program_options
-
 
 all: build_dir deps $(EXE)
 
@@ -24,9 +28,13 @@ build_dir:
 $(EXE): $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(CC_VENDOR_OBJ): build/%.o: vendor/%.cc
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+build/%_test: tests/%_test.cpp $(TEST_OBJS)
+	$(CXX) $(CXX_FLAGS) $^ -o $@ $(LDFLAGS) -lgtest
+
+build/%_test.run: build/%_test
+	./$^
+
+test: $(RUN_TESTS)
 
 build/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
@@ -37,8 +45,7 @@ clean_deps:
 	rm -rf $(DEPS)
 
 clean:
-	rm -rf $(dir $(CC_VENDOR_OBJ))
-	rm -f $(EXE) $(OBJ) $(OBJ:.o=.d)
+	rm -f $(EXE) $(OBJ) $(OBJ:.o=.d) $(TESTS)
 
 distclean: clean clean_deps
 	rm -rf build
@@ -48,11 +55,11 @@ distclean: clean clean_deps
 
 deps: $(DEPS)
 
-vendor/easyloggingpp: vendor/easyloggingpp/easylogging++.cc
-vendor/easyloggingpp/easylogging++.cc:
-	@mkdir -p vendor/easyloggingpp
-	@curl -L https://github.com/zuhd-org/easyloggingpp/archive/v$(EASYLOGGING_VERSION).tar.gz | \
-		tar xvz -C vendor/easyloggingpp easyloggingpp-$(EASYLOGGING_VERSION)/src --strip-components=2
+vendor/spdlog: vendor/spdlog/spdlog.h
+vendor/spdlog/spdlog.h:
+	@mkdir -p vendor/spdlog
+	@curl -L https://github.com/gabime/spdlog/archive/v$(SPDLOG_VERSION).tar.gz | \
+		tar xvz -C vendor spdlog-$(SPDLOG_VERSION)/include --strip-components=2
 
 vendor/nlohmann: vendor/nlohmann/json.hpp
 vendor/nlohmann/json.hpp:

@@ -1,15 +1,17 @@
 #pragma once
 
 #include <vector>
+#include <map>
 #include <string>
 #include <memory>
 
 #include "miner.h"
+#include "share.h"
 
 class MiningPool {
  private:
   // list of miners in pool
-  std::vector<std::shared_ptr<Miner>> miners;
+  std::map<std::string, std::shared_ptr<Miner>> miners;
 
   // share and network difficulty; total hashrate of pool
   unsigned long long share_diff, net_diff, hashrate;
@@ -27,18 +29,20 @@ class MiningPool {
   MiningPool();
 
   // populate pool with miners from .csv file 'miner_file'
-  MiningPool(std::string miner_file);
+  MiningPool(const std::string& miner_file);
 
-  inline std::vector<std::shared_ptr<Miner>> get_miners() { return miners; }
+  // Returns all the miners currently in the pool
+  std::vector<std::shared_ptr<Miner>> get_miners();
 
-  // network share submitted by a miner in the pool
-  void network_share(Miner *miner);
+  // Submit a share to the pool
+  // The share can be either a network share or a pool share
+  void submit_share(const std::string& miner_address, const Share& share);
 
-  // share submitted to pool by a miner in the pool
-  void pool_share(Miner *miner);
-
+  // Joins this mining pool
+  // This method does not update the miner state
   void join(std::shared_ptr<Miner> miner);
 
-  friend class Queue_Based;
-
+  // Leaves this mining pool
+  // This method does not update the miner state
+  void leave(const std::string& miner_address);
 };

@@ -16,6 +16,10 @@ class Miner {
  public:
   Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool);
 
+  inline std::string get_address() const { return address; }
+
+  inline double get_hashrate() const { return hashrate; }
+
 
   void join_pool(std::shared_ptr<MiningPool> pool);
 

@@ -2,13 +2,11 @@
 #include <string>
 #include <boost/program_options.hpp>
 
-#include <easyloggingpp/easylogging++.h>
 
 #include "simulator.h"
 
 namespace po = boost::program_options;
 
-INITIALIZE_EASYLOGGINGPP
 
 int main(int argc, char* argv[]) {
   po::options_description desc("Allowed options");
