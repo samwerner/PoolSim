@@ -5,6 +5,7 @@
 
 #include "share.h"
 #include "mining_pool.h"
+#include "share_handler.h"
 
 
 class Miner: public std::enable_shared_from_this<Miner> {
@@ -14,6 +15,8 @@ class Miner: public std::enable_shared_from_this<Miner> {
   std::weak_ptr<MiningPool> pool;
   unsigned long long credits, shares;
   unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
+
+  std::unique_ptr<ShareHandler> share_handler;
   
  public:
   Miner(std::string _address, double _hashrate);

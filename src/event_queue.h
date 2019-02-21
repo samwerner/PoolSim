@@ -17,7 +17,7 @@ private:
 public:
   EventQueue();
 
-  // Schedule a new share event
+  // Schedules a new share event
   void schedule(Event _event);
 
   // Pops and returns first element in event queue;

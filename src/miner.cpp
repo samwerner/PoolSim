@@ -29,6 +29,8 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
 }
 
 void Miner::process_share(const Share& share) {
+  // TODO: update stats
+  share_handler->handle_share(share);
 }
 
 void Miner::set_credits(unsigned long long _credits) {

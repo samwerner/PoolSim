@@ -41,6 +41,8 @@ class MiningPool {
 
   // Submit a share to the pool
   // The share can be either a network share or a pool share
+  // TODO: when the share is a network share this should probably return
+  // if it became an uncle block or not
   void submit_share(const std::string& miner_address, const Share& share);
 
   // Joins this mining pool
