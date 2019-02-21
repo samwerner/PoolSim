@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "simulator.h"
-#include "json.hpp"
 
 
 Simulator::Simulator(Simulation _simulation) : simulation(_simulation) {}

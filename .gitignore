@@ -1,4 +1,4 @@
 *.o
 *.d
-poolsim
-json.hpp
+vendor/
+build/
