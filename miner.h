@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 class MiningPool;
 
@@ -8,12 +9,15 @@ class Miner {
  private:
   std::string address;
   double hashrate;
-  MiningPool *pool;
+  std::shared_ptr<MiningPool> pool;
   unsigned long long credits, shares;
   unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
   
  public:
-  Miner(std::string _address, double _hashrate, MiningPool *_pool);
+  Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool);
+
+
+  void join_pool(std::shared_ptr<MiningPool> pool);
 
   // schedules next mining share event in eventqueue
   // bool schedule_share(EventQueue *queue);

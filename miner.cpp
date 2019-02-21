@@ -3,12 +3,18 @@
 
 
 #include "miner.h"
+#include "mining_pool.h"
 #include "share_events.h"
 
 
-Miner::Miner(std::string _address, double _hashrate, MiningPool *_pool)
+Miner::Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool)
   : address(_address), hashrate(_hashrate), pool(_pool) {
   // initialise member variables to zero
+}
+
+void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
+  pool = _pool;
+  pool->join(std::shared_ptr<Miner>(this));
 }
 
 // bool Miner::schedule_share(EventQueue *queue) {

@@ -18,7 +18,7 @@ class MiningPool {
   double uncle_prob;
 
   // reward scheme used by pool for distributing block rewards among miners
-  
+
 
   // total blocks mined by miners in pool
   unsigned long blocks_mined;
@@ -29,11 +29,15 @@ class MiningPool {
   // populate pool with miners from .csv file 'miner_file'
   MiningPool(std::string miner_file);
 
+  inline std::vector<std::shared_ptr<Miner>> get_miners() { return miners; }
+
   // network share submitted by a miner in the pool
   void network_share(Miner *miner);
 
   // share submitted to pool by a miner in the pool
   void pool_share(Miner *miner);
+
+  void join(std::shared_ptr<Miner> miner);
 
   friend class Queue_Based;
 
