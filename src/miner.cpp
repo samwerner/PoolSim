@@ -32,28 +32,9 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
   get_pool()->join(get_address());
 }
 
-// bool Miner::schedule_share(EventQueue *queue) {
-//     assert(queue != NULL);
+void Miner::process_share(const Share& share) {
 
-//     if (hashrate <= 0) {
-//         return false;
-//     }
-
-//     double lambda = (double) hashrate / pool->getShareDiff();
-//     double t = -log(drand48()) / lambda;
-//     double p = (double) pool->getShareDiff() / pool->getNetDiff();
-
-//     // TODO: allow
-//     // minerBehavior.processShare(self, pool, isValidProof)
-
-//     if (drand48() < p) {
-//         queue->schedule(new NetworkShareEvent(this, queue->getTime() + t));
-//         return true;
-//     } else {
-//       queue->schedule(new MiningPoolShareEvent(this, queue->getTime() + t));
-//       return true;
-//     }
-// }
+}
 
 void Miner::set_credits(unsigned long long _credits) {
   credits = _credits;

@@ -13,6 +13,7 @@ Simulation Simulation::from_stream(std::istream& stream) {
 
   Simulation simulation;
   simulation.rounds = j["rounds"];
+  simulation.network_difficulty = j["networkDifficulty"];
 
   return simulation;
 }

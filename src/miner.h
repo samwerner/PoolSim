@@ -3,7 +3,9 @@
 #include <string>
 #include <memory>
 
-class MiningPool;
+#include "share.h"
+#include "mining_pool.h"
+
 
 class Miner: public std::enable_shared_from_this<Miner> {
  private:
@@ -21,6 +23,7 @@ class Miner: public std::enable_shared_from_this<Miner> {
   double get_hashrate() const;
   std::shared_ptr<MiningPool> get_pool() const;
 
+  void process_share(const Share& share);
 
   void join_pool(std::shared_ptr<MiningPool> pool);
 

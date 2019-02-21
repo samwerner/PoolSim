@@ -18,7 +18,8 @@ EXE = build/poolsim
 
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor
-LDFLAGS = -lboost_program_options
+LDFLAGS = -lboost_program_options -pthread
+LDFLAGS_TEST = $(LDFLAGS) -lgtest -lgmock
 
 all: build_dir deps $(EXE)
 
@@ -29,7 +30,7 @@ $(EXE): $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/%_test: tests/%_test.cpp $(TEST_OBJS)
-	$(CXX) $(CXX_FLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS) -lgtest
+	$(CXX) $(CXX_FLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS_TEST)
 
 build/%_test.run: build/%_test
 	./$^

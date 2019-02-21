@@ -9,9 +9,10 @@ struct Event {
   double time;
 };
 
+// Class used to compare Events in priority_queue
 class CompareEvents {
 public:
-  inline bool operator()(const Event& l, const Event& r) {
-    return l.time > r.time;
+  inline bool operator()(const Event& left, const Event& right) {
+    return left.time > right.time;
   }
 };

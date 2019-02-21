@@ -11,5 +11,5 @@ struct Simulation {
   static Simulation from_string(const std::string& string);
 
   uint64_t rounds;
+  uint64_t network_difficulty;
 };
-
