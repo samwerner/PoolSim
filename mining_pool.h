@@ -1,15 +1,15 @@
-#ifndef MININGPOOL_H
-#define MININGPOOL_H
+#pragma once
 
 #include <vector>
 #include <string>
+#include <memory>
 
-class Miner;
+#include "miner.h"
 
 class MiningPool {
  private:
   // list of miners in pool
-  std::vector<Miner*> miners;
+  std::vector<std::shared_ptr<Miner>> miners;
 
   // share and network difficulty; total hashrate of pool
   unsigned long long share_diff, net_diff, hashrate;
@@ -24,10 +24,10 @@ class MiningPool {
   unsigned long blocks_mined;
   
  public:
-  MiningPool::MiningPool();
+  MiningPool();
 
   // populate pool with miners from .csv file 'miner_file'
-  MiningPool::MiningPool(std::string miner_file);
+  MiningPool(std::string miner_file);
 
   // network share submitted by a miner in the pool
   void network_share(Miner *miner);
@@ -38,5 +38,3 @@ class MiningPool {
   friend class Queue_Based;
 
 };
-
-#endif

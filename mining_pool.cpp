@@ -1,6 +1,7 @@
-#include "miningpool.h"
-#include "miner.h"
 #include <iostream>
+
+#include "mining_pool.h"
+#include "miner.h"
 
 
 MiningPool::MiningPool() {}

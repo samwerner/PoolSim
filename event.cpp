@@ -1,6 +1,6 @@
 #include "event.h"
 
-Event(double _time) : time(_time) {}
+Event::Event(double _time) : time(_time) {}
 
 double Event::get_time() const {
   return time;

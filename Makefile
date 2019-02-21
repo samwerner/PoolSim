@@ -1,9 +1,11 @@
-OBJ =  event.o event_queue.o compare.o miner.o miningpool.o share_events.o reward_scheme.o queue_based.o 
+SRCS = $(wildcard *.cpp)
+OBJ = $(SRCS:.cpp=.o)
 
 EXE = poolsim
 
 CXX = g++ -std=c++11
 CXXFLAGS = -Wall -g -MMD
+
 
 $(EXE): $(OBJ)
 	$(CXX) $(CXXFLAGS) $^ -o $@

@@ -1,12 +1,11 @@
-#ifndef EVENTQUEUE_H
-#define EVENTQUEUE_H
+#pragma once
 
 #include <queue>
 #include <vector>
-#include "compare.h"
-class Event;
 
-class Event_Queue {
+#include "compare.h"
+
+class EventQueue {
 private:
 std::priority_queue<Event*, std::vector<Event*>, Compare> queue;
 
@@ -17,7 +16,7 @@ double time;
 unsigned int blocks;
   
 public:
-Event_Queue();
+EventQueue();
 
 // schedule a new share event
 void schedule(Event *_event);
@@ -43,10 +42,4 @@ Event* get_top();
 // begin simulation of events for a duration of _blocks
 double simulate(unsigned int sim_length);
 
-
-
-
-
 };
-
-#endif

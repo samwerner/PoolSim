@@ -1,24 +1,11 @@
-#ifndef EVENT_H
-#define EVENT_H
-
-class Event_Queue;
+#pragma once
 
 class Event {
- protected:
+protected:
   double time;
 
- public:
-  Event();
-
+public:
   Event(double _time);
   
-  virtual ~Events();
-
   double get_time() const;
-
-  virtual int execute(Event_Queue* = nullptr) = 0;
-  
 };
-
-
-#endif

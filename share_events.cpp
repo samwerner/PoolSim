@@ -1,25 +1,25 @@
 #include "share_events.h"
-#include "eventqueue.h"
+#include "event_queue.h"
 #include "miner.h"
-#include "miningpool.h"
+#include "mining_pool.h"
 #include "event.h"
 
-Share_Event::Share_Event(Miner *_miner, double _time) : Event(time) {
+ShareEvent::ShareEvent(Miner *_miner, double _time) : Event(time) {
   miner = _miner;
 }
 
-Share_Event::~Share_Event() {}
+PoolEvent::PoolEvent(Miner *_miner, double _time) : ShareEvent(miner, time) {}
 
-Pool_Event::Pool_Event(Miner *_miner, double _time) : Share_Event(miner, time) {}
-
-Pool_Event::execute(Event_Queue *queue) {
+int PoolEvent::execute(EventQueue *queue) {
   miner->pool_share();
-  miner->schedule_share(queue);
+  // miner->schedule_share(queue);
+  return 0;
 }
 
-Network_Event::Network_Event(Miner *_miner, double _time) : Share_Event(miner, time) {}
+NetworkEvent::NetworkEvent(Miner *_miner, double _time) : ShareEvent(miner, time) {}
 
-Network_Event::execute(Event_Queue *queue) {
+bool NetworkEvent::execute(EventQueue *queue) {
   miner->network_share();
-  miner->schedule_share(queue);
+  // miner->schedule_share(queue);
+  return false;
 }

@@ -1,33 +1,31 @@
-#ifndef SHAREEVENTS_H
-#define SHAREEVENTS_H
+#pragma once
 
-class Event, Event_Queue, Miner;
+#include "event_queue.h"
+#include "event.h"
+#include "miner.h"
 
-class Share_Event : public Event {
+class ShareEvent : public Event {
 protected:
-Miner *miner;
+  Miner *miner;
 
 public:
-Share_Event(Miner *_miner, double _time);
-
-~Share_Event();
-};
-
-class Pool_Event : public Share_Event {
- public:
-Pool_Event(Miner *_miner, double _time);
-
-// executes a pool event: a valid pool share but an invalid network share has been submitted to the pool
-int execute(Event_Queue *queue);
+  ShareEvent(Miner *_miner, double _time);
 
 };
 
-class Network_Event : public Share_Event {
- public:
-Network_Event(Miner *_miner, double _time);
+class PoolEvent : public ShareEvent {
+public:
+  PoolEvent(Miner *_miner, double _time);
 
-// executes a network event: a valid network share has been submitted to the pool
-int execute(Event_Queue *queue);
+  // executes a pool event: a valid pool share but an invalid network share has been submitted to the pool
+  int execute(EventQueue *queue);
+
 };
 
-#endif
+class NetworkEvent : public ShareEvent {
+public:
+  NetworkEvent(Miner *_miner, double _time);
+
+  // executes a network event: a valid network share has been submitted to the pool
+  bool execute(EventQueue *queue);
+};

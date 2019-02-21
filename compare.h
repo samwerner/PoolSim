@@ -1,14 +1,12 @@
-#ifndef COMPARE_H
-#define COMPARE_H
+#pragma once
 
-class Event;
+#include "event.h"
 
 
 // Overwrites 'Compare' class used for priority queue implementation in event_queue.h
 class Compare {
 public:
-    bool operator()(const Event* l, const Event* r);
+    inline bool operator()(const Event* l, const Event* r) {
+        return l->get_time() > r->get_time();
+    }
 };
-
-
-#endif 

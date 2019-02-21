@@ -1,7 +1,8 @@
-#ifndef MINER_H
-#define MINER_H
+#pragma once
 
-class MiningPool, EventQeueu;
+#include <string>
+
+class MiningPool;
 
 class Miner {
  private:
@@ -12,10 +13,10 @@ class Miner {
   unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
   
  public:
-  Miner(std::string _address, double _hashrate);
+  Miner(std::string _address, double _hashrate, MiningPool *_pool);
 
   // schedules next mining share event in eventqueue
-  bool schedule_share(EventQueue *queue);
+  // bool schedule_share(EventQueue *queue);
 
   // miner submits network share to pool
   void network_share();
@@ -39,5 +40,3 @@ class Miner {
   void inc_uncles_received();
 
 };
-
-#endif
