@@ -1,6 +1,23 @@
 #pragma once
 
 #include <iostream>
+#include <string>
+
+#include <nlohmann/json.hpp>
+
+
+struct MinerConfig {
+  std::string generator;
+  nlohmann::json arguments;
+};
+
+struct PoolConfig {
+  // The difficulty of the pool
+  uint64_t difficulty;
+
+  // How to create initial miners for this pool
+  MinerConfig miner_config;
+};
 
 struct Simulation {
   // Creates a Simulation from a config file
@@ -10,6 +27,16 @@ struct Simulation {
   // Creates a Simulation from a JSON string
   static Simulation from_string(const std::string& string);
 
-  uint64_t rounds;
+  // The number of blocks to reach before ending the simulation
+  uint64_t blocks;
+
+  // Difficulty of the network
   uint64_t network_difficulty;
+
+  // Pools to include in the simulation
+  std::vector<PoolConfig> pools;
 };
+
+void from_json(const nlohmann::json& j, Simulation& simulation);
+void from_json(const nlohmann::json& j, PoolConfig& simulation);
+void from_json(const nlohmann::json& j, MinerConfig& simulation);

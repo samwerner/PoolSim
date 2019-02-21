@@ -29,6 +29,8 @@ public:
   void add_miner(std::shared_ptr<Miner> miner);
   void add_pool(std::shared_ptr<MiningPool> pool);
 
+  uint64_t get_blocks_mined() const;
+
 private:
   Simulation simulation;
   std::shared_ptr<Random> random;
@@ -36,4 +38,5 @@ private:
   std::vector<std::shared_ptr<MiningPool>> pools;
   std::map<std::string, std::shared_ptr<Miner>> miners;
   double current_time;
+  uint64_t blocks_mined;
 };

@@ -11,8 +11,15 @@
 
 
 const std::string simulation_string = R"({
-  "rounds": 5,
-  "networkDifficulty": 100
+  "blocks": 5,
+  "networkDifficulty": 100,
+  "pools": [{
+    "difficulty": 10,
+    "miners": {
+      "generator": "csv",
+      "arguments": {"path": "miners.csv"}
+    }
+  }]
 })";
 
 
@@ -60,8 +67,14 @@ TEST(Miner, join_pool) {
 
 TEST(Simulation, from_string) {
   auto simulation = Simulation::from_string(simulation_string);
-  ASSERT_EQ(simulation.rounds, 5);
+  ASSERT_EQ(simulation.blocks, 5);
   ASSERT_EQ(simulation.network_difficulty, 100);
+  ASSERT_EQ(simulation.pools.size(), 1);
+  auto pool = simulation.pools[0];
+  ASSERT_EQ(pool.difficulty, 10);
+  auto miner_config = pool.miner_config;
+  ASSERT_EQ(miner_config.generator, "csv");
+  ASSERT_EQ(miner_config.arguments["path"], "miners.csv");
 }
 
 TEST(SystemRandom, initialization) {
@@ -113,11 +126,14 @@ TEST(Simulator, process_event) {
   Simulator simulator(simulation, random);
   simulator.add_miner(miner);
   Event event(miner->get_address(), 5);
+  ASSERT_EQ(simulator.get_blocks_mined(), 0);
+  ASSERT_EQ(simulator.get_current_time(), 0);
   // drand48() called once in process_event and once in schedule_miner
   EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.3));
   // 0.3 < 0.5 -> network share
   EXPECT_CALL(*miner, process_share(Share(true))).Times(1);
   simulator.process_event(event);
+  ASSERT_EQ(simulator.get_blocks_mined(), 1);
   ASSERT_EQ(simulator.get_current_time(), 5);
 
   Event event2(miner->get_address(), 10);
@@ -125,6 +141,7 @@ TEST(Simulator, process_event) {
   // 0.8 > 0.5 -> not network share
   EXPECT_CALL(*miner, process_share(Share(false))).Times(1);
   simulator.process_event(event2);
+  ASSERT_EQ(simulator.get_blocks_mined(), 1);
   ASSERT_EQ(simulator.get_current_time(), 10);
 }
 

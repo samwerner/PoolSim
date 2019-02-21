@@ -1,5 +1,5 @@
 {
-  "rounds": 10000,
+  "blocks": 10000,
   "networkDifficulty": 100,
   "pools": [{
     "difficulty": 10,

@@ -5,6 +5,11 @@
 
 #include "event.h"
 
+class EmptyQueueException : public std::exception {
+public:
+  virtual char const* what() const throw();
+};
+
 class EventQueue {
 private:
   std::priority_queue<Event, std::vector<Event>, CompareEvents> queue;
