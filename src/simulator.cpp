@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <easyloggingpp/easylogging++.h>
+
 #include "simulator.h"
 
 
@@ -13,5 +15,5 @@ Simulator Simulator::from_config_file(const std::string& filepath) {
 
 
 void Simulator::run() {
-  std::cout << "running " << simulation.rounds << " rounds" << std::endl;
+  LOG(INFO) << "running " << simulation.rounds << " rounds";
 }

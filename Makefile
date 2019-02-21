@@ -12,7 +12,7 @@ EASYLOGGING_VERSION = 9.96.7
 EXE = build/poolsim
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor
+CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor -DELPP_NO_DEFAULT_LOG_FILE
 LDFLAGS = -lboost_program_options
 
 
