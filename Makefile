@@ -30,7 +30,7 @@ $(EXE): $(ALL_OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/%_test: tests/%_test.cpp $(TEST_OBJS)
-	$(CXX) $(CXX_FLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS_TEST)
+	$(CXX) $(CXXFLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS_TEST)
 
 build/%_test.run: build/%_test
 	./$^
