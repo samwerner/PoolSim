@@ -1,6 +1,6 @@
 SRCS = $(subst src/main.cpp,,$(wildcard src/*.cpp))
 OBJ = $(SRCS:src/%.cpp=build/%.o)
-MAIN_OBJ = src/main.o
+MAIN_OBJ = build/main.o
 
 
 TEST_SRCS = $(wildcard tests/*.cpp)
