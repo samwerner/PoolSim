@@ -81,10 +81,29 @@ std::unique_ptr<ShareHandler> get_mock_share_handler() {
   return std::unique_ptr<ShareHandler>(new MockShareHandler);
 }
 
-std::unique_ptr<RewardScheme> get_mock_reward_scheme() {
-  return std::unique_ptr<RewardScheme>(new MockRewardScheme);
+std::unique_ptr<MockRewardScheme> get_mock_reward_scheme() {
+  return std::unique_ptr<MockRewardScheme>(new MockRewardScheme);
 }
 
+
+// XXX: this should be at te top of the test suite
+// because it expects SystemRandom not to be initialized
+// and it performs the initialization
+// if we someday need to parallelize the test suite we can think
+// about how to make this less ugly but for now it should work just fine
+TEST(SystemRandom, initialization) {
+  ASSERT_THROW(SystemRandom::get_instance(), RandomInitException);
+  SystemRandom::initialize(0);
+  ASSERT_NO_THROW(SystemRandom::get_instance());
+  // NOTE: expected value with seed = 0
+  ASSERT_FLOAT_EQ(SystemRandom::get_instance()->drand48(), 0.170828);
+}
+
+TEST(SystemRandom, get_address) {
+  auto address = SystemRandom::get_instance()->get_address();
+  ASSERT_EQ(address.size(), 42);
+  ASSERT_THAT(address, testing::MatchesRegex("0x[0-9a-f]{40}"));
+}
 
 TEST(Share, equality) {
   ASSERT_EQ(Share(Share::Property::network), Share(Share::Property::network));
@@ -141,19 +160,23 @@ TEST(Miner, join_pool) {
   ASSERT_EQ(miner->get_pool(), pool2);
 }
 
+TEST(MiningPool, submit_share) {
+  auto reward_scheme = get_mock_reward_scheme();
+  auto random = std::make_shared<MockRandom>();
+  MockRewardScheme* reward_scheme_ptr = reward_scheme.get();
 
-TEST(SystemRandom, initialization) {
-  ASSERT_THROW(SystemRandom::get_instance(), RandomInitException);
-  SystemRandom::initialize(0);
-  ASSERT_NO_THROW(SystemRandom::get_instance());
-  // NOTE: expected value with seed = 0
-  ASSERT_FLOAT_EQ(SystemRandom::get_instance()->drand48(), 0.170828);
-}
+  auto pool = MiningPool::create(100, 0.3, std::move(reward_scheme), random);
 
-TEST(SystemRandom, get_address) {
-  auto address = SystemRandom::get_instance()->get_address();
-  ASSERT_EQ(address.size(), 42);
-  ASSERT_THAT(address, testing::MatchesRegex("0x[0-9a-f]{40}"));
+  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::none)));
+  pool->submit_share("address", Share(Share::Property::none));
+
+  EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.5));
+  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::network)));
+  pool->submit_share("address", Share(Share::Property::network));
+
+  EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
+  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::network | Share::Property::uncle)));
+  pool->submit_share("address", Share(Share::Property::network));
 }
 
 

@@ -7,11 +7,17 @@
 
 #include "reward_scheme.h"
 #include "share.h"
+#include "random.h"
+
 
 class MiningPool : public std::enable_shared_from_this<MiningPool> {
 public:
   static std::shared_ptr<MiningPool> create(
     uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);
+
+  static std::shared_ptr<MiningPool> create(
+    uint64_t difficulty, double uncle_prob,
+    std::unique_ptr<RewardScheme> reward_scheme, std::shared_ptr<Random> random);
 
   // Returns all the miners currently in the pool
   std::set<std::string> get_miners();
@@ -40,7 +46,7 @@ public:
   void set_reward_scheme(std::unique_ptr<RewardScheme> handler);
 
 protected:
-  MiningPool(uint64_t difficulty, double uncle_prob);
+  MiningPool(uint64_t difficulty, double uncle_prob, std::shared_ptr<Random> random);
 
 private:
   // list of miners in pool
@@ -57,4 +63,7 @@ private:
 
   // total blocks mined by miners in pool
   unsigned long blocks_mined;
+
+  // Random instance
+  std::shared_ptr<Random> random;
 };
