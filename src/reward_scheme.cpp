@@ -22,3 +22,12 @@ void PPSRewardScheme::handle_share(const std::string& miner_address, const Share
 }
 
 REGISTER(RewardScheme, PPSRewardScheme, "pps")
+
+
+PPLNSRewardScheme::PPLNSRewardScheme(const nlohmann::json& _args) {}
+
+void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
+  // TODO: do some realy cool stuff with this share
+}
+
+REGISTER(RewardScheme, PPLNSRewardScheme, "pplns")

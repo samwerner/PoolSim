@@ -1,15 +1,19 @@
+#include <stdexcept>
+
 #include "miner.h"
 #include "mining_pool.h"
+
 
 Miner::Miner(std::string _address, double _hashrate)
   : address(_address), hashrate(_hashrate) {}
 
 std::shared_ptr<Miner> Miner::create(std::string address, double hashrate,
                     std::unique_ptr<ShareHandler> handler) {
-  auto miner = std::shared_ptr<Miner>(new Miner(address, hashrate));
-  if (handler != nullptr) {
-    miner->set_handler(std::move(handler));
+  if (handler == nullptr) {
+    throw std::invalid_argument("handler cannot be null");
   }
+  auto miner = std::shared_ptr<Miner>(new Miner(address, hashrate));
+  miner->set_handler(std::move(handler));
   return miner;
 }
 

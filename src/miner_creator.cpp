@@ -1,6 +1,8 @@
 #include "miner_creator.h"
 #include "share_handler.h"
 
+#include "csv.h"
+
 using nlohmann::json;
 
 
@@ -32,11 +34,26 @@ MinerCreator::MinerCreator(std::shared_ptr<Random> _random)
 
 std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohmann::json& args) {
   std::vector<std::shared_ptr<Miner>> miners;
-  std::string filepath = args["filepath"];
-  std::cout << filepath << std::endl;
+  std::string filepath = args["path"];
+  io::CSVReader<3> in(filepath);
+  in.read_header(io::ignore_missing_column, "address", "hashrate", "behavior");
+  std::string address;
+  double hashrate;
+  std::string behavior_name;
+  while (in.read_row(address, hashrate, behavior_name)) {
+    if (behavior_name.empty()) {
+      behavior_name = args["behavior"]["name"];
+    }
+    auto share_handler = ShareHandlerFactory::create(behavior_name, args["behavior"]["params"]);
+    auto miner = Miner::create(address, hashrate, std::move(share_handler));
+    miners.push_back(miner);
+    behavior_name.clear();
+  }
 
   return miners;
 }
+
+REGISTER(MinerCreator, CSVMinerCreator, "csv")
 
 
 std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nlohmann::json& args) {
@@ -59,5 +76,4 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
   return miners;
 }
 
-REGISTER(MinerCreator, CSVMinerCreator, "csv")
 REGISTER(MinerCreator, RandomMinerCreator, "random")

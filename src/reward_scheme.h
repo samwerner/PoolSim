@@ -43,3 +43,12 @@ public:
 
   void handle_share(const std::string& miner_address, const Share& share) override;
 };
+
+
+// Pay-per-last-n-shares reward scheme
+class PPLNSRewardScheme: public BaseRewardScheme<PPLNSRewardScheme> {
+public:
+  explicit PPLNSRewardScheme(const nlohmann::json& args);
+
+  void handle_share(const std::string& miner_address, const Share& share) override;
+};

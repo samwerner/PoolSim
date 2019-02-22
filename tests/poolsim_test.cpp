@@ -38,18 +38,32 @@ const nlohmann::json random_miners_params = R"({
 })"_json;
 
 
-class MockRandom: public Random {
+
+class MockRandom : public Random {
 public:
   MOCK_METHOD0(drand48, double());
   MOCK_METHOD0(get_address, std::string());
   MOCK_METHOD0(get_random_engine, std::shared_ptr<std::default_random_engine>());
 };
 
-class MockMiner: public Miner {
+class MockMiner : public Miner {
 public:
   MockMiner(const std::string& address, double hashrate): Miner(address, hashrate) {}
   MOCK_METHOD1(process_share, void(const Share& share));
 };
+
+
+class MockShareHandler : public ShareHandler {
+public:
+  MOCK_METHOD1(handle_share, void(const Share&));
+};
+
+
+class MockRewardScheme : public RewardScheme {
+public:
+  MOCK_METHOD2(handle_share, void(const std::string&, const Share&));
+};
+
 
 
 Simulation get_sample_simulation() {
@@ -61,6 +75,14 @@ Simulation get_sample_simulation() {
 
 Simulator get_sample_simulator() {
   return Simulator(get_sample_simulation());
+}
+
+std::unique_ptr<ShareHandler> get_mock_share_handler() {
+  return std::unique_ptr<ShareHandler>(new MockShareHandler);
+}
+
+std::unique_ptr<RewardScheme> get_mock_reward_scheme() {
+  return std::unique_ptr<RewardScheme>(new MockRewardScheme);
 }
 
 
@@ -97,15 +119,15 @@ TEST(Simulation, from_string) {
 
 
 TEST(Miner, accessors) {
-  auto miner = Miner::create("random_address", 123, nullptr);
+  auto miner = Miner::create("random_address", 123, get_mock_share_handler());
   ASSERT_EQ(miner->get_address(), "random_address");
   ASSERT_EQ(miner->get_hashrate(), 123);
 }
 
 TEST(Miner, join_pool) {
-  auto miner = Miner::create("random_address", 123, nullptr);
-  auto pool1 = MiningPool::create(100, 0.001, nullptr);
-  auto pool2 = MiningPool::create(100, 0.001, nullptr);
+  auto miner = Miner::create("random_address", 123, get_mock_share_handler());
+  auto pool1 = MiningPool::create(100, 0.001, get_mock_reward_scheme());
+  auto pool2 = MiningPool::create(100, 0.001, get_mock_reward_scheme());
   ASSERT_EQ(miner->get_pool(), nullptr);
   ASSERT_EQ(pool1->get_miners_count(), 0);
   ASSERT_EQ(pool2->get_miners_count(), 0);
@@ -151,8 +173,8 @@ TEST(EventQueue, events_ordering) {
 
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, 0.001, nullptr);
-  auto miner = Miner::create("address", 25, nullptr);
+  auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
+  auto miner = Miner::create("address", 25, get_mock_share_handler());
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
   Simulator simulator(simulation, random);
@@ -168,7 +190,7 @@ TEST(Simulator, schedule_miner) {
 
 TEST(Simulator, process_event) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, 0.001, nullptr);
+  auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
   auto miner = std::make_shared<MockMiner>("address", 25);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
@@ -272,6 +294,20 @@ TEST(MinerCreator, RandomMinerCreator) {
   }
   ASSERT_GE(total_hashrate, 100);
 }
+
+TEST(MinerCreator, CSVMinerCreator) {
+  auto args = R"({
+    "behavior": {"name": "default", "params": {}},
+    "path": "tests/fixtures/sample_miners.csv"
+  })"_json;
+  auto creator = MinerCreatorFactory::create("csv");
+  auto miners = creator->create_miners(args);
+  ASSERT_EQ(miners.size(), 3);
+  ASSERT_FLOAT_EQ(miners[0]->get_hashrate(), 1);
+  ASSERT_FLOAT_EQ(miners[1]->get_hashrate(), 2);
+  ASSERT_FLOAT_EQ(miners[2]->get_hashrate(), 3);
+}
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

@@ -11,7 +11,7 @@ RUN_TESTS = $(addsuffix .run, $(TESTS))
 TEST_OBJS = $(OBJ)
 ALL_OBJS = $(TEST_OBJS) $(MAIN_OBJ)
 
-DEPS = vendor/nlohmann vendor/spdlog
+DEPS = vendor/nlohmann vendor/spdlog vendor/csv.h
 SPDLOG_VERSION = 1.3.1
 
 EXE = build/poolsim
@@ -56,6 +56,9 @@ distclean: clean clean_deps
 .SECONDARY: $(TESTS)
 
 deps: $(DEPS)
+
+vendor/csv.h:
+	@wget https://raw.githubusercontent.com/ben-strasser/fast-cpp-csv-parser/master/csv.h -O $@
 
 vendor/spdlog: vendor/spdlog/spdlog.h
 vendor/spdlog/spdlog.h:

@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdexcept>
 
 #include "mining_pool.h"
 
@@ -6,9 +6,10 @@
 std::shared_ptr<MiningPool> MiningPool::create(
     uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme) {
   auto mining_pool = std::shared_ptr<MiningPool>(new MiningPool(difficulty, uncle_prob));
-  if (reward_scheme != nullptr) {
-    mining_pool->set_reward_scheme(std::move(reward_scheme));
+  if (reward_scheme == nullptr) {
+    throw std::invalid_argument("reward_scheme cannot be null");
   }
+  mining_pool->set_reward_scheme(std::move(reward_scheme));
   return mining_pool;
 }
 
