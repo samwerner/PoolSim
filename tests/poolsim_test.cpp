@@ -12,8 +12,9 @@
 
 const std::string simulation_string = R"({
   "blocks": 5,
-  "networkDifficulty": 100,
+  "network_difficulty": 100,
   "pools": [{
+    "uncle_block_prob": 0.001,
     "difficulty": 10,
     "reward_scheme": {"type": "pps", "params": {}},
     "miners": {
@@ -81,6 +82,20 @@ TEST(Share, flags) {
 }
 
 
+TEST(Simulation, from_string) {
+  auto simulation = Simulation::from_string(simulation_string);
+  ASSERT_EQ(simulation.blocks, 5);
+  ASSERT_EQ(simulation.network_difficulty, 100);
+  ASSERT_EQ(simulation.pools.size(), 1);
+  auto pool = simulation.pools[0];
+  ASSERT_EQ(pool.difficulty, 10);
+  ASSERT_FLOAT_EQ(pool.uncle_block_prob, 0.001);
+  auto miner_config = pool.miner_config;
+  ASSERT_EQ(miner_config.generator, "csv");
+  ASSERT_EQ(miner_config.params["path"], "miners.csv");
+}
+
+
 TEST(Miner, accessors) {
   auto miner = Miner::create("random_address", 123, nullptr);
   ASSERT_EQ(miner->get_address(), "random_address");
@@ -89,8 +104,8 @@ TEST(Miner, accessors) {
 
 TEST(Miner, join_pool) {
   auto miner = Miner::create("random_address", 123, nullptr);
-  auto pool1 = MiningPool::create(100, nullptr);
-  auto pool2 = MiningPool::create(100, nullptr);
+  auto pool1 = MiningPool::create(100, 0.001, nullptr);
+  auto pool2 = MiningPool::create(100, 0.001, nullptr);
   ASSERT_EQ(miner->get_pool(), nullptr);
   ASSERT_EQ(pool1->get_miners_count(), 0);
   ASSERT_EQ(pool2->get_miners_count(), 0);
@@ -104,17 +119,6 @@ TEST(Miner, join_pool) {
   ASSERT_EQ(miner->get_pool(), pool2);
 }
 
-TEST(Simulation, from_string) {
-  auto simulation = Simulation::from_string(simulation_string);
-  ASSERT_EQ(simulation.blocks, 5);
-  ASSERT_EQ(simulation.network_difficulty, 100);
-  ASSERT_EQ(simulation.pools.size(), 1);
-  auto pool = simulation.pools[0];
-  ASSERT_EQ(pool.difficulty, 10);
-  auto miner_config = pool.miner_config;
-  ASSERT_EQ(miner_config.generator, "csv");
-  ASSERT_EQ(miner_config.params["path"], "miners.csv");
-}
 
 TEST(SystemRandom, initialization) {
   ASSERT_THROW(SystemRandom::get_instance(), RandomInitException);
@@ -147,7 +151,7 @@ TEST(EventQueue, events_ordering) {
 
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, nullptr);
+  auto pool = MiningPool::create(50, 0.001, nullptr);
   auto miner = Miner::create("address", 25, nullptr);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
@@ -164,7 +168,7 @@ TEST(Simulator, schedule_miner) {
 
 TEST(Simulator, process_event) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, nullptr);
+  auto pool = MiningPool::create(50, 0.001, nullptr);
   auto miner = std::make_shared<MockMiner>("address", 25);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();

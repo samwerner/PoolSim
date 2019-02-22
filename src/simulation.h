@@ -28,6 +28,9 @@ struct PoolConfig {
   // The difficulty of the pool
   uint64_t difficulty;
 
+  // Probability of having an uncle block
+  double uncle_block_prob;
+
   // Reward scheme to use for this pool
   RewardSchemeConfig reward_scheme_config;
 

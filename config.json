@@ -1,7 +1,8 @@
 {
   "blocks": 10000,
-  "networkDifficulty": 100,
+  "network_difficulty": 100,
   "pools": [{
+    "uncle_block_prob": 0.001,
     "difficulty": 10,
     "reward_scheme": {
       "type": "pplns",
@@ -15,6 +16,7 @@
       }
     }
   }, {
+    "uncle_block_prob": 0.001,
     "difficulty": 20,
     "reward_scheme": {
       "type": "pps",

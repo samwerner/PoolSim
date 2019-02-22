@@ -25,7 +25,8 @@ void Simulator::initialize() {
     auto new_miners = miner_creator->create_miners(miner_config.params);
     auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
                                                      reward_scheme_config.params);
-    auto pool = MiningPool::create(pool_config.difficulty, std::move(reward_scheme));
+    auto pool = MiningPool::create(pool_config.difficulty,
+                                   pool_config.uncle_block_prob, std::move(reward_scheme));
     for (auto miner : new_miners) {
       miner->join_pool(pool);
       add_miner(miner);

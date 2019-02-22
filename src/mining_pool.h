@@ -10,7 +10,8 @@
 
 class MiningPool : public std::enable_shared_from_this<MiningPool> {
 public:
-  static std::shared_ptr<MiningPool> create(uint64_t difficulty, std::unique_ptr<RewardScheme> reward_scheme);
+  static std::shared_ptr<MiningPool> create(
+    uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);
 
   // Returns all the miners currently in the pool
   std::set<std::string> get_miners();
@@ -39,7 +40,7 @@ public:
   void set_reward_scheme(std::unique_ptr<RewardScheme> handler);
 
 protected:
-  explicit MiningPool(uint64_t difficulty);
+  MiningPool(uint64_t difficulty, double uncle_prob);
 
 private:
   // list of miners in pool
