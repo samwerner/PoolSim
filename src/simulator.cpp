@@ -63,11 +63,13 @@ void Simulator::process_event(const Event& event) {
   auto pool = miner->get_pool();
   double p = (double) pool->get_difficulty() / simulation.network_difficulty;
   bool is_network_share = random->drand48() < p;
+  uint8_t share_flags = Share::Property::none;
   if (is_network_share) {
     blocks_mined++;
     spdlog::debug("new block mined: {} / {}", blocks_mined, simulation.blocks);
+    share_flags |= Share::Property::network;
   }
-  Share share(is_network_share);
+  Share share(share_flags);
   schedule_miner(miner);
   miner->process_share(share);
 }

@@ -39,4 +39,5 @@ size_t MiningPool::get_miners_count() const {
 }
 
 void MiningPool::submit_share(const std::string& miner_address, const Share& share) {
+  reward_scheme->handle_share(miner_address, share);
 }

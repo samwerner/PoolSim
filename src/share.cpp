@@ -1,12 +1,15 @@
 #include "share.h"
 
-Share::Share(bool _network_share): network_share(_network_share) {}
+Share::Share(uint8_t _properties): properties(_properties) {}
 
-bool Share::is_network_share() const { return network_share; }
+
+uint8_t Share::get_properties() const { return properties; }
+bool Share::is_network_share() const { return (properties & Property::network) != 0; }
+bool Share::is_uncle() const { return (properties & Property::uncle) != 0; }
 
 
 bool operator==(const Share& lhs, const Share& rhs) {
-  return lhs.is_network_share() == rhs.is_network_share();
+  return lhs.get_properties() == rhs.get_properties();
 }
 
 bool operator!=(const Share& lhs, const Share& rhs) {

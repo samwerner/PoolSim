@@ -64,9 +64,20 @@ Simulator get_sample_simulator() {
 
 
 TEST(Share, equality) {
-  ASSERT_EQ(Share(true), Share(true));
-  ASSERT_EQ(Share(false), Share(false));
-  ASSERT_NE(Share(true), Share(false));
+  ASSERT_EQ(Share(Share::Property::network), Share(Share::Property::network));
+  uint8_t flags = Share::Property::network | Share::Property::uncle;
+  ASSERT_EQ(Share(flags), Share(flags));
+  ASSERT_NE(Share(Share::Property::network), Share(Share::Property::uncle));
+}
+
+TEST(Share, flags) {
+  ASSERT_TRUE(Share(Share::Property::network).is_network_share());
+  ASSERT_TRUE(Share(Share::Property::uncle).is_uncle());
+  ASSERT_FALSE(Share(Share::Property::uncle).is_network_share());
+  uint8_t flags = Share::Property::network | Share::Property::uncle;
+  ASSERT_TRUE(Share(flags).is_uncle());
+  ASSERT_TRUE(Share(flags).is_network_share());
+  ASSERT_FALSE(Share(0).is_network_share());
 }
 
 
