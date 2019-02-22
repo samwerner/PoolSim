@@ -5,6 +5,8 @@
 
 #include "simulator.h"
 
+#include "miner_creator.h"
+
 namespace po = boost::program_options;
 
 
@@ -31,11 +33,11 @@ int main(int argc, char* argv[]) {
 
   std::string config_filepath = vm["config-file"].as<std::string>();
 
-  auto simulation = Simulation::from_config_file(config_filepath);
-  Simulator simulator(simulation);
+  // auto simulation = Simulation::from_config_file(config_filepath);
+  // Simulator simulator(simulation);
 
-  simulator.run();
-
+  // simulator.run();
+  std::cout << MinerCreatorFactory::registered().size() << std::endl;
 
   return 0;
 }

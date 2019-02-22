@@ -11,6 +11,8 @@
 #include "event.h"
 #include "random.h"
 
+#include "miner_creator.h"
+
 class Simulator {
 public:
   Simulator(Simulation simulation);
