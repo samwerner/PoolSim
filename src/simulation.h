@@ -6,6 +6,14 @@
 #include <nlohmann/json.hpp>
 
 
+class InvalidSimulationException : public std::exception {
+public:
+  explicit InvalidSimulationException(const char* _message);
+  const char* what() const throw();
+private:
+  const char* message;
+};
+
 struct MinerConfig {
   std::string generator;
   nlohmann::json arguments;

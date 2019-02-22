@@ -36,7 +36,7 @@ public:
     return names;
   }
 
-  static bool registerClass(const std::string& name, CreateMethod create_method) {
+  static bool register_class(const std::string& name, CreateMethod create_method) {
     auto it = get_methods().find(name);
     if (it == get_methods().end()) {
       get_methods()[name] = create_method;
@@ -61,9 +61,9 @@ private:
   }
 };
 
-#define MAKE_FACTORY(name, ...) \
-  using name ## Factory = Factory<name, std::unique_ptr<name>(*)(__VA_ARGS__)>;
+#define MAKE_FACTORY(factory_name, name, ...) \
+  using factory_name = Factory<name, std::unique_ptr<name>(*)(__VA_ARGS__)>;
 
 #define REGISTER(base, clazz, name) \
   volatile bool base ## _ ## clazz ## _registered = \
-    Factory<base, decltype(&clazz::create)>::registerClass(name, clazz::create);
+    Factory<base, decltype(&clazz::create)>::register_class(name, clazz::create);

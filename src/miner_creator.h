@@ -9,13 +9,19 @@
 
 class MinerCreator {
 public:
-  virtual std::vector<Miner> create_miners(const nlohmann::json& args) = 0;
+  virtual std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) = 0;
 };
 
 class CSVMinerCreator : public MinerCreator, public Creatable0<MinerCreator, CSVMinerCreator> {
 public:
-  std::vector<Miner> create_miners(const nlohmann::json& args) override;
+  std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
+};
+
+class DistributionMinerCreator : public MinerCreator,
+                                 public Creatable0<MinerCreator, DistributionMinerCreator> {
+public:
+  std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
 };
 
 
-MAKE_FACTORY(MinerCreator);
+MAKE_FACTORY(MinerCreatorFactory, MinerCreator)

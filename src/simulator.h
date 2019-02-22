@@ -21,6 +21,10 @@ public:
   // Runs the simulator
   void run();
 
+  // Initializes the simulator
+  // creates pools and miners
+  void initialize();
+
   // Schedules all the miners
   // This should only be used for the first initialization
   void schedule_all();

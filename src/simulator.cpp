@@ -6,19 +6,40 @@
 #include "simulator.h"
 #include "miner.h"
 #include "event.h"
+#include "miner_creator.h"
+
 
 Simulator::Simulator(Simulation _simulation)
-  : Simulator(_simulation, std::shared_ptr<SystemRandom>(&SystemRandom::getInstance())) {}
+  : Simulator(_simulation, SystemRandom::get_instance()) {}
 
 Simulator::Simulator(Simulation _simulation, std::shared_ptr<Random> _random)
   : simulation(_simulation), random(_random), current_time(0), blocks_mined(0) {}
 
+
+void Simulator::initialize() {
+  for (auto pool_config : simulation.pools) {
+    auto miner_config = pool_config.miner_config;
+    auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
+    auto new_miners = miner_creator->create_miners(miner_config.arguments);
+    auto pool = std::make_shared<MiningPool>(pool_config.difficulty);
+    for (auto miner : new_miners) {
+      miner->join_pool(pool);
+      miners[miner->get_address()] = miner;
+    }
+    pools.push_back(pool);
+  }
+}
+
 void Simulator::run() {
-  spdlog::info("running {} blocks", simulation.blocks);
-  // TODO: initialize the simulator
+  initialize();
+
+  if (pools.empty() || miners.empty()) {
+    throw InvalidSimulationException("simulation must have at least one miner and one pool");
+  }
 
   schedule_all();
 
+  spdlog::info("running {} blocks", simulation.blocks);
   while (get_blocks_mined() <= simulation.blocks) {
     auto event = queue.pop();
     process_event(event);

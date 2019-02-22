@@ -26,6 +26,7 @@ const std::string simulation_string = R"({
 class MockRandom: public Random {
 public:
   MOCK_METHOD0(drand48, double());
+  MOCK_METHOD0(get_random_engine, std::shared_ptr<std::default_random_engine>());
 };
 
 class MockMiner: public Miner {
@@ -78,11 +79,11 @@ TEST(Simulation, from_string) {
 }
 
 TEST(SystemRandom, initialization) {
-  ASSERT_THROW(SystemRandom::getInstance(), RandomInitException);
+  ASSERT_THROW(SystemRandom::get_instance(), RandomInitException);
   SystemRandom::initialize(0);
-  ASSERT_NO_THROW(SystemRandom::getInstance());
+  ASSERT_NO_THROW(SystemRandom::get_instance());
   // NOTE: expected value with seed = 0
-  ASSERT_FLOAT_EQ(SystemRandom::getInstance().drand48(), 0.170828);
+  ASSERT_FLOAT_EQ(SystemRandom::get_instance()->drand48(), 0.170828);
 }
 
 
@@ -144,6 +145,24 @@ TEST(Simulator, process_event) {
   ASSERT_EQ(simulator.get_blocks_mined(), 1);
   ASSERT_EQ(simulator.get_current_time(), 10);
 }
+
+TEST(Random, UniformDistribution) {
+  auto args = R"({"low": 0.0, "high": 10.0})"_json;
+  auto dist = DistributionFactory::create("uniform", args);
+  double value = dist->get();
+  ASSERT_GE(value, 0.0);
+  ASSERT_LE(value, 10.0);
+}
+
+
+TEST(Random, NormalDistribution) {
+  auto args = R"({"mean": 0.0, "variance": 1.0})"_json;
+  auto dist = DistributionFactory::create("normal", args);
+  double value = dist->get();
+  ASSERT_GE(value, -5.0);
+  ASSERT_LE(value, 5.0);
+}
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
