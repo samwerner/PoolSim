@@ -9,6 +9,10 @@ char const* EmptyQueueException::what() const throw() {
 
 EventQueue::EventQueue() {}
 
+size_t EventQueue::size() const {
+  return queue.size();
+}
+
 void EventQueue::schedule(Event event) {
   queue.push(event);
 }
@@ -23,7 +27,7 @@ bool EventQueue::is_empty() const {
   return queue.empty();
 }
 
-Event EventQueue::get_top() {
+Event EventQueue::get_top() const {
   if (is_empty()) {
     throw EmptyQueueException();
   }

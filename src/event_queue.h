@@ -17,6 +17,8 @@ private:
 public:
   EventQueue();
 
+  size_t size() const;
+
   // Schedules a new share event
   void schedule(Event _event);
 
@@ -27,5 +29,5 @@ public:
   bool is_empty() const;
 
   // Returns event first in queue
-  Event get_top();
+  Event get_top() const;
 };

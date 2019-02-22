@@ -22,6 +22,17 @@ const std::string simulation_string = R"({
   }]
 })";
 
+const nlohmann::json random_miners_params = R"({
+  "hashrate": {
+    "distribution": "normal",
+    "params": {"mean": 10.0, "variance": 30.0}
+  },
+  "stop_condition": {
+    "type": "miners_count",
+    "params": {"value": 100}
+  }
+})"_json;
+
 
 class MockRandom: public Random {
 public:
@@ -35,6 +46,18 @@ public:
   MockMiner(const std::string& address, double hashrate): Miner(address, hashrate) {}
   MOCK_METHOD1(process_share, void(const Share& share));
 };
+
+
+Simulation get_sample_simulation() {
+  auto simulation_json = nlohmann::json::parse(simulation_string);
+  simulation_json["pools"][0]["miners"]["generator"] = "random";
+  simulation_json["pools"][0]["miners"]["params"] = random_miners_params;
+  return simulation_json.get<Simulation>();
+}
+
+Simulator get_sample_simulator() {
+  return Simulator(get_sample_simulation());
+}
 
 
 TEST(Share, equality) {
@@ -115,11 +138,11 @@ TEST(Simulator, schedule_miner) {
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
   Simulator simulator(simulation, random);
-  ASSERT_TRUE(simulator.get_event_queue().is_empty());
+  ASSERT_EQ(simulator.get_events_count(), 0);
   EXPECT_CALL(*random, drand48()).Times(1).WillOnce(testing::Return(0.3));
   simulator.schedule_miner(miner);
-  ASSERT_FALSE(simulator.get_event_queue().is_empty());
-  auto event = simulator.get_event_queue().get_top();
+  ASSERT_NE(simulator.get_events_count(), 0);
+  auto event = simulator.get_next_event();
   ASSERT_EQ(event.miner_address, "address");
   // 25 / 50 = 0.5
   ASSERT_FLOAT_EQ(event.time, -log(0.3) / 0.5);
@@ -151,6 +174,21 @@ TEST(Simulator, process_event) {
   simulator.process_event(event2);
   ASSERT_EQ(simulator.get_blocks_mined(), 1);
   ASSERT_EQ(simulator.get_current_time(), 10);
+}
+
+TEST(Simulator, initialize) {
+  auto simulator = get_sample_simulator();
+  simulator.initialize();
+  ASSERT_EQ(simulator.get_pools_count(), 1);
+  ASSERT_EQ(simulator.get_miners_count(), 100);
+}
+
+TEST(Simulator, schedule_all) {
+  auto simulator = get_sample_simulator();
+  simulator.initialize();
+  ASSERT_EQ(simulator.get_events_count(), 0);
+  simulator.schedule_all();
+  ASSERT_EQ(simulator.get_events_count(), 100);
 }
 
 TEST(Random, UniformDistribution) {
@@ -198,22 +236,22 @@ TEST(MinerCreator, RandomMinerCreator) {
       "params": {"mean": 10.0, "variance": 30.0}
     },
     "stop_condition": {
-      "type": "total_hashrate",
+      "type": "miners_count",
       "params": {"value": 100}
     }
   })"_json;
   auto creator = MinerCreatorFactory::create("random");
   auto miners = creator->create_miners(args);
+  ASSERT_EQ(miners.size(), 100);
+
+  args["stop_condition"]["type"] = "total_hashrate";
+  miners = creator->create_miners(args);
   ASSERT_FALSE(miners.empty());
   uint64_t total_hashrate = 0;
   for (auto miner : miners) {
     total_hashrate += miner->get_hashrate();
   }
   ASSERT_GE(total_hashrate, 100);
-
-  args["stop_condition"]["type"] = "miners_count";
-  miners = creator->create_miners(args);
-  ASSERT_EQ(miners.size(), 100);
 }
 
 int main(int argc, char **argv) {

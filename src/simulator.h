@@ -36,11 +36,14 @@ public:
   // Schedules a single miner
   void schedule_miner(const std::shared_ptr<Miner> miner);
 
+  // Adds a miner to the simulator
+  void add_miner(std::shared_ptr<Miner> miner);
+
+  // Adds a pool to the simulator
+  void add_pool(std::shared_ptr<MiningPool> pool);
+
   // Returns the miner with the given address:
   std::shared_ptr<Miner> get_miner(const std::string& miner_address);
-
-  // Returns the current event queue
-  EventQueue& get_event_queue();
 
   // Returns the current number of blocks mined
   uint64_t get_blocks_mined() const;
@@ -48,12 +51,17 @@ public:
   // Returns the current time
   double get_current_time() const;
 
-  // Adds a miner to the simulator
-  void add_miner(std::shared_ptr<Miner> miner);
+  // Returns the numbers of pool
+  size_t get_pools_count() const;
 
-  // Adds a pool to the simulator
-  void add_pool(std::shared_ptr<MiningPool> pool);
+  // Returns the numbers of miners
+  size_t get_miners_count() const;
 
+  // Returns the numbers of scheduled events
+  size_t get_events_count() const;
+
+  // Returns the next event
+  Event get_next_event() const;
 
 private:
   // Setup of the simulation to run

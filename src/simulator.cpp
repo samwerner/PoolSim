@@ -24,9 +24,9 @@ void Simulator::initialize() {
     auto pool = std::make_shared<MiningPool>(pool_config.difficulty);
     for (auto miner : new_miners) {
       miner->join_pool(pool);
-      miners[miner->get_address()] = miner;
+      add_miner(miner);
     }
-    pools.push_back(pool);
+    add_pool(pool);
   }
 }
 
@@ -46,26 +46,11 @@ void Simulator::run() {
   }
 }
 
-EventQueue& Simulator::get_event_queue() {
-  return queue;
-}
-
-double Simulator::get_current_time() const {
-  return current_time;
-}
-
-uint64_t Simulator::get_blocks_mined() const {
-  return blocks_mined;
-}
 
 void Simulator::schedule_all() {
   for (auto miner_kv: miners) {
     schedule_miner(miner_kv.second);
   }
-}
-
-std::shared_ptr<Miner> Simulator::get_miner(const std::string& miner_address) {
-  return miners[miner_address];
 }
 
 void Simulator::process_event(const Event& event) {
@@ -98,4 +83,32 @@ void Simulator::add_miner(std::shared_ptr<Miner> miner) {
 
 void Simulator::add_pool(std::shared_ptr<MiningPool> pool) {
   pools.push_back(pool);
+}
+
+std::shared_ptr<Miner> Simulator::get_miner(const std::string& miner_address) {
+  return miners[miner_address];
+}
+
+double Simulator::get_current_time() const {
+  return current_time;
+}
+
+uint64_t Simulator::get_blocks_mined() const {
+  return blocks_mined;
+}
+
+size_t Simulator::get_miners_count() const {
+  return miners.size();
+}
+
+size_t Simulator::get_pools_count() const {
+  return pools.size();
+}
+
+size_t Simulator::get_events_count() const {
+  return queue.size();
+}
+
+Event Simulator::get_next_event() const {
+  return queue.get_top();
 }
