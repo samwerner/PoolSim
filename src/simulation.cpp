@@ -7,6 +7,14 @@
 
 using json = nlohmann::json;
 
+InvalidSimulationException::InvalidSimulationException(const char* _message)
+  : message(_message) {}
+
+const char* InvalidSimulationException::what() const throw() {
+  return message;
+}
+
+
 void from_json(const json& j, MinerConfig& miner_config) {
   j.at("generator").get_to(miner_config.generator);
   miner_config.arguments = j["arguments"];

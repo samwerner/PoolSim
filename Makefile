@@ -40,13 +40,13 @@ test: $(RUN_TESTS)
 build/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
--include $(OBJ:.o=.d)
+-include $(ALL_OBJS:.o=.d)
 
 clean_deps:
 	rm -rf $(DEPS)
 
 clean:
-	rm -f $(EXE) $(OBJ) $(OBJ:.o=.d) $(TESTS)
+	rm -f $(EXE) $(ALL_OBJS) $(ALL_OBJS:.o=.d) $(TESTS)
 
 distclean: clean clean_deps
 	rm -rf build

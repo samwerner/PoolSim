@@ -1,6 +1,11 @@
 #pragma once
 
+#include <random>
 #include <memory>
+
+#include "factory.h"
+
+#include <nlohmann/json.hpp>
 
 // Exception thrown if the Random class
 // has not yet been initialized exactly once
@@ -12,11 +17,13 @@ private:
   const char* message;
 };
 
+
 // Interface used for mocking
 class Random {
 public:
   virtual ~Random() {}
   virtual double drand48() = 0;
+  virtual std::shared_ptr<std::default_random_engine> get_random_engine() = 0;
 };
 
 
@@ -25,16 +32,54 @@ public:
 class SystemRandom : public Random {
 public:
   static void initialize(long seed);
-  static void ensureInitialized(long seed);
-  static SystemRandom& getInstance();
+  static void ensure_initialized(long seed);
+  static std::shared_ptr<SystemRandom> get_instance();
 
   // Delegates to standard drand48()
   double drand48() override;
+
+  std::shared_ptr<std::default_random_engine> get_random_engine();
 
   // Avoid accidental copies
   SystemRandom(SystemRandom const&) = delete;
   void operator=(SystemRandom const&) = delete;
 private:
   static bool initialized;
+  std::shared_ptr<std::default_random_engine> random_engine;
   SystemRandom();
+};
+
+// Base class for a probability distribution
+class Distribution {
+public:
+  Distribution();
+  explicit Distribution(std::shared_ptr<Random> random);
+  virtual double get() = 0;
+protected:
+  std::shared_ptr<Random> random;
+};
+
+MAKE_FACTORY(DistributionFactory, Distribution, const nlohmann::json&)
+
+
+class NormalDistribution : public Distribution,
+                           public Creatable1<Distribution, NormalDistribution, const nlohmann::json&> {
+public:
+  explicit NormalDistribution(const nlohmann::json& args);
+  NormalDistribution(double mean, double variance);
+  NormalDistribution(double mean, double variance, std::shared_ptr<Random> random);
+  virtual double get();
+private:
+  std::normal_distribution<double> dist;
+};
+
+class UniformDistribution : public Distribution,
+                            public Creatable1<Distribution, UniformDistribution, const nlohmann::json&> {
+public:
+  explicit UniformDistribution(const nlohmann::json& args);
+  UniformDistribution(double low, double high);
+  UniformDistribution(double low, double high, std::shared_ptr<Random> random);
+  virtual double get();
+private:
+  std::uniform_real_distribution<double> dist;
 };
