@@ -2,6 +2,7 @@
 #include <string>
 #include <boost/program_options.hpp>
 
+#include <spdlog/spdlog.h>
 
 #include "simulator.h"
 
@@ -15,6 +16,7 @@ int main(int argc, char* argv[]) {
   desc.add_options()
       ("help", "shows help")
       ("config-file", po::value<std::string>(), "path to config file")
+      ("debug", "enable debug logs")
   ;
 
   po::variables_map vm;
@@ -30,6 +32,12 @@ int main(int argc, char* argv[]) {
     std::cerr << "--config-file not given" << std::endl;
     return 1;
   }
+
+  spdlog::set_level(spdlog::level::info);
+  if (vm.count("debug")) {
+    spdlog::set_level(spdlog::level::debug);
+  }
+
 
   std::string config_filepath = vm["config-file"].as<std::string>();
 
