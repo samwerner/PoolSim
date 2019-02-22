@@ -4,6 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include "simulator.h"
+#include "reward_scheme.h"
 #include "miner.h"
 #include "event.h"
 #include "miner_creator.h"
@@ -19,9 +20,12 @@ Simulator::Simulator(Simulation _simulation, std::shared_ptr<Random> _random)
 void Simulator::initialize() {
   for (auto pool_config : simulation.pools) {
     auto miner_config = pool_config.miner_config;
+    auto reward_scheme_config = pool_config.reward_scheme_config;
     auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
     auto new_miners = miner_creator->create_miners(miner_config.params);
-    auto pool = std::make_shared<MiningPool>(pool_config.difficulty);
+    auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
+                                                     reward_scheme_config.params);
+    auto pool = MiningPool::create(pool_config.difficulty, std::move(reward_scheme));
     for (auto miner : new_miners) {
       miner->join_pool(pool);
       add_miner(miner);

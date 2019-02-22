@@ -21,6 +21,7 @@ void from_json(const json& j, MinerConfig& miner_config) {
 }
 
 void from_json(const json& j, PoolConfig& pool_config) {
+  j.at("reward_scheme").get_to(pool_config.reward_scheme_config);
   j.at("difficulty").get_to(pool_config.difficulty);
   j.at("miners").get_to(pool_config.miner_config);
 }
@@ -29,6 +30,12 @@ void from_json(const json& j, Simulation& simulation) {
   j.at("blocks").get_to(simulation.blocks);
   j.at("networkDifficulty").get_to(simulation.network_difficulty);
   j.at("pools").get_to(simulation.pools);
+}
+
+
+void from_json(const json& j, RewardSchemeConfig& reward_scheme_config) {
+  j.at("type").get_to(reward_scheme_config.scheme_type);
+  reward_scheme_config.params = j["params"];
 }
 
 Simulation Simulation::from_stream(std::istream& stream) {

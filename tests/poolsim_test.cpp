@@ -15,6 +15,7 @@ const std::string simulation_string = R"({
   "networkDifficulty": 100,
   "pools": [{
     "difficulty": 10,
+    "reward_scheme": {"type": "pps", "params": {}},
     "miners": {
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
@@ -77,8 +78,8 @@ TEST(Miner, accessors) {
 
 TEST(Miner, join_pool) {
   auto miner = Miner::create("random_address", 123, nullptr);
-  auto pool1 = std::make_shared<MiningPool>(100);
-  auto pool2 = std::make_shared<MiningPool>(100);
+  auto pool1 = MiningPool::create(100, nullptr);
+  auto pool2 = MiningPool::create(100, nullptr);
   ASSERT_EQ(miner->get_pool(), nullptr);
   ASSERT_EQ(pool1->get_miners_count(), 0);
   ASSERT_EQ(pool2->get_miners_count(), 0);
@@ -135,7 +136,7 @@ TEST(EventQueue, events_ordering) {
 
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = std::make_shared<MiningPool>(50);
+  auto pool = MiningPool::create(50, nullptr);
   auto miner = Miner::create("address", 25, nullptr);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
@@ -152,7 +153,7 @@ TEST(Simulator, schedule_miner) {
 
 TEST(Simulator, process_event) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = std::make_shared<MiningPool>(50);
+  auto pool = MiningPool::create(50, nullptr);
   auto miner = std::make_shared<MockMiner>("address", 25);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();

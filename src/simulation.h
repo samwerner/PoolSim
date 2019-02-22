@@ -19,9 +19,17 @@ struct MinerConfig {
   nlohmann::json params;
 };
 
+struct RewardSchemeConfig {
+  std::string scheme_type;
+  nlohmann::json params;
+};
+
 struct PoolConfig {
   // The difficulty of the pool
   uint64_t difficulty;
+
+  // Reward scheme to use for this pool
+  RewardSchemeConfig reward_scheme_config;
 
   // How to create initial miners for this pool
   MinerConfig miner_config;
@@ -46,5 +54,6 @@ struct Simulation {
 };
 
 void from_json(const nlohmann::json& j, Simulation& simulation);
-void from_json(const nlohmann::json& j, PoolConfig& simulation);
-void from_json(const nlohmann::json& j, MinerConfig& simulation);
+void from_json(const nlohmann::json& j, PoolConfig& pool_config);
+void from_json(const nlohmann::json& j, MinerConfig& miner_config);
+void from_json(const nlohmann::json& j, RewardSchemeConfig& reward_scheme_config);

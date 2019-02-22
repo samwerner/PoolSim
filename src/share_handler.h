@@ -17,7 +17,12 @@ public:
   // e.g. info about other mining pools, current network difficulty, etc
   virtual void handle_share(const Share& share) = 0;
 
+  // Set the miner for this share handler
+  // ShareHandler and Miner should must a 1 to 1 relationship
   void set_miner(std::shared_ptr<Miner> miner);
+
+  // Returns the miner of this handler as a shared_ptr
+  // Use this rather than accessing the weak_ptr property
   std::shared_ptr<Miner> get_miner();
 protected:
   std::weak_ptr<Miner> miner;

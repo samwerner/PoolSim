@@ -3,10 +3,19 @@
 #include "mining_pool.h"
 
 
+std::shared_ptr<MiningPool> MiningPool::create(uint64_t difficulty, std::unique_ptr<RewardScheme> reward_scheme) {
+  auto mining_pool = std::shared_ptr<MiningPool>(new MiningPool(difficulty));
+  if (reward_scheme != nullptr) {
+    mining_pool->set_reward_scheme(std::move(reward_scheme));
+  }
+  return mining_pool;
+}
+
 MiningPool::MiningPool(uint64_t _difficulty): difficulty(_difficulty) {}
 
-MiningPool::MiningPool(const std::string& miner_file) {
-  // populate pool with miners from file
+void MiningPool::set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme) {
+  reward_scheme = std::move(_reward_scheme);
+  reward_scheme->set_mining_pool(shared_from_this());
 }
 
 void MiningPool::join(const std::string& miner_address) {

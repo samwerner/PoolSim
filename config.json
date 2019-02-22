@@ -3,6 +3,10 @@
   "networkDifficulty": 100,
   "pools": [{
     "difficulty": 10,
+    "reward_scheme": {
+      "type": "pplns",
+      "params": {}
+    },
     "miners": {
       "generator": "csv",
       "params": {
@@ -12,6 +16,10 @@
     }
   }, {
     "difficulty": 20,
+    "reward_scheme": {
+      "type": "pps",
+      "params": {}
+    },
     "miners": {
       "generator": "random",
       "params": {

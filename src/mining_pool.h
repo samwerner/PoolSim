@@ -5,30 +5,12 @@
 #include <memory>
 #include <cstdint>
 
+#include "reward_scheme.h"
 #include "share.h"
 
-class MiningPool {
- private:
-  // list of miners in pool
-  std::set<std::string> miners;
-
-  // share and network difficulty; total hashrate of pool
-  uint64_t difficulty;
-
-  // probability that a block is an uncle
-  double uncle_prob;
-
-  // reward scheme used by pool for distributing block rewards among miners
-
-
-  // total blocks mined by miners in pool
-  unsigned long blocks_mined;
-  
- public:
-  explicit MiningPool(uint64_t difficulty);
-
-  // populate pool with miners from .csv file 'miner_file'
-  explicit MiningPool(const std::string& miner_file);
+class MiningPool : public std::enable_shared_from_this<MiningPool> {
+public:
+  static std::shared_ptr<MiningPool> create(uint64_t difficulty, std::unique_ptr<RewardScheme> reward_scheme);
 
   // Returns all the miners currently in the pool
   std::set<std::string> get_miners();
@@ -52,4 +34,26 @@ class MiningPool {
   // Leaves this mining pool
   // This method does not update the miner state
   void leave(const std::string& miner_address);
+
+  // Set the reward scheme for this mining pool
+  void set_reward_scheme(std::unique_ptr<RewardScheme> handler);
+
+protected:
+  explicit MiningPool(uint64_t difficulty);
+
+private:
+  // list of miners in pool
+  std::set<std::string> miners;
+
+  // share and network difficulty; total hashrate of pool
+  uint64_t difficulty;
+
+  // probability that a block is an uncle
+  double uncle_prob;
+
+  // reward scheme used by pool for distributing block rewards among miners
+  std::unique_ptr<RewardScheme> reward_scheme;
+
+  // total blocks mined by miners in pool
+  unsigned long blocks_mined;
 };

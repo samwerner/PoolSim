@@ -8,7 +8,7 @@
 #include "share_handler.h"
 
 
-class Miner: public std::enable_shared_from_this<Miner> {
+class Miner : public std::enable_shared_from_this<Miner> {
 public:
   // Miners can only be created through this method
   // as we only want to create them as shared_ptr
