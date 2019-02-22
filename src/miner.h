@@ -20,12 +20,13 @@ class Miner: public std::enable_shared_from_this<Miner> {
   
  public:
   Miner(std::string _address, double _hashrate);
-  Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool);
   virtual ~Miner() {}
 
   std::string get_address() const;
   double get_hashrate() const;
   std::shared_ptr<MiningPool> get_pool() const;
+
+  void set_handler(std::unique_ptr<ShareHandler> handler);
 
   // Processes the share by delegating to different strategies
   virtual void process_share(const Share& share);

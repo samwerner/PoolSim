@@ -2,14 +2,7 @@
 #include "mining_pool.h"
 
 Miner::Miner(std::string _address, double _hashrate)
-  : address(_address), hashrate(_hashrate) {
-}
-
-Miner::Miner(std::string _address, double _hashrate, std::shared_ptr<MiningPool> _pool)
-  : address(_address), hashrate(_hashrate), pool(_pool) {
-  // initialise member variables to zero
-}
-
+  : address(_address), hashrate(_hashrate) {}
 
 std::string Miner::get_address() const { return address; }
 
@@ -31,6 +24,11 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
 void Miner::process_share(const Share& share) {
   // TODO: update stats
   share_handler->handle_share(share);
+}
+
+void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
+  share_handler = std::move(_share_handler);
+  share_handler->set_miner(shared_from_this());
 }
 
 void Miner::set_credits(unsigned long long _credits) {

@@ -1,4 +1,5 @@
 #include "miner_creator.h"
+#include "share_handler.h"
 
 using nlohmann::json;
 
@@ -49,6 +50,9 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
     double hashrate = hashrate_distribution->get();
     std::string address = random->get_address();
     auto miner = std::make_shared<Miner>(address, hashrate);
+    auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"],
+                                                     args["behavior"]["params"]);
+    miner->set_handler(std::move(share_handler));
     miners.push_back(miner);
     state.miners_count++;
     state.total_hashrate += hashrate;

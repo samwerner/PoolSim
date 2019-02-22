@@ -5,13 +5,17 @@
     "difficulty": 10,
     "miners": {
       "generator": "csv",
-      "params": {"path": "miners.csv"}
+      "params": {
+        "behavior": {"name": "default"},
+        "path": "miners.csv"
+      }
     }
   }, {
     "difficulty": 20,
     "miners": {
       "generator": "random",
       "params": {
+        "behavior": {"name": "default"},
         "hashrate": {
           "distribution": "normal",
           "params": {"mean": 10.0, "variance": 30.0}

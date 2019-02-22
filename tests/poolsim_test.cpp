@@ -16,6 +16,7 @@ const std::string simulation_string = R"({
   "pools": [{
     "difficulty": 10,
     "miners": {
+      "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
     }
@@ -23,6 +24,7 @@ const std::string simulation_string = R"({
 })";
 
 const nlohmann::json random_miners_params = R"({
+  "behavior": {"name": "default", "params": {}},
   "hashrate": {
     "distribution": "normal",
     "params": {"mean": 10.0, "variance": 30.0}
@@ -231,6 +233,7 @@ TEST(MinerCreator, MinerCreationState) {
 
 TEST(MinerCreator, RandomMinerCreator) {
   auto args = R"({
+    "behavior": {"name": "default", "params": {}},
     "hashrate": {
       "distribution": "normal",
       "params": {"mean": 10.0, "variance": 30.0}

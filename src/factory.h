@@ -3,10 +3,21 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <vector>
 #include <iostream>
 
 
+class NotRegisteredException : public std::exception {
+public:
+  explicit NotRegisteredException(const std::string& name);
+  virtual char const* what() const throw();
+private:
+  std::string name;
+};
 
+
+// XXX: not sure how to use variadic templates for CreatableN
+// compiler seemed to have trouble deducing types when I tried
 template <typename Base, typename T>
 class Creatable0 {
 public:
@@ -22,6 +33,7 @@ public:
     return std::unique_ptr<T>(new T(arg));
   }
 };
+
 
 template <typename T, typename CreateMethod>
 class Factory {
@@ -51,7 +63,7 @@ public:
     if (it != get_methods().end()) {
         return it->second(args...);
     }
-    return nullptr;
+    throw NotRegisteredException(name);
   }
 
 private:
