@@ -5,7 +5,22 @@
     "difficulty": 10,
     "miners": {
       "generator": "csv",
-      "arguments": {"path": "miners.csv"}
+      "params": {"path": "miners.csv"}
+    }
+  }, {
+    "difficulty": 20,
+    "miners": {
+      "generator": "random",
+      "params": {
+        "hashrate": {
+          "distribution": "normal",
+          "params": {"mean": 10.0, "variance": 30.0}
+        },
+        "stop_condition": {
+          "type": "total_hashrate",
+          "params": {"value": 100}
+        }
+      }
     }
   }]
 }

@@ -16,7 +16,7 @@ private:
 
 struct MinerConfig {
   std::string generator;
-  nlohmann::json arguments;
+  nlohmann::json params;
 };
 
 struct PoolConfig {

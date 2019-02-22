@@ -20,7 +20,7 @@ void Simulator::initialize() {
   for (auto pool_config : simulation.pools) {
     auto miner_config = pool_config.miner_config;
     auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
-    auto new_miners = miner_creator->create_miners(miner_config.arguments);
+    auto new_miners = miner_creator->create_miners(miner_config.params);
     auto pool = std::make_shared<MiningPool>(pool_config.difficulty);
     for (auto miner : new_miners) {
       miner->join_pool(pool);

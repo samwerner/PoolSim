@@ -22,7 +22,12 @@ private:
 class Random {
 public:
   virtual ~Random() {}
+  // Returns a random double between 0 and 1
   virtual double drand48() = 0;
+
+  // Returns a random address (0x prefix + 40 hex chars)
+  virtual std::string get_address() = 0;
+
   virtual std::shared_ptr<std::default_random_engine> get_random_engine() = 0;
 };
 
@@ -34,6 +39,8 @@ public:
   static void initialize(long seed);
   static void ensure_initialized(long seed);
   static std::shared_ptr<SystemRandom> get_instance();
+
+  std::string get_address() override;
 
   // Delegates to standard drand48()
   double drand48() override;

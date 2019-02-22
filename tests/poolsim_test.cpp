@@ -17,7 +17,7 @@ const std::string simulation_string = R"({
     "difficulty": 10,
     "miners": {
       "generator": "csv",
-      "arguments": {"path": "miners.csv"}
+      "params": {"path": "miners.csv"}
     }
   }]
 })";
@@ -26,6 +26,7 @@ const std::string simulation_string = R"({
 class MockRandom: public Random {
 public:
   MOCK_METHOD0(drand48, double());
+  MOCK_METHOD0(get_address, std::string());
   MOCK_METHOD0(get_random_engine, std::shared_ptr<std::default_random_engine>());
 };
 
@@ -75,7 +76,7 @@ TEST(Simulation, from_string) {
   ASSERT_EQ(pool.difficulty, 10);
   auto miner_config = pool.miner_config;
   ASSERT_EQ(miner_config.generator, "csv");
-  ASSERT_EQ(miner_config.arguments["path"], "miners.csv");
+  ASSERT_EQ(miner_config.params["path"], "miners.csv");
 }
 
 TEST(SystemRandom, initialization) {
@@ -84,6 +85,12 @@ TEST(SystemRandom, initialization) {
   ASSERT_NO_THROW(SystemRandom::get_instance());
   // NOTE: expected value with seed = 0
   ASSERT_FLOAT_EQ(SystemRandom::get_instance()->drand48(), 0.170828);
+}
+
+TEST(SystemRandom, get_address) {
+  auto address = SystemRandom::get_instance()->get_address();
+  ASSERT_EQ(address.size(), 42);
+  ASSERT_THAT(address, testing::MatchesRegex("0x[0-9a-f]{40}"));
 }
 
 
@@ -163,6 +170,51 @@ TEST(Random, NormalDistribution) {
   ASSERT_LE(value, 5.0);
 }
 
+TEST(MinerCreatorStopCondition, TotalHashrate) {
+  auto args = R"({"value": 20})"_json;
+  auto cond = MinerCreatorStopConditionFactory::create("total_hashrate", args);
+  ASSERT_TRUE(cond->should_stop(MinerCreationState(0, 100)));
+  ASSERT_FALSE(cond->should_stop(MinerCreationState(3, 10)));
+}
+
+
+TEST(MinerCreatorStopCondition, MinersCount) {
+  auto args = R"({"value": 10})"_json;
+  auto cond = MinerCreatorStopConditionFactory::create("miners_count", args);
+  ASSERT_TRUE(cond->should_stop(MinerCreationState(15, 100)));
+  ASSERT_FALSE(cond->should_stop(MinerCreationState(5, 50)));
+}
+
+TEST(MinerCreator, MinerCreationState) {
+  MinerCreationState state;
+  ASSERT_EQ(state.miners_count, 0);
+  ASSERT_EQ(state.total_hashrate, 0);
+}
+
+TEST(MinerCreator, RandomMinerCreator) {
+  auto args = R"({
+    "hashrate": {
+      "distribution": "normal",
+      "params": {"mean": 10.0, "variance": 30.0}
+    },
+    "stop_condition": {
+      "type": "total_hashrate",
+      "params": {"value": 100}
+    }
+  })"_json;
+  auto creator = MinerCreatorFactory::create("random");
+  auto miners = creator->create_miners(args);
+  ASSERT_FALSE(miners.empty());
+  uint64_t total_hashrate = 0;
+  for (auto miner : miners) {
+    total_hashrate += miner->get_hashrate();
+  }
+  ASSERT_GE(total_hashrate, 100);
+
+  args["stop_condition"]["type"] = "miners_count";
+  miners = creator->create_miners(args);
+  ASSERT_EQ(miners.size(), 100);
+}
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

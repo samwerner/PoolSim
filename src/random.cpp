@@ -1,5 +1,7 @@
 #include "random.h"
 
+#include <sstream>
+
 using nlohmann::json;
 
 
@@ -14,6 +16,16 @@ SystemRandom::SystemRandom() :
 
 double SystemRandom::drand48() {
   return ::drand48();
+}
+
+std::string SystemRandom::get_address() {
+  std::stringstream result;
+  std::uniform_int_distribution<int> dist(0, 15);
+  for (size_t i = 0; i < 40; i++) {
+    auto value = dist(*get_random_engine());
+    result << std::hex << value;
+  }
+  return "0x" + result.str();
 }
 
 std::shared_ptr<std::default_random_engine> SystemRandom::get_random_engine() {

@@ -17,7 +17,7 @@ const char* InvalidSimulationException::what() const throw() {
 
 void from_json(const json& j, MinerConfig& miner_config) {
   j.at("generator").get_to(miner_config.generator);
-  miner_config.arguments = j["arguments"];
+  miner_config.params = j["params"];
 }
 
 void from_json(const json& j, PoolConfig& pool_config) {
