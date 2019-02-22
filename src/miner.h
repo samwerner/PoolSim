@@ -9,17 +9,12 @@
 
 
 class Miner: public std::enable_shared_from_this<Miner> {
- private:
-  std::string address;
-  double hashrate;
-  std::weak_ptr<MiningPool> pool;
-  unsigned long long credits, shares;
-  unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
-
-  std::unique_ptr<ShareHandler> share_handler;
-  
- public:
-  Miner(std::string _address, double _hashrate);
+public:
+  // Miners can only be created through this method
+  // as we only want to create them as shared_ptr
+  // for the ShareHandler to be able to reference them
+  static std::shared_ptr<Miner> create(std::string _address, double _hashrate,
+                                       std::unique_ptr<ShareHandler> share_handler);
   virtual ~Miner() {}
 
   std::string get_address() const;
@@ -49,4 +44,15 @@ class Miner: public std::enable_shared_from_this<Miner> {
   // increments total balance of uncles received by miner
   void inc_uncles_received();
 
+protected:
+  Miner(std::string _address, double _hashrate);
+
+private:
+  std::string address;
+  double hashrate;
+  std::weak_ptr<MiningPool> pool;
+  unsigned long long credits, shares;
+  unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
+
+  std::unique_ptr<ShareHandler> share_handler;
 };

@@ -70,13 +70,13 @@ TEST(Share, equality) {
 
 
 TEST(Miner, accessors) {
-  auto miner = std::make_shared<Miner>("random_address", 123);
+  auto miner = Miner::create("random_address", 123, nullptr);
   ASSERT_EQ(miner->get_address(), "random_address");
   ASSERT_EQ(miner->get_hashrate(), 123);
 }
 
 TEST(Miner, join_pool) {
-  auto miner = std::make_shared<Miner>("random_address", 123);
+  auto miner = Miner::create("random_address", 123, nullptr);
   auto pool1 = std::make_shared<MiningPool>(100);
   auto pool2 = std::make_shared<MiningPool>(100);
   ASSERT_EQ(miner->get_pool(), nullptr);
@@ -136,7 +136,7 @@ TEST(EventQueue, events_ordering) {
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
   auto pool = std::make_shared<MiningPool>(50);
-  auto miner = std::make_shared<Miner>("address", 25);
+  auto miner = Miner::create("address", 25, nullptr);
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
   Simulator simulator(simulation, random);

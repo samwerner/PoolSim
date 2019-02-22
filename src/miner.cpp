@@ -4,6 +4,15 @@
 Miner::Miner(std::string _address, double _hashrate)
   : address(_address), hashrate(_hashrate) {}
 
+std::shared_ptr<Miner> Miner::create(std::string address, double hashrate,
+                    std::unique_ptr<ShareHandler> handler) {
+  auto miner = std::shared_ptr<Miner>(new Miner(address, hashrate));
+  if (handler != nullptr) {
+    miner->set_handler(std::move(handler));
+  }
+  return miner;
+}
+
 std::string Miner::get_address() const { return address; }
 
 double Miner::get_hashrate() const { return hashrate; }
