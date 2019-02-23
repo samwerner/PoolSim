@@ -16,6 +16,19 @@ make
 should build everything into the `build` directory.
 Executable is at `build/poolsim`
 
+## Running the simulator
+
+Simulations need a configuration file to work. A sample config file
+can be found at [config.json](./config.json).
+
+The simulator can be run with the following command.
+
+```
+./build/poolsim --config config.json
+```
+
+You can try the `--help` flag for information about other optional flags.
+
 ## Development
 
 ### Implementing a new miner behavior
@@ -103,6 +116,8 @@ should run and execute the tests.
 
 ## Progress
 
+- [x] Simulator core logic
+- [x] Config parser
 - [x] Network difficulty
 - [x] Pool
   - [x] Difficulty
