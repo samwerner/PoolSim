@@ -3,7 +3,18 @@
 ## Requirements
 
 * Boost (currently using 1.69.0, older versions may work)
-* [Google Test][google-test] and Google Mock (only for tests, packages `google-mock` and `gtest` on Ubuntu)
+* [Google Test][google-test] and Google Mock (only for tests, packages `google-mock` and `libgtest-dev` on Ubuntu)
+
+NOTE: On Ubuntu, Google Mock and Google Test must be compiled.
+To install them system-wide, you can use the following commands.
+
+```
+mkdir /usr/src/googletest/build
+cd /usr/src/googletest/build
+cmake ..
+make
+make install
+```
 
 ## Build
 
