@@ -36,7 +36,7 @@ void from_json(const json& j, Simulation& simulation) {
 
 void from_json(const json& j, RewardSchemeConfig& reward_scheme_config) {
   j.at("type").get_to(reward_scheme_config.scheme_type);
-  reward_scheme_config.params = j["params"];
+  reward_scheme_config.params = j.value("params", json());
 }
 
 Simulation Simulation::from_stream(std::istream& stream) {

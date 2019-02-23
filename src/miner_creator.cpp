@@ -44,7 +44,8 @@ std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohman
     if (behavior_name.empty()) {
       behavior_name = args["behavior"]["name"];
     }
-    auto share_handler = ShareHandlerFactory::create(behavior_name, args["behavior"]["params"]);
+    auto behavior_params = args["behavior"].value("params", json());
+    auto share_handler = ShareHandlerFactory::create(behavior_name, behavior_params);
     auto miner = Miner::create(address, hashrate, std::move(share_handler));
     miners.push_back(miner);
     behavior_name.clear();
@@ -64,10 +65,13 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
                                                                  args["stop_condition"]["params"]);
   MinerCreationState state;
   while (!stop_condition->should_stop(state)) {
-    double hashrate = hashrate_distribution->get();
+    double hashrate = -1;
+    while (hashrate < 0) {
+      hashrate = hashrate_distribution->get();
+    }
     std::string address = random->get_address();
-    auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"],
-                                                     args["behavior"]["params"]);
+    auto behavior_params = args["behavior"].value("params", json());
+    auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"], behavior_params);
     auto miner = Miner::create(address, hashrate, std::move(share_handler));
     miners.push_back(miner);
     state.miners_count++;

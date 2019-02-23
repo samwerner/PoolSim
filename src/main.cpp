@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
       ("help", "shows help")
       ("config-file", po::value<std::string>(), "path to config file")
       ("debug", "enable debug logs")
+      ("seed", po::value<long>(), "random seed to use")
   ;
 
   po::variables_map vm;
@@ -38,14 +39,20 @@ int main(int argc, char* argv[]) {
     spdlog::set_level(spdlog::level::debug);
   }
 
+  long seed = 0;
+  if (vm.count("seed")) {
+    seed = vm["seed"].as<long>();
+  }
 
   std::string config_filepath = vm["config-file"].as<std::string>();
 
-  // auto simulation = Simulation::from_config_file(config_filepath);
-  // Simulator simulator(simulation);
+  SystemRandom::initialize(seed);
+  spdlog::debug("initialized random with seed {}", seed);
 
-  // simulator.run();
-  std::cout << MinerCreatorFactory::registered().size() << std::endl;
+  auto simulation = Simulation::from_config_file(config_filepath);
+  Simulator simulator(simulation);
+
+  simulator.run();
 
   return 0;
 }

@@ -104,6 +104,8 @@ REGISTER(RewardScheme, NewRewardScheme, "some_name")
     - [x] From distribution
         - [x] Normal distribution
         - [x] Uniform distribution
+- [ ] Result serialization
+    - [ ] Decide what to save and where
 - [ ] Reward schemes
     - [ ] PPS
     - [ ] PPLNS

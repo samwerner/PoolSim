@@ -1,6 +1,6 @@
 {
-  "blocks": 10000,
-  "network_difficulty": 100,
+  "blocks": 1000,
+  "network_difficulty": 10000,
   "pools": [{
     "uncle_block_prob": 0.001,
     "difficulty": 10,
@@ -12,7 +12,7 @@
       "generator": "csv",
       "params": {
         "behavior": {"name": "default"},
-        "path": "miners.csv"
+        "path": "tests/fixtures/sample_miners.csv"
       }
     }
   }, {
@@ -28,7 +28,7 @@
         "behavior": {"name": "default"},
         "hashrate": {
           "distribution": "normal",
-          "params": {"mean": 10.0, "variance": 30.0}
+          "params": {"mean": 10.0, "variance": 10.0}
         },
         "stop_condition": {
           "type": "total_hashrate",

@@ -44,7 +44,6 @@ std::shared_ptr<SystemRandom> SystemRandom::get_instance() {
 void SystemRandom::ensure_initialized(long seed) {
   if (!initialized) {
     initialize(seed);
-    get_instance()->get_random_engine()->seed(seed);
   }
 }
 
@@ -54,6 +53,7 @@ void SystemRandom::initialize(long seed) {
   }
   initialized = true;
   srand48(seed);
+  get_instance()->get_random_engine()->seed(seed);
 }
 
 bool SystemRandom::initialized = false;

@@ -38,6 +38,8 @@ void Simulator::initialize() {
 void Simulator::run() {
   initialize();
 
+  spdlog::debug("loaded {} pools with a total of {} miners", pools.size(), miners.size());
+
   if (pools.empty() || miners.empty()) {
     throw InvalidSimulationException("simulation must have at least one miner and one pool");
   }
@@ -67,7 +69,9 @@ void Simulator::process_event(const Event& event) {
   uint8_t share_flags = Share::Property::none;
   if (is_network_share) {
     blocks_mined++;
-    spdlog::debug("new block mined: {} / {}", blocks_mined, simulation.blocks);
+    if (blocks_mined % 100 == 0) {
+      spdlog::debug("progress: {} / {}", blocks_mined, simulation.blocks);
+    }
     share_flags |= Share::Property::network;
   }
   Share share(share_flags);
