@@ -3,9 +3,11 @@
 ## Requirements
 
 * Boost (currently using 1.69.0, older versions may work)
-* Google Test and Google Mock (only for tests, packages `google-mock` and `gtest` on Ubuntu)
+* [Google Test][google-test] and Google Mock (only for tests, packages `google-mock` and `gtest` on Ubuntu)
 
 ## Build
+
+Running
 
 ```
 make
@@ -14,11 +16,6 @@ make
 should build everything into the `build` directory.
 Executable is at `build/poolsim`
 
-## Running the tests
-
-```
-make test
-```
 ## Development
 
 ### Implementing a new miner behavior
@@ -93,6 +90,17 @@ void NewRewardScheme::handle_share(const std::string& miner_address, const Share
 REGISTER(RewardScheme, NewRewardScheme, "some_name")
 ```
 
+### Running the tests
+
+Tests require Google Test and Google Mock.
+Running
+
+```
+make test
+```
+
+should run and execute the tests.
+
 ## Progress
 
 - [x] Network difficulty
@@ -117,3 +125,6 @@ REGISTER(RewardScheme, NewRewardScheme, "some_name")
 - [ ] Multiple simulations per run
     - [ ] Config file scheme
     - [ ] Simulator implementation
+
+
+[google-test]: https://github.com/google/googletest
