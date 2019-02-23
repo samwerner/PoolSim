@@ -14,7 +14,7 @@ std::shared_ptr<Miner> ShareHandler::get_miner() {
 }
 
 // NOTE: this particular class probably does not need for args
-// but it must accepts them because of the current factory implementation
+// but it must accept them because of the current factory implementation
 DefaultShareHandler::DefaultShareHandler(const nlohmann::json& _args) {}
 
 void DefaultShareHandler::handle_share(const Share& share) {
