@@ -17,7 +17,7 @@ SPDLOG_VERSION = 1.3.1
 EXE = build/poolsim
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g -MMD -I$(PWD)/vendor
+CXXFLAGS = -std=c++11 -Wall -g -MMD -MP -I$(PWD)/vendor
 LDFLAGS = -lboost_program_options -pthread
 LDFLAGS_TEST = $(LDFLAGS) -lgtest -lgmock
 
@@ -38,7 +38,7 @@ build/%_test.run: build/%_test
 test: $(RUN_TESTS)
 
 build/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 -include $(ALL_OBJS:.o=.d)
 

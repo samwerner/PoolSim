@@ -29,20 +29,7 @@ public:
   // Joins the given pool, updates the state of the pool too
   void join_pool(std::shared_ptr<MiningPool> pool);
 
-  // sets credit balance of miner to _credits
-  void set_credits(unsigned long long _credits);
-
-  // increments balance of blocks mined by miner
-  void inc_blocks_mined();
-
-  // increments balance of total blocks received by mined
-  void inc_blocks_received();
-
-  // increments total balance of uncles mined by miner
-  void inc_uncles_mined();
-
-  // increments total balance of uncles received by miner
-  void inc_uncles_received();
+  //TODO: track shares submitted by miner
 
 protected:
   Miner(std::string _address, double _hashrate);
@@ -51,8 +38,7 @@ private:
   std::string address;
   double hashrate;
   std::weak_ptr<MiningPool> pool;
-  unsigned long long credits, shares;
-  unsigned long blocks_mined, blocks_received, uncles_mined, uncles_received;
+  unsigned long long shares;
 
   std::unique_ptr<ShareHandler> share_handler;
 };
