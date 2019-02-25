@@ -4,7 +4,6 @@
 
 #include "mining_pool.h"
 #include "miner_record.h"
-#include "qb_sort_obj.h"
 #include <algorithm>
 
 RewardScheme::~RewardScheme() {}

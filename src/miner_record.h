@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <cstdint>
 
 class MinerRecord {
@@ -38,4 +39,11 @@ public:
     
 private:
     uint64_t credits;
+};
+
+class QBSortObj {
+public:
+    inline bool operator()(std::shared_ptr<QBRecord> left_record, std::shared_ptr<QBRecord> right_record) {
+        return (left_record->get_credits() > right_record->get_credits());
+    }
 };
