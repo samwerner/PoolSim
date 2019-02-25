@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: ubuntu:18.04
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install dependencies
+          command: apt update && apt install -y build-essential google-mock libgtest-dev googletest cmake wget curl libboost-program-options-dev
+      
+      - run:
+          name: Compile gtest
+          command: >
+            mkdir /usr/src/googletest/build &&
+            cd /usr/src/googletest/build &&
+            cmake .. &&
+            make &&
+            make install
+      - run:
+          name: Compile app
+          command: make
+
+      - run:
+          name: Run tests
+          command: make test

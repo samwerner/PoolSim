@@ -35,7 +35,6 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
 }
 
 void Miner::process_share(const Share& share) {
-  // TODO: update stats
   share_handler->handle_share(share);
 }
 
@@ -44,22 +43,3 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
   share_handler->set_miner(shared_from_this());
 }
 
-void Miner::set_credits(unsigned long long _credits) {
-  credits = _credits;
-}
-
-void Miner::inc_blocks_received() {
-  blocks_received++;
-}
-
-void Miner::inc_blocks_mined() {
-  blocks_mined++;
-}
-
-void Miner::inc_uncles_received() {
-  uncles_received++;
-}
-
-void Miner::inc_uncles_mined() {
-  uncles_mined++;
-}
