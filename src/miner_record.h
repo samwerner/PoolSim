@@ -17,8 +17,12 @@ public:
     void inc_uncles_received();
     // returns address of miner to which record belongs
     std::string get_miner() const;
+    // returns the number of shares submitted
+    uint64_t get_shares_count() const;
+    // increment the shares count
+    void inc_shares_count();
 private:
-    uint64_t blocks_mined, blocks_received, uncles_mined, uncles_received;
+    uint64_t blocks_mined, blocks_received, uncles_mined, uncles_received, shares_count;
     std::string address;
 };
 

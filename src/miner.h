@@ -29,8 +29,6 @@ public:
   // Joins the given pool, updates the state of the pool too
   void join_pool(std::shared_ptr<MiningPool> pool);
 
-  //TODO: track shares submitted by miner
-
 protected:
   Miner(std::string _address, double _hashrate);
 
@@ -38,7 +36,6 @@ private:
   std::string address;
   double hashrate;
   std::weak_ptr<MiningPool> pool;
-  unsigned long long shares;
 
   std::unique_ptr<ShareHandler> share_handler;
 };

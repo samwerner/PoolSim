@@ -40,6 +40,7 @@ QBRewardScheme::QBRewardScheme(const nlohmann::json& _args) {}
 void QBRewardScheme::update_record(std::shared_ptr<QBRecord> record, const Share& share) {
   auto share_difficulty = get_mining_pool()->get_difficulty();
   record->inc_credits(share_difficulty);
+  record->inc_shares_count();
   if (share.is_network_share())
     record->inc_blocks_mined();
   else if (share.is_uncle())

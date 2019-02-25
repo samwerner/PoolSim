@@ -23,6 +23,14 @@ void MinerRecord::inc_uncles_received() {
     uncles_received++;
 }
 
+uint64_t MinerRecord::get_shares_count() const {
+    return shares_count;
+}
+
+void MinerRecord::inc_shares_count() {
+    shares_count++;
+}
+
 
 QBRecord::QBRecord(std::string miner_address) : MinerRecord(miner_address) {}
 
