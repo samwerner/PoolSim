@@ -10,6 +10,7 @@
 #include "miner_creator.h"
 
 
+
 Simulator::Simulator(Simulation _simulation)
   : Simulator(_simulation, SystemRandom::get_instance()) {}
 
@@ -27,6 +28,7 @@ void Simulator::initialize() {
                                                      reward_scheme_config.params);
     auto pool = MiningPool::create(pool_config.difficulty,
                                    pool_config.uncle_block_prob, std::move(reward_scheme));
+    pool->add_observer(shared_from_this());
     for (auto miner : new_miners) {
       miner->join_pool(pool);
       add_miner(miner);
@@ -122,4 +124,8 @@ size_t Simulator::get_events_count() const {
 
 Event Simulator::get_next_event() const {
   return queue.get_top();
+}
+
+void Simulator::process(const BlockEvent& block_event) {
+    block_events.push_back(block_event);
 }

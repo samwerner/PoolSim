@@ -50,9 +50,9 @@ int main(int argc, char* argv[]) {
   spdlog::debug("initialized random with seed {}", seed);
 
   auto simulation = Simulation::from_config_file(config_filepath);
-  Simulator simulator(simulation);
+  auto simulator = std::make_shared<Simulator>(simulation);
 
-  simulator.run();
+  simulator->run();
 
   return 0;
 }

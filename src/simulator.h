@@ -12,8 +12,12 @@
 #include "random.h"
 
 #include "miner_creator.h"
+#include "observer.h"
+#include "block_event.h"
 
-class Simulator {
+
+class Simulator :  public std::enable_shared_from_this<Simulator>,
+                   public Observer<BlockEvent> {
 public:
   Simulator(Simulation simulation);
   Simulator(Simulation simulation, std::shared_ptr<Random> random);
@@ -63,9 +67,14 @@ public:
   // Returns the next event
   Event get_next_event() const;
 
+  void process(const BlockEvent& value);
+
 private:
   // Setup of the simulation to run
   Simulation simulation;
+
+  // List of block events
+  std::vector<BlockEvent> block_events;
 
   // Interface able to return random numbers
   // used mostly for testing purposes

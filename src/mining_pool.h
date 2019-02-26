@@ -8,9 +8,12 @@
 #include "reward_scheme.h"
 #include "share.h"
 #include "random.h"
+#include "observer.h"
+#include "block_event.h"
 
 
-class MiningPool : public std::enable_shared_from_this<MiningPool> {
+class MiningPool : public std::enable_shared_from_this<MiningPool>,
+                   public Observable<BlockEvent> {
 public:
   static std::shared_ptr<MiningPool> create(
     uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);

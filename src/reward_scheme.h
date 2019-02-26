@@ -20,6 +20,9 @@ public:
     // RewardScheme and MiningPool should be a 1 to 1 relationship
     void set_mining_pool(std::shared_ptr<MiningPool> mining_pool);
 
+    // returns the metadata needed when a block has been mined
+    virtual nlohmann::json get_block_metadata() = 0;
+
     // Returns the mining_pool of this reward scheme as a shared_ptr
     // Use this rather than accessing the weak_ptr property
     std::shared_ptr<MiningPool> get_mining_pool();
@@ -38,6 +41,8 @@ protected:
 
     // increments mined block and credits stats for a given record
     virtual void update_record(std::shared_ptr<RecordClass> record, const Share& share) = 0;
+    nlohmann::json get_block_metadata() override { return nlohmann::json(); }
+
 
     std::shared_ptr<RecordClass> find_record(const std::string miner_address);
 };

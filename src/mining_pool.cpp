@@ -49,9 +49,17 @@ size_t MiningPool::get_miners_count() const {
 }
 
 void MiningPool::submit_share(const std::string& miner_address, const Share& share) {
-  uint8_t flags = share.get_properties();
-  if (share.is_network_share() && random->drand48() < uncle_prob) {
-    flags |= Share::Property::uncle;
-  }
-  reward_scheme->handle_share(miner_address, Share(flags));
+    uint8_t flags = share.get_properties();
+    if (share.is_network_share() && random->drand48() < uncle_prob) {
+        flags |= Share::Property::uncle;
+    }
+    reward_scheme->handle_share(miner_address, Share(flags));
+    if (share.is_network_share()) {
+        BlockEvent block_event {
+            .pool_name = "TODO: generate me",
+            .miner_address = miner_address,
+            .reward_scheme_data = reward_scheme->get_block_metadata()
+        };
+        notify(block_event);
+    }
 }
