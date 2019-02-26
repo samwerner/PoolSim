@@ -81,7 +81,8 @@ public:
 
 class MockRewardScheme : public RewardScheme {
 public:
-  MOCK_METHOD2(handle_share, void(const std::string&, const Share&));
+    MOCK_METHOD2(handle_share, void(const std::string&, const Share&));
+    MOCK_METHOD0(get_block_metadata, nlohmann::json());
 };
 
 
@@ -92,9 +93,15 @@ Simulation get_sample_simulation() {
   return simulation_json.get<Simulation>();
 }
 
-Simulator get_sample_simulator() {
-  return Simulator(get_sample_simulation());
+std::shared_ptr<Simulator> get_sample_simulator(std::shared_ptr<Random> random) {
+  return std::make_shared<Simulator>(get_sample_simulation(), random);
 }
+
+std::shared_ptr<Simulator> get_sample_simulator() {
+  return std::make_shared<Simulator>(get_sample_simulation());
+}
+
+
 
 std::unique_ptr<ShareHandler> get_mock_share_handler() {
   return std::unique_ptr<ShareHandler>(new MockShareHandler);
@@ -258,58 +265,58 @@ TEST(Simulator, schedule_miner) {
   auto miner = Miner::create("address", 25, get_mock_share_handler());
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
-  Simulator simulator(simulation, random);
-  ASSERT_EQ(simulator.get_events_count(), 0);
+  auto simulator = std::make_shared<Simulator>(simulation, random);
+  ASSERT_EQ(simulator->get_events_count(), 0);
   EXPECT_CALL(*random, drand48()).Times(1).WillOnce(testing::Return(0.3));
-  simulator.schedule_miner(miner);
-  ASSERT_NE(simulator.get_events_count(), 0);
-  auto event = simulator.get_next_event();
+  simulator->schedule_miner(miner);
+  ASSERT_NE(simulator->get_events_count(), 0);
+  auto event = simulator->get_next_event();
   ASSERT_EQ(event.miner_address, "address");
   // 25 / 50 = 0.5
   ASSERT_FLOAT_EQ(event.time, -log(0.3) / 0.5);
 }
 
 TEST(Simulator, process_event) {
-  auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
-  auto miner = std::make_shared<MockMiner>("address", 25);
-  miner->join_pool(pool);
-  auto random = std::make_shared<MockRandom>();
-  Simulator simulator(simulation, random);
-  simulator.add_miner(miner);
-  Event event(miner->get_address(), 5);
-  ASSERT_EQ(simulator.get_blocks_mined(), 0);
-  ASSERT_EQ(simulator.get_current_time(), 0);
-  // drand48() called once in process_event and once in schedule_miner
-  EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.3));
-  // 0.3 < 0.5 -> network share
-  EXPECT_CALL(*miner, process_share(Share(true))).Times(1);
-  simulator.process_event(event);
-  ASSERT_EQ(simulator.get_blocks_mined(), 1);
-  ASSERT_EQ(simulator.get_current_time(), 5);
+    auto simulation = Simulation::from_string(simulation_string);
+    auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
+    auto miner = std::make_shared<MockMiner>("address", 25);
+    miner->join_pool(pool);
+    auto random = std::make_shared<MockRandom>();  
+    auto simulator = std::make_shared<Simulator>(simulation, random);
+    simulator->add_miner(miner);
+    Event event(miner->get_address(), 5);
+    ASSERT_EQ(simulator->get_blocks_mined(), 0);
+    ASSERT_EQ(simulator->get_current_time(), 0);
+    // drand48() called once in process_event and once in schedule_miner
+    EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.3));
+    // 0.3 < 0.5 -> network share
+    EXPECT_CALL(*miner, process_share(Share(true))).Times(1);
+    simulator->process_event(event);
+    ASSERT_EQ(simulator->get_blocks_mined(), 1);
+    ASSERT_EQ(simulator->get_current_time(), 5);
 
-  Event event2(miner->get_address(), 10);
-  EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.8));
-  // 0.8 > 0.5 -> not network share
-  EXPECT_CALL(*miner, process_share(Share(false))).Times(1);
-  simulator.process_event(event2);
-  ASSERT_EQ(simulator.get_blocks_mined(), 1);
-  ASSERT_EQ(simulator.get_current_time(), 10);
+    Event event2(miner->get_address(), 10);
+    EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.8));
+    // 0.8 > 0.5 -> not network share
+    EXPECT_CALL(*miner, process_share(Share(false))).Times(1);
+    simulator->process_event(event2);
+    ASSERT_EQ(simulator->get_blocks_mined(), 1);
+    ASSERT_EQ(simulator->get_current_time(), 10);
 }
 
 TEST(Simulator, initialize) {
   auto simulator = get_sample_simulator();
-  simulator.initialize();
-  ASSERT_EQ(simulator.get_pools_count(), 1);
-  ASSERT_EQ(simulator.get_miners_count(), 100);
+  simulator->initialize();
+  ASSERT_EQ(simulator->get_pools_count(), 1);
+  ASSERT_EQ(simulator->get_miners_count(), 100);
 }
 
 TEST(Simulator, schedule_all) {
   auto simulator = get_sample_simulator();
-  simulator.initialize();
-  ASSERT_EQ(simulator.get_events_count(), 0);
-  simulator.schedule_all();
-  ASSERT_EQ(simulator.get_events_count(), 100);
+  simulator->initialize();
+  ASSERT_EQ(simulator->get_events_count(), 0);
+  simulator->schedule_all();
+  ASSERT_EQ(simulator->get_events_count(), 100);
 }
 
 TEST(Random, UniformDistribution) {
