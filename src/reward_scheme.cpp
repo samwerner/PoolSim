@@ -19,8 +19,16 @@ std::shared_ptr<MiningPool> RewardScheme::get_mining_pool() {
 PPSRewardScheme::PPSRewardScheme(const nlohmann::json& _args) {}
 
 void PPSRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
-  // TODO: do some realy cool stuff with this share
+    // TODO: do some realy cool stuff with this share
+    
+
 }
+
+void PPSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
+    // TODO: implement logic
+
+}
+
 
 REGISTER(RewardScheme, PPSRewardScheme, "pps")
 
@@ -28,8 +36,29 @@ REGISTER(RewardScheme, PPSRewardScheme, "pps")
 PPLNSRewardScheme::PPLNSRewardScheme(const nlohmann::json& _args) {}
 
 void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
-  // TODO: do some realy cool stuff with this share
+    // TODO: do some realy cool stuff with this share
+    auto record = find_record(miner_address);
+    update_record(record, share);
+    
+    if (share.is_network_share()) {
+
+    } else if (share.is_uncle()) {
+
+    }
 }
+
+void PPLNSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
+    record->inc_shares_count();
+    if (share.is_network_share())
+        record->inc_blocks_mined();
+    else if (share.is_uncle())
+        record->inc_uncles_mined();
+}
+
+void PPLNSRewardScheme::set_n(uint64_t _n) {
+    n = _n;
+}
+
 
 REGISTER(RewardScheme, PPLNSRewardScheme, "pplns")
 
@@ -40,23 +69,13 @@ void QBRewardScheme::update_record(std::shared_ptr<QBRecord> record, const Share
   auto share_difficulty = get_mining_pool()->get_difficulty();
   record->inc_credits(share_difficulty);
   record->inc_shares_count();
-  if (share.is_network_share())
+  if (share.is_network_share()) {
     record->inc_blocks_mined();
-  else if (share.is_uncle())
+    record->update_avg_credits_per_block();
+  } else if (share.is_uncle())
     record->inc_uncles_mined();
 }
 
-std::shared_ptr<QBRecord> QBRewardScheme::find_record(std::string miner_address) {
-  for (std::vector<std::shared_ptr<QBRecord>>::iterator iter = records.begin();
-  iter != records.end(); ++iter) {
-    if ((*iter)->get_miner() == miner_address)
-      return (*iter);
-  }
-
-  auto record = std::make_shared<QBRecord>(miner_address);
-  records.push_back(record);
-  return record;
-}
 
 void QBRewardScheme::reward_top_miner() {
   if (!records.empty()) {
@@ -78,8 +97,14 @@ void QBRewardScheme::handle_share(const std::string& miner_address, const Share&
     this->reward_top_miner();
   else if (share.is_uncle()) {
     // TODO: decide on uncle reward scheme
-  
+    
   }
 }
+
+uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
+    auto record = this->find_record(miner_address);
+    return record->get_credits();
+}
+
 
 REGISTER(RewardScheme, QBRewardScheme, "qb")
