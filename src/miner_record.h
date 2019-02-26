@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <cstdint>
+#include <nlohmann/json.hpp>
 
 class MinerRecord {
 public:
@@ -22,8 +23,12 @@ public:
     uint64_t get_shares_count() const;
     // increment the shares count
     void inc_shares_count();
-private:
-    uint64_t blocks_mined, blocks_received, uncles_mined, uncles_received, shares_count;
+    // write miner record data to json object
+    void to_json(nlohmann::json& j);
+protected:
+    uint64_t blocks_mined = 0, blocks_received = 0, uncles_mined = 0, uncles_received = 0, 
+            shares_count = 0; 
+    
     std::string address;
 };
 
@@ -36,9 +41,13 @@ public:
     void set_credits(uint64_t balance);
     // returns credits of a miner
     uint64_t get_credits() const;
-    
+    // writes miner record data to json object
+    void to_json(nlohmann::json& j);
+    // updates the average credits a miner had when he was rewarded a block
+    void update_avg_credits_per_block();
+
 private:
-    uint64_t credits;
+    uint64_t credits = 0, avg_credits_per_block = 0;
 };
 
 class QBSortObj {

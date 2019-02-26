@@ -8,6 +8,26 @@
 #include "simulation.h"
 #include "simulator.h"
 #include "random.h"
+#include "reward_scheme.h"
+#include "miner_record.h"
+#include <memory>
+#include <nlohmann/json.hpp>
+
+
+const std::string qb_simulation_string = R"({
+  "blocks": 5,
+  "network_difficulty": 100,
+  "pools": [{
+    "uncle_block_prob": 0.001,
+    "difficulty": 10,
+    "reward_scheme": {"type": "qb", "params": {}},
+    "miners": {
+      "behavior": {"name": "default", "params": {}},
+      "generator": "csv",
+      "params": {"path": "miners.csv"}
+    }
+  }]
+})";
 
 
 const std::string simulation_string = R"({
@@ -63,7 +83,6 @@ class MockRewardScheme : public RewardScheme {
 public:
   MOCK_METHOD2(handle_share, void(const std::string&, const Share&));
 };
-
 
 
 Simulation get_sample_simulation() {
@@ -178,6 +197,45 @@ TEST(MiningPool, submit_share) {
   EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::network | Share::Property::uncle)));
   pool->submit_share("address", Share(Share::Property::network));
 }
+
+TEST(QBRewardScheme, update_record) {
+nlohmann::json j;
+std::unique_ptr<QBRewardScheme> reward_scheme(new QBRewardScheme(j));
+auto random = std::make_shared<MockRandom>();
+QBRewardScheme* reward_scheme_ptr = reward_scheme.get();
+
+auto pool = MiningPool::create(100, 0.0, std::move(reward_scheme), random);
+
+EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
+
+pool->submit_share("address_A", Share(Share::Property::none));
+pool->submit_share("address_B", Share(Share::Property::none));
+pool->submit_share("address_C", Share(Share::Property::none));
+pool->submit_share("address_A", Share(Share::Property::none));
+
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 200);
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 100);
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_C"), 100);
+
+pool->submit_share("address_B", Share(Share::Property::none));
+pool->submit_share("address_C", Share(Share::Property::none));
+pool->submit_share("address_A", Share(Share::Property::none));
+pool->submit_share("address_B", Share(Share::Property::none));
+pool->submit_share("address_A", Share(Share::Property::none));
+pool->submit_share("address_A", Share(Share::Property::none));
+
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 500);
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 300);
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_C"), 200);
+
+pool->submit_share("address_B", Share(Share::Property::network));
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 100);
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 400);
+
+pool->submit_share("address_B", Share(Share::Property::uncle));
+ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 500);
+}
+
 
 
 TEST(EventQueue, events_ordering) {

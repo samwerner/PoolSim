@@ -43,7 +43,7 @@ public:
   void leave(const std::string& miner_address);
 
   // Set the reward scheme for this mining pool
-  void set_reward_scheme(std::unique_ptr<RewardScheme> handler);
+  void set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme);
 
 protected:
   MiningPool(uint64_t difficulty, double uncle_prob, std::shared_ptr<Random> random);
