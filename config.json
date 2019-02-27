@@ -1,5 +1,6 @@
 {
   "blocks": 1000,
+  "seed": 123,
   "network_difficulty": 10000,
   "pools": [{
     "uncle_block_prob": 0.001,
