@@ -14,13 +14,11 @@ int main(int argc, char* argv[]) {
 
     std::string config_filepath;
     bool debug = false;
-    long seed = 0;
 
     app.add_option("-c,--config-file", config_filepath, "configuration file")
         ->required()
         ->check(CLI::ExistingFile);
     app.add_flag("--debug", debug, "enable debug logs");
-    app.add_option("--seed", seed, "random seed to use");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -29,10 +27,10 @@ int main(int argc, char* argv[]) {
         spdlog::set_level(spdlog::level::debug);
     }
 
-    SystemRandom::initialize(seed);
-    spdlog::debug("initialized random with seed {}", seed);
-
     auto simulation = Simulation::from_config_file(config_filepath);
+    SystemRandom::initialize(simulation.seed);
+    spdlog::debug("initialized random with seed {}", simulation.seed);
+
     auto simulator = std::make_shared<Simulator>(simulation);
 
     simulator->run();

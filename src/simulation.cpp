@@ -28,9 +28,12 @@ void from_json(const json& j, PoolConfig& pool_config) {
 }
 
 void from_json(const json& j, Simulation& simulation) {
-  j.at("blocks").get_to(simulation.blocks);
-  j.at("network_difficulty").get_to(simulation.network_difficulty);
-  j.at("pools").get_to(simulation.pools);
+    j.at("blocks").get_to(simulation.blocks);
+    j.at("network_difficulty").get_to(simulation.network_difficulty);
+    j.at("pools").get_to(simulation.pools);
+    if (j.find("seed") != j.end()) {
+        j.at("seed").get_to(simulation.seed);
+    }
 }
 
 

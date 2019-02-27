@@ -39,21 +39,24 @@ struct PoolConfig {
 };
 
 struct Simulation {
-  // Creates a Simulation from a config file
-  static Simulation from_config_file(const std::string& filepath);
-  // Creates a Simulation from a stream
-  static Simulation from_stream(std::istream& stream);
-  // Creates a Simulation from a JSON string
-  static Simulation from_string(const std::string& string);
+    // Creates a Simulation from a config file
+    static Simulation from_config_file(const std::string& filepath);
+    // Creates a Simulation from a stream
+    static Simulation from_stream(std::istream& stream);
+    // Creates a Simulation from a JSON string
+    static Simulation from_string(const std::string& string);
 
-  // The number of blocks to reach before ending the simulation
-  uint64_t blocks;
+    // The number of blocks to reach before ending the simulation
+    uint64_t blocks;
 
-  // Difficulty of the network
-  uint64_t network_difficulty;
+    // Difficulty of the network
+    uint64_t network_difficulty;
 
-  // Pools to include in the simulation
-  std::vector<PoolConfig> pools;
+    // Pools to include in the simulation
+    std::vector<PoolConfig> pools;
+
+    // Random seed to use for the simulation
+    long seed = 0;
 };
 
 void from_json(const nlohmann::json& j, Simulation& simulation);
