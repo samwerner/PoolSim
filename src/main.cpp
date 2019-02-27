@@ -1,58 +1,41 @@
 #include <iostream>
 #include <string>
-#include <boost/program_options.hpp>
 
+#include <CLI11.hpp>
 #include <spdlog/spdlog.h>
 
 #include "simulator.h"
 
 #include "miner_creator.h"
 
-namespace po = boost::program_options;
-
 
 int main(int argc, char* argv[]) {
-  po::options_description desc("Allowed options");
-  desc.add_options()
-      ("help", "shows help")
-      ("config-file", po::value<std::string>(), "path to config file")
-      ("debug", "enable debug logs")
-      ("seed", po::value<long>(), "random seed to use")
-  ;
+    CLI::App app{"PoolSim: Extensible Mining pool simulator"};
 
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
+    std::string config_filepath;
+    bool debug = false;
+    long seed = 0;
 
-  if (vm.count("help")) {
-      std::cerr << desc << std::endl;
-      return 1;
-  }
+    app.add_option("-c,--config-file", config_filepath, "configuration file")
+        ->required()
+        ->check(CLI::ExistingFile);
+    app.add_flag("--debug", debug, "enable debug logs");
+    app.add_option("--seed", seed, "random seed to use");
 
-  if (!vm.count("config-file")) {
-    std::cerr << "--config-file not given" << std::endl;
-    return 1;
-  }
+    CLI11_PARSE(app, argc, argv);
 
-  spdlog::set_level(spdlog::level::info);
-  if (vm.count("debug")) {
-    spdlog::set_level(spdlog::level::debug);
-  }
+    spdlog::set_level(spdlog::level::info);
+    if (debug) {
+        spdlog::set_level(spdlog::level::debug);
+    }
 
-  long seed = 0;
-  if (vm.count("seed")) {
-    seed = vm["seed"].as<long>();
-  }
+    SystemRandom::initialize(seed);
+    spdlog::debug("initialized random with seed {}", seed);
 
-  std::string config_filepath = vm["config-file"].as<std::string>();
+    auto simulation = Simulation::from_config_file(config_filepath);
+    auto simulator = std::make_shared<Simulator>(simulation);
 
-  SystemRandom::initialize(seed);
-  spdlog::debug("initialized random with seed {}", seed);
+    simulator->run();
 
-  auto simulation = Simulation::from_config_file(config_filepath);
-  auto simulator = std::make_shared<Simulator>(simulation);
-
-  simulator->run();
-
-  return 0;
+    return 0;
 }

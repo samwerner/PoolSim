@@ -11,14 +11,14 @@ RUN_TESTS = $(addsuffix .run, $(TESTS))
 TEST_OBJS = $(OBJ)
 ALL_OBJS = $(TEST_OBJS) $(MAIN_OBJ)
 
-DEPS = vendor/nlohmann vendor/spdlog vendor/csv.h
+DEPS = vendor/nlohmann vendor/spdlog vendor/csv.h vendor/CLI11.hpp
 SPDLOG_VERSION = 1.3.1
 
 EXE = build/poolsim
 
 CXX = g++
 CXXFLAGS = -std=c++11 -Wall -g -MMD -MP -I$(PWD)/vendor
-LDFLAGS = -lboost_program_options -pthread
+LDFLAGS = -pthread
 LDFLAGS_TEST = $(LDFLAGS) -lgtest -lgmock
 
 all: build_dir deps $(EXE)
@@ -59,6 +59,9 @@ deps: $(DEPS)
 
 vendor/csv.h:
 	@wget https://raw.githubusercontent.com/ben-strasser/fast-cpp-csv-parser/master/csv.h -O $@
+
+vendor/CLI11.hpp:
+	@wget https://github.com/CLIUtils/CLI11/releases/download/v1.7.1/CLI11.hpp -O $@
 
 vendor/spdlog: vendor/spdlog/spdlog.h
 vendor/spdlog/spdlog.h:

@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* Boost (currently using 1.69.0, older versions may work)
+* C++11 compiler
 * [Google Test][google-test] and Google Mock (only for tests, packages `google-mock` and `libgtest-dev` on Ubuntu)
 
 NOTE: On Ubuntu, Google Mock and Google Test must be compiled.
