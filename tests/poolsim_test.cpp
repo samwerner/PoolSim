@@ -13,6 +13,8 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 
+using namespace poolsim;
+
 
 const std::string qb_simulation_string = R"({
   "blocks": 5,
