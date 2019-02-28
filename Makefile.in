@@ -1,4 +1,3 @@
-SELF_DIR := $(shell pwd)
 export POOLSIM := $(SELF_DIR)/build/poolsim
 export LIBPOOLSIM := $(SELF_DIR)/build/libpoolsim.so
 export CXX := g++
