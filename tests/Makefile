@@ -6,13 +6,16 @@ LDFLAGS += -lgtest -lgmock -lpoolsim
 
 all: test
 
+build_dir:
+	mkdir -p build
+
 build/%_test: %_test.cpp
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
 build/%_test.run: build/%_test
 	./$^
 
-test: $(RUN_TESTS)
+test: build_dir $(RUN_TESTS)
 
 clean:
 	rm -f $(TESTS)
