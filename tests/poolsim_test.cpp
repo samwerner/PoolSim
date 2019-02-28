@@ -135,19 +135,21 @@ TEST(SystemRandom, get_address) {
 }
 
 TEST(Share, equality) {
-  ASSERT_EQ(Share(Share::Property::network), Share(Share::Property::network));
-  uint8_t flags = Share::Property::network | Share::Property::uncle;
+  ASSERT_EQ(Share(Share::Property::valid_block), Share(Share::Property::valid_block));
+  uint8_t flags = Share::Property::valid_block | Share::Property::uncle;
   ASSERT_EQ(Share(flags), Share(flags));
-  ASSERT_NE(Share(Share::Property::network), Share(Share::Property::uncle));
+  ASSERT_NE(Share(Share::Property::valid_block), Share(Share::Property::uncle));
 }
 
 TEST(Share, flags) {
-  ASSERT_TRUE(Share(Share::Property::network).is_network_share());
+  ASSERT_TRUE(Share(Share::Property::valid_block).is_valid_block());
+  ASSERT_TRUE(Share(Share::Property::valid_block).is_network_share());
   ASSERT_TRUE(Share(Share::Property::uncle).is_uncle());
   ASSERT_FALSE(Share(Share::Property::uncle).is_network_share());
-  uint8_t flags = Share::Property::network | Share::Property::uncle;
+  uint8_t flags = Share::Property::valid_block | Share::Property::uncle;
   ASSERT_TRUE(Share(flags).is_uncle());
-  ASSERT_TRUE(Share(flags).is_network_share());
+  ASSERT_TRUE(Share(flags).is_valid_block());
+  ASSERT_FALSE(Share(flags).is_network_share());
   ASSERT_FALSE(Share(0).is_network_share());
 }
 
@@ -174,8 +176,8 @@ TEST(Miner, accessors) {
 
 TEST(Miner, join_pool) {
   auto miner = Miner::create("random_address", 123, get_mock_share_handler());
-  auto pool1 = MiningPool::create(100, 0.001, get_mock_reward_scheme());
-  auto pool2 = MiningPool::create(100, 0.001, get_mock_reward_scheme());
+  auto pool1 = MiningPool::create("pool1", 100, 0.001, get_mock_reward_scheme());
+  auto pool2 = MiningPool::create("pool2", 100, 0.001, get_mock_reward_scheme());
   ASSERT_EQ(miner->get_pool(), nullptr);
   ASSERT_EQ(pool1->get_miners_count(), 0);
   ASSERT_EQ(pool2->get_miners_count(), 0);
@@ -194,18 +196,18 @@ TEST(MiningPool, submit_share) {
   auto random = std::make_shared<MockRandom>();
   MockRewardScheme* reward_scheme_ptr = reward_scheme.get();
 
-  auto pool = MiningPool::create(100, 0.3, std::move(reward_scheme), random);
+  auto pool = MiningPool::create("pool", 100, 0.3, std::move(reward_scheme), random);
 
   EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::none)));
   pool->submit_share("address", Share(Share::Property::none));
 
   EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.5));
-  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::network)));
-  pool->submit_share("address", Share(Share::Property::network));
+  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::valid_block)));
+  pool->submit_share("address", Share(Share::Property::valid_block));
 
   EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
-  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::network | Share::Property::uncle)));
-  pool->submit_share("address", Share(Share::Property::network));
+  EXPECT_CALL(*reward_scheme_ptr, handle_share("address", Share(Share::Property::valid_block | Share::Property::uncle)));
+  pool->submit_share("address", Share(Share::Property::valid_block));
 }
 
 TEST(QBRewardScheme, update_record) {
@@ -214,7 +216,7 @@ std::unique_ptr<QBRewardScheme> reward_scheme(new QBRewardScheme(j));
 auto random = std::make_shared<MockRandom>();
 QBRewardScheme* reward_scheme_ptr = reward_scheme.get();
 
-auto pool = MiningPool::create(100, 0.0, std::move(reward_scheme), random);
+auto pool = MiningPool::create("pool", 100, 0.0, std::move(reward_scheme), random);
 
 EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
 
@@ -238,7 +240,7 @@ ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 500);
 ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 300);
 ASSERT_EQ(reward_scheme_ptr->get_credits("address_C"), 200);
 
-pool->submit_share("address_B", Share(Share::Property::network));
+pool->submit_share("address_B", Share(Share::Property::valid_block));
 ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 100);
 ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 400);
 
@@ -264,7 +266,7 @@ TEST(EventQueue, events_ordering) {
 
 TEST(Simulator, schedule_miner) {
   auto simulation = Simulation::from_string(simulation_string);
-  auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
+  auto pool = MiningPool::create("pool", 50, 0.001, get_mock_reward_scheme());
   auto miner = Miner::create("address", 25, get_mock_share_handler());
   miner->join_pool(pool);
   auto random = std::make_shared<MockRandom>();
@@ -281,7 +283,7 @@ TEST(Simulator, schedule_miner) {
 
 TEST(Simulator, process_event) {
     auto simulation = Simulation::from_string(simulation_string);
-    auto pool = MiningPool::create(50, 0.001, get_mock_reward_scheme());
+    auto pool = MiningPool::create("pool", 50, 0.001, get_mock_reward_scheme());
     auto miner = std::make_shared<MockMiner>("address", 25);
     miner->join_pool(pool);
     auto random = std::make_shared<MockRandom>();  

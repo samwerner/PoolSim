@@ -15,12 +15,18 @@ void from_json(const nlohmann::json& j, PPLNSConfig& r) {
 }
 
 void to_json(nlohmann::json& j, const BlockMetaData& b) {
-    j = nlohmann::json{{"miner_address", b.miner_address}, {"reward_scheme", b.reward_scheme}, {"shares_per_block", b.shares_per_block}};
+    j = nlohmann::json{
+        {"shares_per_block", b.shares_per_block}
+    };
 }
 void to_json(nlohmann::json& j, const QBBlockMetaData& b) {
-    j = nlohmann::json{{"miner_address", b.miner_address}, {"reward_scheme", b.reward_scheme}, {"shares_per_block", b.shares_per_block},
-                        {"credit_balance_receiver", b.credit_balance_receiver}, {"receiver_address", b.receiver_address}, {"reset_balance_receiver",
-                        b.reset_balance_receiver}, {"proportion_credits_lost", b.prop_credits_lost}};
+    j = nlohmann::json{
+        {"shares_per_block", b.shares_per_block},
+        {"credit_balance_receiver", b.credit_balance_receiver},
+        {"receiver_address", b.receiver_address},
+        {"reset_balance_receiver", b.reset_balance_receiver},
+        {"proportion_credits_lost", b.prop_credits_lost}
+    };
 }
 
 RewardScheme::~RewardScheme() {}
@@ -76,8 +82,6 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
         }
         block_meta_data.shares_per_block = shares_per_block;
         shares_per_block = 0;
-        block_meta_data.miner_address = miner_address;
-        block_meta_data.reward_scheme = "PPLNS";
     } else if (share.is_uncle()) {
         for (const std::string& miner_address : last_n_shares) {
             auto record = find_record(miner_address);
@@ -161,8 +165,6 @@ void QBRewardScheme::handle_share(const std::string& miner_address, const Share&
     this->update_record(record, share);
     shares_per_block++;
     if (share.is_network_share()) {
-        block_meta_data.miner_address = miner_address;
-        block_meta_data.reward_scheme = "QB";
         this->reward_top_miner();
     } else if (share.is_uncle()) {
         // TODO: decide on uncle reward scheme

@@ -17,11 +17,12 @@ namespace poolsim {
 class MiningPool : public std::enable_shared_from_this<MiningPool>,
                    public Observable<BlockEvent> {
 public:
-  static std::shared_ptr<MiningPool> create(
-    uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);
+    static std::shared_ptr<MiningPool> create(
+        const std::string& name, uint64_t difficulty,
+        double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);
 
-  static std::shared_ptr<MiningPool> create(
-    uint64_t difficulty, double uncle_prob,
+    static std::shared_ptr<MiningPool> create(
+        const std::string& name, uint64_t difficulty, double uncle_prob,
         std::unique_ptr<RewardScheme> reward_scheme, std::shared_ptr<Random> random);
 
     // Returns all the miners currently in the pool
@@ -50,11 +51,9 @@ public:
     // Set the reward scheme for this mining pool
     void set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme);
 
-    // Set name of pool
-    void set_pool_name(std::string _name);
-
 protected:
-    MiningPool(uint64_t difficulty, double uncle_prob, std::shared_ptr<Random> random);
+    MiningPool(const std::string& name, uint64_t difficulty,
+               double uncle_prob, std::shared_ptr<Random> random);
 
 private:
     // name of pool

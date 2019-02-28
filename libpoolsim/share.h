@@ -9,7 +9,7 @@ class Share {
 public:
   enum Property {
     none = 0,
-    network = 1 << 0,
+    valid_block = 1 << 0,
     uncle = 1 << 1,
   };
 
@@ -17,6 +17,7 @@ public:
 
   uint8_t get_properties() const;
   bool is_network_share() const;
+  bool is_valid_block() const;
   bool is_uncle() const;
 private:
   // Stores properties about the share

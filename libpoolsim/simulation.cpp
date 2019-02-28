@@ -23,10 +23,13 @@ void from_json(const json& j, MinerConfig& miner_config) {
 }
 
 void from_json(const json& j, PoolConfig& pool_config) {
-  j.at("reward_scheme").get_to(pool_config.reward_scheme_config);
-  j.at("difficulty").get_to(pool_config.difficulty);
-  j.at("uncle_block_prob").get_to(pool_config.uncle_block_prob);
-  j.at("miners").get_to(pool_config.miner_config);
+    if (j.find("name") != j.end()) {
+        j.at("name").get_to(pool_config.name);
+    }
+    j.at("reward_scheme").get_to(pool_config.reward_scheme_config);
+    j.at("difficulty").get_to(pool_config.difficulty);
+    j.at("uncle_block_prob").get_to(pool_config.uncle_block_prob);
+    j.at("miners").get_to(pool_config.miner_config);
 }
 
 void from_json(const json& j, Simulation& simulation) {

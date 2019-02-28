@@ -16,10 +16,8 @@ struct PPLNSConfig {
     uint64_t n;
 };
 
-struct BlockMetaData{
-    std::string reward_scheme;
+struct BlockMetaData {
     uint64_t shares_per_block = 0;
-    std::string miner_address;
 };
 
 struct QBBlockMetaData : BlockMetaData {
@@ -51,7 +49,7 @@ public:
 protected:
     std::weak_ptr<MiningPool> mining_pool;
 
-    uint64_t shares_per_block;
+    uint64_t shares_per_block = 0;
 };
 
 MAKE_FACTORY(RewardSchemeFactory, RewardScheme, const nlohmann::json&);

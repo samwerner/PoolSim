@@ -26,17 +26,20 @@ struct RewardSchemeConfig {
 };
 
 struct PoolConfig {
-  // The difficulty of the pool
-  uint64_t difficulty;
+    // The name of the pool
+    std::string name;
 
-  // Probability of having an uncle block
-  double uncle_block_prob;
+    // The difficulty of the pool
+    uint64_t difficulty;
 
-  // Reward scheme to use for this pool
-  RewardSchemeConfig reward_scheme_config;
+    // Probability of having an uncle block
+    double uncle_block_prob;
 
-  // How to create initial miners for this pool
-  MinerConfig miner_config;
+    // Reward scheme to use for this pool
+    RewardSchemeConfig reward_scheme_config;
+
+    // How to create initial miners for this pool
+    MinerConfig miner_config;
 };
 
 struct Simulation {

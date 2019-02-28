@@ -1,5 +1,7 @@
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 #include <spdlog/spdlog.h>
 
@@ -10,6 +12,9 @@
 #include "miner_creator.h"
 
 namespace poolsim {
+
+using nlohmann::json;
+
 
 Simulator::Simulator(Simulation _simulation)
   : Simulator(_simulation, SystemRandom::get_instance()) {}
@@ -27,22 +32,29 @@ std::shared_ptr<Simulator> Simulator::from_config_file(const std::string& filepa
 
 
 void Simulator::initialize() {
-  for (auto pool_config : simulation.pools) {
-    auto miner_config = pool_config.miner_config;
-    auto reward_scheme_config = pool_config.reward_scheme_config;
-    auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
-    auto new_miners = miner_creator->create_miners(miner_config.params);
-    auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
-                                                     reward_scheme_config.params);
-    auto pool = MiningPool::create(pool_config.difficulty,
-                                   pool_config.uncle_block_prob, std::move(reward_scheme));
-    pool->add_observer(shared_from_this());
-    for (auto miner : new_miners) {
-      miner->join_pool(pool);
-      add_miner(miner);
+    for (size_t i = 0; i < simulation.pools.size(); i++) {
+        auto pool_config = simulation.pools[i];
+        auto miner_config = pool_config.miner_config;
+        auto reward_scheme_config = pool_config.reward_scheme_config;
+        auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
+        auto new_miners = miner_creator->create_miners(miner_config.params);
+        auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
+                                                        reward_scheme_config.params);
+        std::string pool_name = pool_config.name;
+        if (pool_name.empty()) {
+            std::stringstream s;
+            s << "pool-" << i;
+            pool_name = s.str();
+        }
+        auto pool = MiningPool::create(pool_name, pool_config.difficulty,
+                                       pool_config.uncle_block_prob, std::move(reward_scheme));
+        pool->add_observer(shared_from_this());
+        for (auto miner : new_miners) {
+            miner->join_pool(pool);
+            add_miner(miner);
+        }
+        add_pool(pool);
     }
-    add_pool(pool);
-  }
 }
 
 void Simulator::run() {
@@ -63,6 +75,16 @@ void Simulator::run() {
   }
 }
 
+void Simulator::save_simulation_data(const std::string& filepath) {
+    json result;
+    json blocks = json::array();
+    for (auto block : block_events) {
+        blocks.push_back(block);
+    }
+    result["blocks"] = blocks;
+    std::ofstream o(filepath);
+    o << std::setw(4) << result << std::endl;
+}
 
 void Simulator::schedule_all() {
   for (auto miner_kv: miners) {
@@ -82,7 +104,7 @@ void Simulator::process_event(const Event& event) {
     if (blocks_mined % 100 == 0) {
       spdlog::debug("progress: {} / {}", blocks_mined, simulation.blocks);
     }
-    share_flags |= Share::Property::network;
+    share_flags |= Share::Property::valid_block;
   }
   Share share(share_flags);
   schedule_miner(miner);
