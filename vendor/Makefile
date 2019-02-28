@@ -1,7 +1,23 @@
 DEPS = nlohmann spdlog csv.h CLI11.hpp
 SPDLOG_VERSION = 1.3.1
 
-deps: $(DEPS)
+all: $(DEPS)
+
+install:
+	install -d $(PREFIX)/include
+	install -d $(PREFIX)/include/nlohmann
+	install -d $(PREFIX)/include/spdlog
+	install -m 644 csv.h $(PREFIX)/include/csv.h
+	install -m 644 CLI11.hpp $(PREFIX)/include/CLI11.hpp
+	install -m 644 nlohmann/json.hpp $(PREFIX)/include/nlohmann/json.hpp
+	cp -r spdlog $(PREFIX)/include/spdlog
+
+uninstall:
+	@echo "WARNING: skipping 3rd party libraries: $(addprefix $(PREFIX)/include/, $(DEPS))"
+	@echo "you can run 'make force_uninstall' if you are sure you want to remove them"
+
+force_uninstall:
+	rm -rf $(addprefix $(PREFIX)/include/, $(DEPS))
 
 csv.h:
 	@wget https://raw.githubusercontent.com/ben-strasser/fast-cpp-csv-parser/master/csv.h -O $@

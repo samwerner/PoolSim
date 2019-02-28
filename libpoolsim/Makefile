@@ -23,7 +23,7 @@ install:
 
 uninstall:
 	rm -f $(PREFIX)/lib/$(notdir $(LIBPOOLSIM))
-	rm -rf $(PREFIX)/include/libpoolsim
+	rm -rf $(PREFIX)/include/poolsim
 
 -include $(OBJS:.o=.d)
 

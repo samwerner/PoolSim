@@ -16,10 +16,15 @@ $(LIBPOOLSIM): deps
 install:
 	$(MAKE) -C libpoolsim install
 	$(MAKE) -C poolsim install
+	$(MAKE) -C vendor install
 
 uninstall:
 	$(MAKE) -C libpoolsim uninstall
 	$(MAKE) -C poolsim uninstall
+	$(MAKE) -C vendor uninstall
+
+force_uninstall:
+	$(MAKE) -C vendor force_uninstall
 
 deps:
 	$(MAKE) -C vendor
