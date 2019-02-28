@@ -25,7 +25,8 @@ for arg in "$@"; do
         echo 'options:'
         echo '  --prefix=<path>: installation prefix'
         echo '  --debug: enable debug build'
-        echo '  --no-debug: disable debug build'
+        echo '  --no-debug: disable debug build (default for release builds)'
+        echo '  --release: enable release build'
         echo 'all invalid options are silently ignored'
         exit 0
         ;;
@@ -33,10 +34,13 @@ for arg in "$@"; do
 done
 
 echo 'generating makefile ...'
-echo "PREFIX = $prefix" > Makefile
+echo "SELF_DIR = $(pwd)" > Makefile
+echo "export PREFIX = $prefix" >> Makefile
+
+echo "export RELEASE = $release" >> Makefile
 
 if [ "$release" = "false" ]; then
-    extra_cxxflags="$extra_cxxflags -Wl,-rpath,\$(PWD)/build"
+    extra_cxxflags="$extra_cxxflags -Wl,-rpath,\$(SELF_DIR)/build"
 elif [ "$release" = "true" ]; then
     extra_cxxflags="$extra_cxxflags -O2"
 fi

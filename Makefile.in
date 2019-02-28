@@ -1,9 +1,9 @@
-export POOLSIM := $(PWD)/build/poolsim
-export LIBPOOLSIM := $(PWD)/build/libpoolsim.so
+SELF_DIR := $(shell pwd)
+export POOLSIM := $(SELF_DIR)/build/poolsim
+export LIBPOOLSIM := $(SELF_DIR)/build/libpoolsim.so
 export CXX := g++
-export CXXFLAGS := -std=c++11 -Wall -g -fPIC -I$(PWD)/libpoolsim -I$(PWD)/vendor -L$(PWD)/build $(EXTRA_CXXFLAGS)
+export CXXFLAGS := -std=c++11 -Wall -g -fPIC -I$(SELF_DIR)/libpoolsim -I$(SELF_DIR)/vendor -L$(SELF_DIR)/build $(EXTRA_CXXFLAGS)
 export LDFLAGS := -pthread
-export PREFIX
 
 all: $(POOLSIM)
 

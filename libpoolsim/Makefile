@@ -2,7 +2,9 @@ SRCS := $(wildcard *.cpp)
 HEADERS := $(wildcard *.h)
 OBJS := $(SRCS:%.cpp=build/%.o)
 
-CXXFLAGS += -MMD -MP
+ifeq ($(RELEASE),false)
+	CXXFLAGS += -MMD -MP
+endif
 
 all: build_dir $(LIBPOOLSIM)
 

@@ -32,6 +32,9 @@ make install
 Depending on the location, you may need `sudo` for `make install`.
 Everything can be uninstalled using `make uninstall`.
 
+NOTE: if you get an 'error whild loading shared libraries', try to run
+`ldconfig /path/to/install/lib` after installing.
+
 
 ## Running the simulator
 
