@@ -8,6 +8,7 @@
 #include "random.h"
 #include "factory.h"
 
+namespace poolsim {
 
 struct MinerCreationState {
   size_t miners_count = 0;
@@ -67,3 +68,5 @@ public:
 
 
 MAKE_FACTORY(MinerCreatorFactory, MinerCreator)
+
+}

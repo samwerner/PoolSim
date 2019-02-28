@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <nlohmann/json.hpp>
 
+namespace poolsim {
+
 class MinerRecord {
 public:
     MinerRecord(std::string _address);
@@ -70,3 +72,5 @@ public:
 };
 
 void to_json(nlohmann::json& j, const MinerRecord& data);
+
+}

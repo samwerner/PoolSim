@@ -2,6 +2,7 @@
 
 #include "mining_pool.h"
 
+namespace poolsim {
 
 std::shared_ptr<MiningPool> MiningPool::create(
     uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme) {
@@ -66,4 +67,6 @@ void MiningPool::submit_share(const std::string& miner_address, const Share& sha
         };
         notify(block_event);
     }
+}
+
 }

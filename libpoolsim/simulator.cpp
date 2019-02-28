@@ -9,7 +9,7 @@
 #include "event.h"
 #include "miner_creator.h"
 
-
+namespace poolsim {
 
 Simulator::Simulator(Simulation _simulation)
   : Simulator(_simulation, SystemRandom::get_instance()) {}
@@ -136,4 +136,6 @@ Event Simulator::get_next_event() const {
 
 void Simulator::process(const BlockEvent& block_event) {
     block_events.push_back(block_event);
+}
+
 }

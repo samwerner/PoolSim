@@ -7,6 +7,7 @@
 #include "mining_pool.h"
 #include "share_handler.h"
 
+namespace poolsim {
 
 class Miner : public std::enable_shared_from_this<Miner> {
 public:
@@ -39,3 +40,5 @@ private:
 
   std::unique_ptr<ShareHandler> share_handler;
 };
+
+}

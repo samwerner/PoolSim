@@ -8,6 +8,8 @@
 #include "factory.h"
 #include "miner_record.h"
 
+namespace poolsim {
+
 class MiningPool;
 
 struct PPLNSConfig {
@@ -157,3 +159,5 @@ protected:
 void from_json(const nlohmann::json& j, PPLNSConfig& r);
 void to_json(nlohmann::json& j, const BlockMetaData& b);
 void to_json(nlohmann::json& j, const QBBlockMetaData& b);
+
+}

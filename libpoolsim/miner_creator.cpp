@@ -3,6 +3,8 @@
 
 #include "csv.h"
 
+namespace poolsim {
+
 using nlohmann::json;
 
 
@@ -81,3 +83,5 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
 }
 
 REGISTER(MinerCreator, RandomMinerCreator, "random")
+
+}

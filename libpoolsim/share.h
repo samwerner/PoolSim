@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+namespace poolsim {
 
 
 class Share {
@@ -27,3 +28,5 @@ private:
 
 bool operator==(const Share& lhs, const Share& rhs);
 bool operator!=(const Share& lhs, const Share& rhs);
+
+}

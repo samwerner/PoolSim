@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+namespace poolsim {
 
 template <typename T>
 class Observer {
@@ -32,4 +33,6 @@ void Observable<T>::notify(const T& value) {
     for (auto observer : observers) {
         observer->process(value);
     }
+}
+
 }

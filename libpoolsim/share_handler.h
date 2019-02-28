@@ -6,6 +6,8 @@
 #include "share.h"
 #include "factory.h"
 
+namespace poolsim {
+
 class Miner;
 
 class ShareHandler {
@@ -45,3 +47,5 @@ public:
   // Simply submits the share to the mining pool
   virtual void handle_share(const Share& share) override;
 };
+
+}

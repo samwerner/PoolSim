@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 
+namespace poolsim {
 
 class NotRegisteredException : public std::exception {
 public:
@@ -79,3 +80,5 @@ private:
 #define REGISTER(base, clazz, name) \
   volatile bool base ## _ ## clazz ## _registered = \
     Factory<base, decltype(&clazz::create)>::register_class(name, clazz::create);
+
+}

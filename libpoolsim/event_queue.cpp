@@ -3,6 +3,8 @@
 #include "event_queue.h"
 #include "event.h"
 
+namespace poolsim {
+
 char const* EmptyQueueException::what() const throw() {
   return "the queue is empty";
 }
@@ -32,4 +34,6 @@ Event EventQueue::get_top() const {
     throw EmptyQueueException();
   }
   return queue.top();
+}
+
 }

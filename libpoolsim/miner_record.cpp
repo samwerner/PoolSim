@@ -1,6 +1,8 @@
 #include "miner_record.h"
 #include <string>
 
+namespace poolsim {
+
 MinerRecord::MinerRecord(std::string miner_address) : address(miner_address) {}
 
 std::string MinerRecord::get_miner() const {
@@ -79,3 +81,4 @@ void to_json(nlohmann::json& j, const MinerRecord& data) {
                         {"uncles_mined", data.get_uncles_mined()}, {"uncles_received", data.get_uncles_received()}, {"share_count", data.get_shares_count()}};
 }
 
+}

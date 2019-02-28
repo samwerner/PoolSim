@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+namespace poolsim {
+
 using nlohmann::json;
 
 
@@ -92,3 +94,5 @@ double UniformDistribution::get() {
 }
 
 REGISTER(Distribution, UniformDistribution, "uniform")
+
+}

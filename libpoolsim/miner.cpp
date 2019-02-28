@@ -3,6 +3,8 @@
 #include "miner.h"
 #include "mining_pool.h"
 
+namespace poolsim {
+
 
 Miner::Miner(std::string _address, double _hashrate)
   : address(_address), hashrate(_hashrate) {}
@@ -43,3 +45,4 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
   share_handler->set_miner(shared_from_this());
 }
 
+}

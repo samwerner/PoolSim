@@ -5,6 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
+namespace poolsim {
 
 class InvalidSimulationException : public std::exception {
 public:
@@ -63,3 +64,5 @@ void from_json(const nlohmann::json& j, Simulation& simulation);
 void from_json(const nlohmann::json& j, PoolConfig& pool_config);
 void from_json(const nlohmann::json& j, MinerConfig& miner_config);
 void from_json(const nlohmann::json& j, RewardSchemeConfig& reward_scheme_config);
+
+}

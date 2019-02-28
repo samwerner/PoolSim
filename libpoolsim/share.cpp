@@ -1,5 +1,7 @@
 #include "share.h"
 
+namespace poolsim {
+
 Share::Share(uint8_t _properties): properties(_properties) {}
 
 
@@ -14,4 +16,6 @@ bool operator==(const Share& lhs, const Share& rhs) {
 
 bool operator!=(const Share& lhs, const Share& rhs) {
   return !(lhs == rhs);
+}
+
 }

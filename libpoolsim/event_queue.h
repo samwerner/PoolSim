@@ -5,6 +5,8 @@
 
 #include "event.h"
 
+namespace poolsim {
+
 class EmptyQueueException : public std::exception {
 public:
   virtual char const* what() const throw();
@@ -31,3 +33,5 @@ public:
   // Returns event first in queue
   Event get_top() const;
 };
+
+}

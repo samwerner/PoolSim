@@ -15,6 +15,7 @@
 #include "observer.h"
 #include "block_event.h"
 
+namespace poolsim {
 
 class Simulator :  public std::enable_shared_from_this<Simulator>,
                    public Observer<BlockEvent> {
@@ -96,3 +97,5 @@ private:
   // Total number of blocks mined
   uint64_t blocks_mined;
 };
+
+}

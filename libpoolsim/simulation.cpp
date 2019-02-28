@@ -5,6 +5,8 @@
 
 #include "simulation.h"
 
+namespace poolsim {
+
 using json = nlohmann::json;
 
 InvalidSimulationException::InvalidSimulationException(const char* _message)
@@ -56,4 +58,6 @@ Simulation Simulation::from_config_file(const std::string& filepath) {
 Simulation Simulation::from_string(const std::string& string) {
   std::stringstream stream(string);
   return from_stream(stream);
+}
+
 }

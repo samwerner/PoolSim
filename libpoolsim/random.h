@@ -7,6 +7,8 @@
 
 #include <nlohmann/json.hpp>
 
+namespace poolsim {
+
 // Exception thrown if the Random class
 // has not yet been initialized exactly once
 class RandomInitException : public std::exception {
@@ -90,3 +92,5 @@ public:
 private:
   std::uniform_real_distribution<double> dist;
 };
+
+}

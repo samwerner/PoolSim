@@ -8,6 +8,7 @@
 #include "mining_pool.h"
 #include "miner_record.h"
 
+namespace poolsim {
 
 void from_json(const nlohmann::json& j, PPLNSConfig& r) {
     j.at("n").get_to(r.n);
@@ -176,3 +177,5 @@ uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
 
 
 REGISTER(RewardScheme, QBRewardScheme, "qb")
+
+}

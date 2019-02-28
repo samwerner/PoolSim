@@ -12,6 +12,8 @@
 #include "block_event.h"
 
 
+namespace poolsim {
+
 class MiningPool : public std::enable_shared_from_this<MiningPool>,
                    public Observable<BlockEvent> {
 public:
@@ -70,3 +72,5 @@ private:
     // Random instance
     std::shared_ptr<Random> random;
 };
+
+}

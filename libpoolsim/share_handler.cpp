@@ -3,6 +3,8 @@
 #include "factory.h"
 
 
+namespace poolsim {
+
 ShareHandler::~ShareHandler() {}
 
 void ShareHandler::set_miner(std::shared_ptr<Miner> _miner) {
@@ -22,3 +24,5 @@ void DefaultShareHandler::handle_share(const Share& share) {
 }
 
 REGISTER(ShareHandler, DefaultShareHandler, "default")
+
+}

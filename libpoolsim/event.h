@@ -2,6 +2,8 @@
 
 #include <string>
 
+namespace poolsim {
+
 struct Event {
   Event(const std::string& miner_address, double _time);
 
@@ -16,3 +18,5 @@ public:
     return left.time > right.time;
   }
 };
+
+}
