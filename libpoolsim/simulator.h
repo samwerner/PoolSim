@@ -19,8 +19,9 @@
 class Simulator :  public std::enable_shared_from_this<Simulator>,
                    public Observer<BlockEvent> {
 public:
-  Simulator(Simulation simulation);
+  explicit Simulator(Simulation simulation);
   Simulator(Simulation simulation, std::shared_ptr<Random> random);
+  static std::unique_ptr<Simulator> from_config_file(const std::string& filepath);
 
   // Runs the simulator
   void run();

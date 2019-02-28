@@ -1,11 +1,6 @@
 SRCS := $(wildcard *.cpp)
+HEADERS := $(wildcard *.h)
 OBJS := $(SRCS:%.cpp=build/%.o)
-
-LIBPOOLSIM := ../build/libpoolsim.so
-
-CXX := g++
-CXXFLAGS := -std=c++11 -Wall -g -MMD -MP -I../vendor -fPIC
-LDFLAGS := -pthread
 
 all: build_dir $(LIBPOOLSIM)
 
@@ -17,6 +12,16 @@ $(LIBPOOLSIM): $(OBJS)
 
 $(OBJS): build/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+install:
+	install -d $(PREFIX)/lib
+	install -m 755 $(LIBPOOLSIM) $(PREFIX)/lib/$(notdir $(LIBPOOLSIM))
+	install -d $(PREFIX)/include/libpoolsim
+	install -m 644 $(HEADERS) $(PREFIX)/include/libpoolsim
+
+uninstall:
+	rm -f $(PREFIX)/lib/$(notdir $(LIBPOOLSIM))
+	rm -rf $(PREFIX)/include/libpoolsim
 
 -include $(OBJS:.o=.d)
 

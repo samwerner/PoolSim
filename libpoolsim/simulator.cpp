@@ -17,6 +17,14 @@ Simulator::Simulator(Simulation _simulation)
 Simulator::Simulator(Simulation _simulation, std::shared_ptr<Random> _random)
   : simulation(_simulation), random(_random), current_time(0), blocks_mined(0) {}
 
+std::unique_ptr<Simulator> Simulator::from_config_file(const std::string& filepath) {
+    auto simulation = Simulation::from_config_file(filepath);
+    SystemRandom::initialize(simulation.seed);
+    spdlog::debug("initialized random with seed {}", simulation.seed);
+
+    return  std::unique_ptr<Simulator>(new Simulator(simulation));
+}
+
 
 void Simulator::initialize() {
   for (auto pool_config : simulation.pools) {
