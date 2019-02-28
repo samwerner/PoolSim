@@ -1,75 +1,29 @@
-SRCS = $(subst src/main.cpp,,$(wildcard src/*.cpp))
-OBJ = $(SRCS:src/%.cpp=build/%.o)
-MAIN_OBJ = build/main.o
+POOLSIM := build/poolsim
+LIBPOOLSIM := build/libpoolsim.so
 
+all: $(POOLSIM)
 
-TEST_SRCS = $(wildcard tests/*.cpp)
-TESTS = $(patsubst tests/%_test.cpp,build/%_test,$(TEST_SRCS))
-RUN_TESTS = $(addsuffix .run, $(TESTS))
+$(POOLSIM): deps $(LIBPOOLSIM)
+	$(MAKE) -C poolsim
 
+$(LIBPOOLSIM):
+	$(MAKE) -C libpoolsim
 
-TEST_OBJS = $(OBJ)
-ALL_OBJS = $(TEST_OBJS) $(MAIN_OBJ)
+deps:
+	$(MAKE) -C vendor
 
-DEPS = vendor/nlohmann vendor/spdlog vendor/csv.h vendor/CLI11.hpp
-SPDLOG_VERSION = 1.3.1
-
-EXE = build/poolsim
-
-CXX = g++
-CXXFLAGS = -std=c++11 -Wall -g -MMD -MP -I$(PWD)/vendor
-LDFLAGS = -pthread
-LDFLAGS_TEST = $(LDFLAGS) -lgtest -lgmock
-
-all: build_dir deps $(EXE)
-
-build_dir:
-	@mkdir -p build
-
-$(EXE): $(ALL_OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
-
-build/%_test: tests/%_test.cpp $(TEST_OBJS)
-	$(CXX) $(CXXFLAGS) -I$(PWD)/src $^ -o $@ $(LDFLAGS_TEST)
-
-build/%_test.run: build/%_test
-	./$^
-
-test: $(RUN_TESTS)
-
-build/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
--include $(ALL_OBJS:.o=.d)
+test:  $(LIBPOOLSIM)
+	$(MAKE) -C tests
 
 clean_deps:
 	rm -rf $(DEPS)
 
 clean:
-	rm -f $(EXE) $(ALL_OBJS) $(ALL_OBJS:.o=.d) $(TESTS)
+	$(MAKE) clean -C libpoolsim
+	$(MAKE) clean -C poolsim
+	$(MAKE) clean -C tests
 
-distclean: clean clean_deps
-	rm -rf build
-	rm -rf vendor
+distclean: clean
+	$(MAKE) clean -C vendor
 
 .PHONY: clean
-.SECONDARY: $(TESTS)
-
-deps: $(DEPS)
-
-vendor/csv.h:
-	@wget https://raw.githubusercontent.com/ben-strasser/fast-cpp-csv-parser/master/csv.h -O $@
-
-vendor/CLI11.hpp:
-	@wget https://github.com/CLIUtils/CLI11/releases/download/v1.7.1/CLI11.hpp -O $@
-
-vendor/spdlog: vendor/spdlog/spdlog.h
-vendor/spdlog/spdlog.h:
-	@mkdir -p vendor/spdlog
-	@curl -L https://github.com/gabime/spdlog/archive/v$(SPDLOG_VERSION).tar.gz | \
-		tar xvz -C vendor spdlog-$(SPDLOG_VERSION)/include --strip-components=2
-
-vendor/nlohmann: vendor/nlohmann/json.hpp
-vendor/nlohmann/json.hpp:
-	@mkdir -p vendor/nlohmann
-	@wget https://github.com/nlohmann/json/releases/download/v3.5.0/json.hpp -O $@

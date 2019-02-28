@@ -387,7 +387,7 @@ TEST(MinerCreator, RandomMinerCreator) {
 TEST(MinerCreator, CSVMinerCreator) {
   auto args = R"({
     "behavior": {"name": "default", "params": {}},
-    "path": "tests/fixtures/sample_miners.csv"
+    "path": "fixtures/sample_miners.csv"
   })"_json;
   auto creator = MinerCreatorFactory::create("csv");
   auto miners = creator->create_miners(args);
