@@ -22,7 +22,7 @@ class Simulator :  public std::enable_shared_from_this<Simulator>,
 public:
   explicit Simulator(Simulation simulation);
   Simulator(Simulation simulation, std::shared_ptr<Random> random);
-  static std::unique_ptr<Simulator> from_config_file(const std::string& filepath);
+  static std::shared_ptr<Simulator> from_config_file(const std::string& filepath);
 
   // Runs the simulator
   void run();
