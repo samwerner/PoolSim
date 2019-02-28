@@ -11,24 +11,36 @@ public:
 
     // increments balance of blocks mined by miner
     void inc_blocks_mined();
-    // increments balance of total blocks received by mined
+    // increments balance of total blocks received by miner
     void inc_blocks_received();
+    // increments total number of blocks received by miner by specified amount
+    void inc_blocks_received(double _block);
     // increments total balance of uncles mined by miner
     void inc_uncles_mined();
     // increments total balance of uncles received by miner
     void inc_uncles_received();
+    // increments total balance of uncles received by miner by specified amount
+    void inc_uncles_received(double _uncles);
     // returns address of miner to which record belongs
     std::string get_miner() const;
     // returns the number of shares submitted
     uint64_t get_shares_count() const;
+    //
+    uint64_t get_uncles_mined() const;
+    //
+    uint64_t get_uncles_received() const;
+    //
+    uint64_t get_blocks_mined() const;
+    //
+    uint64_t get_blocks_received() const;
+
     // increment the shares count
     void inc_shares_count();
-    // write miner record data to json object
-    void to_json(nlohmann::json& j);
 protected:
-    uint64_t blocks_mined = 0, blocks_received = 0, uncles_mined = 0, uncles_received = 0, 
-            shares_count = 0; 
+    uint64_t blocks_mined = 0, uncles_mined = 0, shares_count = 0; 
     
+    double blocks_received = 0, uncles_received = 0;
+
     std::string address;
 };
 
@@ -56,3 +68,5 @@ public:
         return (left_record->get_credits() > right_record->get_credits());
     }
 };
+
+void to_json(nlohmann::json& j, const MinerRecord& data);

@@ -7,7 +7,9 @@
     "difficulty": 10,
     "reward_scheme": {
       "type": "pplns",
-      "params": {}
+      "params": {
+          "n": 200
+      }
     },
     "miners": {
       "generator": "csv",

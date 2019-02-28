@@ -15,12 +15,36 @@ void MinerRecord::inc_blocks_received() {
     blocks_received++;
 }
 
+void MinerRecord::inc_blocks_received(double _block) {
+    blocks_received += _block;
+}
+
 void MinerRecord::inc_uncles_mined() {
     uncles_mined++;
 }
 
 void MinerRecord::inc_uncles_received() {
     uncles_received++;
+}
+
+uint64_t MinerRecord::get_uncles_received() const {
+    return uncles_received;
+}
+
+uint64_t MinerRecord::get_uncles_mined() const {
+    return uncles_mined;
+}
+
+uint64_t MinerRecord::get_blocks_mined() const {
+    return blocks_mined;
+}
+
+uint64_t MinerRecord::get_blocks_received() const {
+    return blocks_received;
+}
+
+void MinerRecord::inc_uncles_received(double _uncles) {
+    uncles_received += _uncles;
 }
 
 uint64_t MinerRecord::get_shares_count() const {
@@ -30,12 +54,6 @@ uint64_t MinerRecord::get_shares_count() const {
 void MinerRecord::inc_shares_count() {
     shares_count++;
 }
-
-void MinerRecord::to_json(nlohmann::json& j) {
-    j = nlohmann::json{{"miner_address", address}, {"shares_count", shares_count}, {"uncles_mined", uncles_mined},
-        {"uncles_received", uncles_received}, {"blocks_mined", blocks_mined}, {"blocks_received", blocks_received}};
-}
-
 
 QBRecord::QBRecord(std::string miner_address) : MinerRecord(miner_address) {}
 
@@ -56,8 +74,8 @@ void QBRecord::update_avg_credits_per_block() {
         avg_credits_per_block = (avg_credits_per_block + credits)/blocks_received;
 }
 
-void QBRecord::to_json(nlohmann::json& j) {
-     j = nlohmann::json{{"miner_address", address}, {"shares_count", shares_count}, {"uncles_mined", uncles_mined},
-        {"uncles_received", uncles_received}, {"blocks_mined", blocks_mined}, {"blocks_received", blocks_received},
-        {"avg_credits_per_received_block", avg_credits_per_block}};
+void to_json(nlohmann::json& j, const MinerRecord& data) {
+    j = nlohmann::json{{"miner_address", data.get_miner()}, {"blocks_mined", data.get_blocks_mined()}, {"blocks_received", data.get_blocks_received()},
+                        {"uncles_mined", data.get_uncles_mined()}, {"uncles_received", data.get_uncles_received()}, {"share_count", data.get_shares_count()}};
 }
+
