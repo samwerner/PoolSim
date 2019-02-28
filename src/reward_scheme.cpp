@@ -17,8 +17,8 @@ void to_json(nlohmann::json& j, const BlockMetaData& b) {
     j = nlohmann::json{{"miner_address", b.miner_address}, {"reward_scheme", b.reward_scheme}, {"shares_per_block", b.shares_per_block}};
 }
 void to_json(nlohmann::json& j, const QBBlockMetaData& b) {
-    j = nlohmann::json{{"miner_address", b.miner_address}, {"reward_scheme", b.reward_scheme}, {"shares_per_block", b.shares_per_block}, 
-                        {"credit_balance_receiver", b.credit_balance_receiver}, {"receiver_address", b.receiver_address}, {"reset_balance_receiver", 
+    j = nlohmann::json{{"miner_address", b.miner_address}, {"reward_scheme", b.reward_scheme}, {"shares_per_block", b.shares_per_block},
+                        {"credit_balance_receiver", b.credit_balance_receiver}, {"receiver_address", b.receiver_address}, {"reset_balance_receiver",
                         b.reset_balance_receiver}, {"proportion_credits_lost", b.prop_credits_lost}};
 }
 
@@ -36,7 +36,7 @@ PPSRewardScheme::PPSRewardScheme(const nlohmann::json& _args) {}
 
 void PPSRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
     // TODO: do some realy cool stuff with this share
-    
+
 
 }
 
@@ -117,31 +117,34 @@ void QBRewardScheme::update_record(std::shared_ptr<QBRecord> record, const Share
 
 
 void QBRewardScheme::reward_top_miner() {
-    if (!records.empty()) {
-        if (records.size() == 1) {
-            records[0]->inc_blocks_received();
-            block_meta_data.credit_balance_receiver = records[0]->get_credits();
-            block_meta_data.receiver_address = records[0]->get_miner();
-            shares_per_block = 0;
-        } else {
-            std::sort(records.begin(), records.end(), QBSortObj());
-            records[0]->inc_blocks_received();
-            block_meta_data.credit_balance_receiver = records[0]->get_credits();
-            block_meta_data.receiver_address = records[0]->get_miner();
-            uint64_t credits_diff = records[0]->get_credits() - records[1]->get_credits();
-            block_meta_data.reset_balance_receiver = credits_diff;
-            
-            uint64_t credits_sum = get_credits_sum();
-            if (credits_sum)
-                block_meta_data.prop_credits_lost = (double)records[1]->get_credits()/credits_sum;   
-            else 
-                block_meta_data.prop_credits_lost = 0;
-
-            block_meta_data.shares_per_block = shares_per_block;
-            shares_per_block = 0;         
-            records[0]->set_credits(credits_diff);
-        }
+    if (records.empty()) {
+        return;
     }
+
+    if (records.size() == 1) {
+        records[0]->inc_blocks_received();
+        block_meta_data.credit_balance_receiver = records[0]->get_credits();
+        block_meta_data.receiver_address = records[0]->get_miner();
+        shares_per_block = 0;
+        return;
+    }
+
+    std::sort(records.begin(), records.end(), QBSortObj());
+    records[0]->inc_blocks_received();
+    block_meta_data.credit_balance_receiver = records[0]->get_credits();
+    block_meta_data.receiver_address = records[0]->get_miner();
+    uint64_t credits_diff = records[0]->get_credits() - records[1]->get_credits();
+    block_meta_data.reset_balance_receiver = credits_diff;
+
+    uint64_t credits_sum = get_credits_sum();
+    if (credits_sum)
+        block_meta_data.prop_credits_lost = (double)records[1]->get_credits()/credits_sum;
+    else
+        block_meta_data.prop_credits_lost = 0;
+
+    block_meta_data.shares_per_block = shares_per_block;
+    shares_per_block = 0;
+    records[0]->set_credits(credits_diff);
 }
 
 uint_fast64_t QBRewardScheme::get_credits_sum() {
