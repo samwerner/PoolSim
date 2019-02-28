@@ -69,8 +69,8 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
     last_n_shares.push_back(miner_address);
 
     if (share.is_network_share()) {
-        for (auto iter = last_n_shares.begin(); iter != last_n_shares.end(); ++iter) {
-            auto record = find_record((*iter));
+        for (const std::string& miner_address : last_n_shares) {
+            auto record = find_record(miner_address);
             record->inc_blocks_received(1.0/n);
         }
         block_meta_data.shares_per_block = shares_per_block;
@@ -78,8 +78,8 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
         block_meta_data.miner_address = miner_address;
         block_meta_data.reward_scheme = "PPLNS";
     } else if (share.is_uncle()) {
-            for (auto iter = last_n_shares.begin(); iter != last_n_shares.end(); ++iter) {
-            auto record = find_record((*iter));
+        for (const std::string& miner_address : last_n_shares) {
+            auto record = find_record(miner_address);
             record->inc_uncles_received(1.0/n);
         }
     }
@@ -149,8 +149,8 @@ void QBRewardScheme::reward_top_miner() {
 
 uint_fast64_t QBRewardScheme::get_credits_sum() {
     uint64_t sum = 0;
-    for (auto iter = records.begin(); iter != records.end(); ++iter) {
-        sum += (*iter)->get_credits();
+    for (auto record : records) {
+        sum += record->get_credits();
     }
     return sum;
 }
