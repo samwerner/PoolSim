@@ -18,8 +18,8 @@ $(OBJS): build/%.o: %.cpp
 install:
 	install -d $(PREFIX)/lib
 	install -m 755 $(LIBPOOLSIM) $(PREFIX)/lib/$(notdir $(LIBPOOLSIM))
-	install -d $(PREFIX)/include/libpoolsim
-	install -m 644 $(HEADERS) $(PREFIX)/include/libpoolsim
+	install -d $(PREFIX)/include/poolsim
+	install -m 644 $(HEADERS) $(PREFIX)/include/poolsim
 
 uninstall:
 	rm -f $(PREFIX)/lib/$(notdir $(LIBPOOLSIM))

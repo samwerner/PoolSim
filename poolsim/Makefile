@@ -18,7 +18,7 @@ uninstall:
 $(POOLSIM): $(OBJS)
 	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
 
-$(OBJS): build/%.o: %.cpp
+build/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:

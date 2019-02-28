@@ -6,6 +6,8 @@
 
 #include "simulator.h"
 
+namespace poolsim {
+
 struct CliArgs {
     std::string config_filepath;
     bool debug;
@@ -23,4 +25,6 @@ private:
 };
 
 
-std::shared_ptr<Simulator> get_simulator(std::string config_filepath);
+int run(int argc, char* argv[]);
+
+}

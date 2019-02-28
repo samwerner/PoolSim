@@ -9,6 +9,9 @@
 #include "miner_creator.h"
 
 
+namespace poolsim {
+
+
 Cli::Cli() {
     app = std::make_shared<CLI::App>("PoolSim: Extensible Mining pool simulator");
     args = std::make_shared<CliArgs>();
@@ -34,4 +37,19 @@ int Cli::run(int argc, char* argv[]) {
 
 std::shared_ptr<CLI::App> Cli::get_app() {
     return app;
+}
+
+
+int run(int argc, char **argv) {
+    Cli cli;
+
+    try {
+        cli.run(argc, argv);
+    } catch(const CLI::ParseError &e) {
+        return cli.get_app()->exit(e);
+    }
+
+    return 0;
+}
+
 }
