@@ -1,10 +1,12 @@
+#include <algorithm>
+#include <cassert>
+
 #include "reward_scheme.h"
 #include "miner.h"
 #include "factory.h"
 
 #include "mining_pool.h"
 #include "miner_record.h"
-#include <algorithm>
 
 
 void from_json(const nlohmann::json& j, PPLNSConfig& r) {
@@ -64,23 +66,21 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
     auto miner_record = find_record(miner_address);
     update_record(miner_record, share);
     shares_per_block++;
-    if (n) {
-        last_n_shares.push_back(miner_address);
+    last_n_shares.push_back(miner_address);
 
-        if (share.is_network_share()) {
+    if (share.is_network_share()) {
+        for (auto iter = last_n_shares.begin(); iter != last_n_shares.end(); ++iter) {
+            auto record = find_record((*iter));
+            record->inc_blocks_received(1.0/n);
+        }
+        block_meta_data.shares_per_block = shares_per_block;
+        shares_per_block = 0;
+        block_meta_data.miner_address = miner_address;
+        block_meta_data.reward_scheme = "PPLNS";
+    } else if (share.is_uncle()) {
             for (auto iter = last_n_shares.begin(); iter != last_n_shares.end(); ++iter) {
-                auto record = find_record((*iter));
-                record->inc_blocks_received(1.0/n);
-            }
-            block_meta_data.shares_per_block = shares_per_block;
-            shares_per_block = 0;
-            block_meta_data.miner_address = miner_address;
-            block_meta_data.reward_scheme = "PPLNS";
-        } else if (share.is_uncle()) {
-             for (auto iter = last_n_shares.begin(); iter != last_n_shares.end(); ++iter) {
-                auto record = find_record((*iter));
-                record->inc_uncles_received(1.0/n);
-            }
+            auto record = find_record((*iter));
+            record->inc_uncles_received(1.0/n);
         }
     }
 }
@@ -94,6 +94,7 @@ void PPLNSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const
 }
 
 void PPLNSRewardScheme::set_n(uint64_t _n) {
+    assert(_n > 0);
     n = _n;
 }
 
