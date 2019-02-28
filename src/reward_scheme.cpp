@@ -54,11 +54,8 @@ PPLNSRewardScheme::PPLNSRewardScheme(const nlohmann::json& _args) {
 // TODO: add tests for this
 void PPLNSRewardScheme::insert_share(std::string miner_address) {
     last_n_shares.push_back(miner_address);
-    if (last_n_shares.size() > n) {
-        auto range_begin = last_n_shares.begin();
-        auto range_end = last_n_shares.begin();
-        std::advance(range_end, last_n_shares.size() - n);        
-        last_n_shares.erase(range_begin, range_end);
+    while (last_n_shares.size() > n) {
+        last_n_shares.pop_front();
     }
 }
 
