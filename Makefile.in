@@ -1,0 +1,46 @@
+export POOLSIM := $(SELF_DIR)/build/poolsim
+export LIBPOOLSIM := $(SELF_DIR)/build/libpoolsim.so
+export CXX := g++
+export CXXFLAGS := -std=c++11 -Wall -fPIC -I$(SELF_DIR)/libpoolsim -I$(SELF_DIR)/vendor -L$(SELF_DIR)/build $(EXTRA_CXXFLAGS)
+export LDFLAGS := -pthread
+
+all: $(POOLSIM)
+
+$(POOLSIM): $(LIBPOOLSIM)
+	$(MAKE) -C poolsim
+
+$(LIBPOOLSIM): deps
+	$(MAKE) -C libpoolsim
+
+install:
+	$(MAKE) -C libpoolsim install
+	$(MAKE) -C poolsim install
+	$(MAKE) -C vendor install
+
+uninstall:
+	$(MAKE) -C libpoolsim uninstall
+	$(MAKE) -C poolsim uninstall
+	$(MAKE) -C vendor uninstall
+
+force_uninstall:
+	$(MAKE) -C vendor force_uninstall
+
+deps:
+	$(MAKE) -C vendor
+
+test:  $(LIBPOOLSIM)
+	$(MAKE) -C tests
+
+clean_deps:
+	rm -rf $(DEPS)
+
+clean:
+	$(MAKE) clean -C libpoolsim
+	$(MAKE) clean -C poolsim
+	$(MAKE) clean -C tests
+
+distclean: clean
+	$(MAKE) clean -C vendor
+	rm Makefile
+
+.PHONY: clean $(POOLSIM) $(LIBPOOLSIM) test

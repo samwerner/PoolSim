@@ -16,16 +16,25 @@ make
 make install
 ```
 
-## Build
+## Installation
 
-Running
+The default install location will be `/usr/local`. You can override this
+by passing the `--prefix=/path/to/install` to `./configure`.
+
+Run the following commands to install the simulator.
 
 ```
+./configure --release
 make
+make install
 ```
 
-should build everything into the `build` directory.
-Executable is at `build/poolsim`
+Depending on the location, you may need `sudo` for `make install`.
+Everything can be uninstalled using `make uninstall`.
+
+NOTE: if you get an 'error whild loading shared libraries', try to run
+`ldconfig /path/to/install/lib` after installing.
+
 
 ## Running the simulator
 
@@ -35,12 +44,37 @@ can be found at [config.json](./config.json).
 The simulator can be run with the following command.
 
 ```
-./build/poolsim --config config.json
+poolsim --config config.json
 ```
 
-You can try the `--help` flag for information about other optional flags.
+You can use the `--help` flag for information about other optional flags.
 
-## Development
+## Extending the simulator
+
+To build on top of the project, you can write new share handlers or
+reward schemes and configure them in the configuration file.
+The headers are in `<prefix>/include/poolsim` and a `libpoolsim.so`
+shared library is provided to build on top of.
+
+To compile your custom poolsim binary, you can write a main function like this.
+
+```
+// main.cpp
+#include <poolsim/cli.h>
+// #include "new_share_handler.h"
+// #include "new_reward_scheme.h"
+
+int main(int argc, char* argv[]) {
+    return poolsim::run(argc, argv);
+}
+```
+
+and compile it using
+
+```
+g++ main.cpp -o my-poolsim -lpoolsim
+```
+
 
 ### Implementing a new miner behavior
 
@@ -66,7 +100,7 @@ This is the minimum code to implement a new behavior is as follow.
 ```c++
 // new_share_handler.h
 #include <nlohmann/json.hpp>
-#include "share_handler.h"
+#include <poolsim/share_handler.h>
 
 class NewShareHandler: public BaseShareHandler<NewShareHandler> {
 public:
@@ -97,7 +131,7 @@ Below is the mininum code to create a new reward scheme.
 ```c++
 // new_reward_scehme.h
 #include <nlohmann/json.hpp>
-#include "reward_scheme.h"
+#include <poolsim/reward_scheme.h>
 
 class NewRewardScheme: public BaseRewardScheme<NewRewardScheme> {
 public:
@@ -114,6 +148,19 @@ void NewRewardScheme::handle_share(const std::string& miner_address, const Share
 REGISTER(RewardScheme, NewRewardScheme, "some_name")
 ```
 
+## Contributing
+
+### Development build
+
+Run
+
+```
+./configure
+make
+```
+
+The executable will be at `build/poolsim`.
+
 ### Running the tests
 
 Tests require Google Test and Google Mock.
@@ -124,6 +171,7 @@ make test
 ```
 
 should run and execute the tests.
+
 
 ## Progress
 

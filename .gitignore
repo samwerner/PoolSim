@@ -1,4 +1,7 @@
 *.o
 *.d
-vendor/
+vendor/*
+!vendor/Makefile
 build/
+dist/
+/Makefile
