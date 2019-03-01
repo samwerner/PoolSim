@@ -186,12 +186,12 @@ should run and execute the tests.
     - [x] From distribution
         - [x] Normal distribution
         - [x] Uniform distribution
-- [ ] Result serialization
-    - [ ] Decide what to save and where
-- [ ] Reward schemes
-    - [ ] PPS
-    - [ ] PPLNS
-    - [ ] QB
+- [x] Result serialization
+- [x] Reward schemes
+    - [x] PPS
+    - [x] PPLNS
+    - [x] QB
+    - [x] PROP
 - [ ] Miner behaviors
     - [x] Default
     - [ ] Stop mining
@@ -199,6 +199,5 @@ should run and execute the tests.
 - [ ] Multiple simulations per run
     - [ ] Config file scheme
     - [ ] Simulator implementation
-
 
 [google-test]: https://github.com/google/googletest

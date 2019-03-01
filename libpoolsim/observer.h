@@ -11,8 +11,6 @@ public:
     virtual void process(const T& value) = 0;
 };
 
-
-
 template <typename T>
 class Observable {
 public:
@@ -21,7 +19,6 @@ public:
 private:
     std::vector<std::shared_ptr<Observer<T>>> observers;
 };
-
 
 template <typename T>
 void Observable<T>::add_observer(std::shared_ptr<Observer<T>> observer) {

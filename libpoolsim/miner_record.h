@@ -23,23 +23,28 @@ public:
     void inc_uncles_received();
     // increments total balance of uncles received by miner by specified amount
     void inc_uncles_received(double _uncles);
+    // increments the number of shares submitted by miner during the current round
+    void inc_shares_per_round();
+    // resets the number of shares submitted per round by miner to zero
+    void reset_shares_per_round();
     // returns address of miner to which record belongs
     std::string get_miner() const;
     // returns the number of shares submitted
     uint64_t get_shares_count() const;
-    //
+    // returns the number of uncle blocks mined by the miner
     uint64_t get_uncles_mined() const;
-    //
-    uint64_t get_uncles_received() const;
-    //
+    // returns the number of uncle blocks received by the miner
+    double get_uncles_received() const;
+    // returns the number of full blocks mined by the miner
     uint64_t get_blocks_mined() const;
-    //
-    uint64_t get_blocks_received() const;
-
-    // increment the shares count
+    // returns the number of full blocks received by the miner
+    double get_blocks_received() const;
+    // returns the number of shares submitted by the miner for the current round
+    uint64_t get_shares_per_round() const;
+    // increment the total shares count
     void inc_shares_count();
 protected:
-    uint64_t blocks_mined = 0, uncles_mined = 0, shares_count = 0; 
+    uint64_t blocks_mined = 0, uncles_mined = 0, shares_count = 0, shares_per_round = 0; 
     
     double blocks_received = 0, uncles_received = 0;
 

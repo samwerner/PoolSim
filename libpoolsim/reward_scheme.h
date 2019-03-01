@@ -3,6 +3,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <list>
+#include <map>
 
 #include "share.h"
 #include "factory.h"
@@ -12,8 +13,12 @@ namespace poolsim {
 
 class MiningPool;
 
-struct PPLNSConfig {
-    uint64_t n;
+struct RewardConfig {
+    double pool_fee = 0;
+};
+
+struct PPLNSConfig : RewardConfig {
+    uint64_t n = 0;
 };
 
 struct BlockMetaData {
@@ -46,10 +51,19 @@ public:
     // Returns the mining_pool of this reward scheme as a shared_ptr
     // Use this rather than accessing the weak_ptr property
     std::shared_ptr<MiningPool> get_mining_pool();
+    // sets the pool operator fee (expressed as a perecentage)
+    void set_pool_fee(double _fee);
+
+    // USED FOR TESTING
+    virtual double get_blocks_received(const std::string& miner_address) = 0;
+    virtual uint64_t get_blocks_mined(const std::string& miner_address) = 0;
+
 protected:
     std::weak_ptr<MiningPool> mining_pool;
-
+    // number of shares submitted per block mined (NOT including uncles)
     uint64_t shares_per_block = 0;
+    // the percentage of a block reward taken by the pool operator
+    double pool_fee = 0;    
 };
 
 MAKE_FACTORY(RewardSchemeFactory, RewardScheme, const nlohmann::json&);
@@ -75,6 +89,11 @@ protected:
 
     // stores the meta data associated to the last block mined
     BlockData block_meta_data;
+
+    // USED FOR TESTING
+    virtual double get_blocks_received(const std::string& miner_address) override;
+    virtual uint64_t get_blocks_mined(const std::string& miner_address) override;
+
 };
 
 template <typename T, typename RecordClass, typename BlockData>
@@ -103,6 +122,19 @@ nlohmann::json BaseRewardScheme<T, RecordClass, BlockData>::get_miner_metadata(c
     return j;
 }
 
+// USED FOR TESTING
+template<typename T, typename RecordClass, typename BlockData>
+double BaseRewardScheme<T, RecordClass, BlockData>::get_blocks_received(const std::string& miner_address) {
+    auto record = find_record(miner_address);
+    return record->get_blocks_received();
+}
+
+// USED FOR TESTING
+template<typename T, typename RecordClass, typename BlockData>
+uint64_t BaseRewardScheme<T, RecordClass, BlockData>::get_blocks_mined(const std::string& miner_address) {
+    auto record = find_record(miner_address);
+    return record->get_blocks_mined();
+}
 
 // Pay-per-share reward scheme
 class PPSRewardScheme: public BaseRewardScheme<PPSRewardScheme> {
@@ -110,11 +142,9 @@ public:
     explicit PPSRewardScheme(const nlohmann::json& args);
 
     void handle_share(const std::string& miner_address, const Share& share) override;
-
 private:
     void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
 };
-
 
 // Pay-per-last-n-shares reward scheme
 class PPLNSRewardScheme: public BaseRewardScheme<PPLNSRewardScheme> {
@@ -124,7 +154,8 @@ public:
     void handle_share(const std::string& miner_address, const Share& share) override;
 
     void set_n(uint64_t _n);
-
+    // a flag for showing whether a total of n or more shares have been been submitted
+    bool n_shares_submitted = false;
 private:
     void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
 
@@ -154,7 +185,19 @@ protected:
     uint64_t get_credits_sum();
 };
 
+// Proportional reward scheme
+class PROPRewardScheme: public BaseRewardScheme<PROPRewardScheme> {
+public:
+    explicit PROPRewardScheme(const nlohmann::json& args);
+
+    void handle_share(const std::string& miner_address, const Share& share) override;
+
+private:
+    void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
+};
+
 void from_json(const nlohmann::json& j, PPLNSConfig& r);
+void from_json(const nlohmann::json& j, RewardConfig& r);
 void to_json(nlohmann::json& j, const BlockMetaData& b);
 void to_json(nlohmann::json& j, const QBBlockMetaData& b);
 

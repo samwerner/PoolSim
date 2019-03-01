@@ -58,15 +58,16 @@ void MiningPool::submit_share(const std::string& miner_address, const Share& sha
         flags |= Share::Property::uncle;
     }
     reward_scheme->handle_share(miner_address, Share(flags));
-    if (share.is_network_share()) {
+    if (share.is_valid_block()) {
         BlockEvent block_event {
+            .time = 0,
+            .is_uncle = share.is_uncle(),
             .pool_name = pool_name,
             .miner_address = miner_address,
             .reward_scheme_data = reward_scheme->get_block_metadata()
         };
         notify(block_event);
     }
-    // TODO: record uncle blocks
 }
 
 }

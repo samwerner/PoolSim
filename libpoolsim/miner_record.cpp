@@ -29,7 +29,19 @@ void MinerRecord::inc_uncles_received() {
     uncles_received++;
 }
 
-uint64_t MinerRecord::get_uncles_received() const {
+void MinerRecord::inc_shares_per_round() {
+    shares_per_round++;
+}
+
+void MinerRecord::reset_shares_per_round() {
+    shares_per_round = 0;
+}
+
+uint64_t MinerRecord::get_shares_per_round() const {
+    return shares_per_round;
+}
+
+double MinerRecord::get_uncles_received() const {
     return uncles_received;
 }
 
@@ -41,7 +53,7 @@ uint64_t MinerRecord::get_blocks_mined() const {
     return blocks_mined;
 }
 
-uint64_t MinerRecord::get_blocks_received() const {
+double MinerRecord::get_blocks_received() const {
     return blocks_received;
 }
 

@@ -3,12 +3,13 @@
   "seed": 123,
   "network_difficulty": 10000,
   "pools": [{
-    "uncle_block_prob": 0.001,
+    "uncle_block_prob": 0.75,
     "difficulty": 10,
     "reward_scheme": {
       "type": "pplns",
       "params": {
-          "n": 200
+          "n": 200,
+          "pool_fee": 0
       }
     },
     "miners": {
@@ -19,11 +20,13 @@
       }
     }
   }, {
-    "uncle_block_prob": 0.001,
+    "uncle_block_prob": 0.05,
     "difficulty": 20,
     "reward_scheme": {
       "type": "pps",
-      "params": {}
+      "params": {
+          "pool_fee": 0.05
+      }
     },
     "miners": {
       "generator": "random",

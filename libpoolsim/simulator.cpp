@@ -46,6 +46,8 @@ void Simulator::initialize() {
             s << "pool-" << i;
             pool_name = s.str();
         }
+
+        // TODO: add network difficulty class
         auto pool = MiningPool::create(pool_name, pool_config.difficulty,
                                        pool_config.uncle_block_prob, std::move(reward_scheme));
         pool->add_observer(shared_from_this());
@@ -157,7 +159,9 @@ Event Simulator::get_next_event() const {
 }
 
 void Simulator::process(const BlockEvent& block_event) {
-    block_events.push_back(block_event);
+    BlockEvent block_event_copy = block_event;
+    block_event_copy.time = current_time;
+    block_events.push_back(block_event_copy);
 }
 
 }
