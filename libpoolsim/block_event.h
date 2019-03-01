@@ -7,6 +7,7 @@
 namespace poolsim {
 
 struct BlockEvent {
+    double time;
     std::string pool_name;
     std::string miner_address;
     nlohmann::json reward_scheme_data;

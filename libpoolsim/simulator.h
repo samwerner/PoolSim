@@ -72,7 +72,7 @@ public:
     // Returns the next event
     Event get_next_event() const;
 
-    void process(const BlockEvent& value);
+    void process(const BlockEvent& block_event);
 
 private:
     // Setup of the simulation to run
