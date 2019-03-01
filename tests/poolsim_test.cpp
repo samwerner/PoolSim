@@ -308,8 +308,8 @@ TEST(PPLNSRewardScheme, handle_share) {
     ASSERT_NEAR(pplns->get_blocks_received("miner_C"), 0.3333, 0.0001);
 }
 
-/*
-TEST(PPSRewardScheme, handle_share) {
+
+TEST(PPSRewardScheme, DISABLED_handle_share) {
     auto simulation = Simulation::from_string(pps_simulation_string);
     ASSERT_EQ(simulation.pools.size(), 1);
     auto reward_config = simulation.pools[0].reward_scheme_config;
@@ -344,7 +344,7 @@ TEST(PPSRewardScheme, handle_share) {
     ASSERT_EQ(pps->get_blocks_mined("miner_B"), 1);
     ASSERT_FLOAT_EQ(pps->get_blocks_received("miner_B"), 0.3);
 }
-*/
+
 
 TEST(PROPRewardScheme, handle_share) {
     auto simulation = Simulation::from_string(pps_simulation_string);
