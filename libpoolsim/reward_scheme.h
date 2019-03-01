@@ -22,7 +22,6 @@ struct PPLNSConfig : RewardConfig {
 };
 
 struct BlockMetaData {
-    std::string block_type;
     uint64_t shares_per_block = 0;
 };
 

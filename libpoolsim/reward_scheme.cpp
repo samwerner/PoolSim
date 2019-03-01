@@ -23,13 +23,11 @@ void from_json(const nlohmann::json& j, RewardConfig& r) {
 
 void to_json(nlohmann::json& j, const BlockMetaData& b) {
     j = nlohmann::json{
-        {"block_type", b.block_type},
         {"shares_per_block", b.shares_per_block}
     };
 }
 void to_json(nlohmann::json& j, const QBBlockMetaData& b) {
     j = nlohmann::json{
-        {"block_type", b.block_type},
         {"shares_per_block", b.shares_per_block},
         {"credit_balance_receiver", b.credit_balance_receiver},
         {"receiver_address", b.receiver_address},
@@ -70,11 +68,9 @@ void PPSRewardScheme::handle_share(const std::string& miner_address, const Share
     
     block_meta_data.shares_per_block = shares_per_block;
 
-    if (share.is_network_share()) {
-        block_meta_data.block_type = "normal";
+    if (!share.is_uncle()) {
         shares_per_block = 0;
-    } else if (share.is_uncle())
-        block_meta_data.block_type = "uncle";
+    }
 }
 
 void PPSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
@@ -112,14 +108,12 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
     block_meta_data.shares_per_block = shares_per_block;
 
     if (share.is_network_share()) {
-        block_meta_data.block_type = "normal";
         for (const std::string& miner_address : last_n_shares) {
             auto record = find_record(miner_address);
             record->inc_blocks_received((1.0/last_n_shares.size()));
         }
         shares_per_block = 0;
     } else if (share.is_uncle()) {
-        block_meta_data.block_type = "uncle";
         for (const std::string& miner_address : last_n_shares) {
             auto record = find_record(miner_address);
             record->inc_uncles_received(1.0/last_n_shares.size());
@@ -211,12 +205,9 @@ void QBRewardScheme::handle_share(const std::string& miner_address, const Share&
     block_meta_data.shares_per_block = shares_per_block;
 
     if (share.is_network_share()) {
-        block_meta_data.block_type = "normal";
         this->reward_top_miner();
     } else if (share.is_uncle()) {
-        block_meta_data.block_type = "uncle";
         // TODO: decide on uncle reward scheme
-
     }
 }
 
@@ -246,7 +237,6 @@ void PROPRewardScheme::handle_share(const std::string& miner_address, const Shar
     block_meta_data.shares_per_block = shares_per_block;
 
     if (share.is_network_share()) {
-        block_meta_data.block_type = "normal";
         for (auto miner_record : records) {
             double reward = 1.0*(miner_record->get_shares_per_round()/(double)shares_per_block);
             miner_record->inc_blocks_received(reward);
@@ -254,7 +244,6 @@ void PROPRewardScheme::handle_share(const std::string& miner_address, const Shar
         }
         shares_per_block = 0;
     } else if (share.is_uncle()) {
-        block_meta_data.block_type = "uncle";
         // TODO: add uncle logic
     }
 }
