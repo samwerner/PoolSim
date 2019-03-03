@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 
 #include "simulator.h"
+#include "network.h"
 #include "reward_scheme.h"
 #include "miner.h"
 #include "event.h"
@@ -17,10 +18,11 @@ using nlohmann::json;
 
 
 Simulator::Simulator(Simulation _simulation)
-  : Simulator(_simulation, SystemRandom::get_instance()) {}
+    : Simulator(_simulation, SystemRandom::get_instance()) {}
 
 Simulator::Simulator(Simulation _simulation, std::shared_ptr<Random> _random)
-  : simulation(_simulation), random(_random), current_time(0), blocks_mined(0) {}
+    : simulation(_simulation), network(std::make_shared<Network>(_simulation.network_difficulty)),
+      random(_random), current_time(0), blocks_mined(0) {}
 
 std::shared_ptr<Simulator> Simulator::from_config_file(const std::string& filepath) {
     auto simulation = Simulation::from_config_file(filepath);
@@ -36,7 +38,7 @@ void Simulator::initialize() {
         auto pool_config = simulation.pools[i];
         auto miner_config = pool_config.miner_config;
         auto reward_scheme_config = pool_config.reward_scheme_config;
-        auto miner_creator = MinerCreatorFactory::create(miner_config.generator);
+        auto miner_creator = MinerCreatorFactory::create(miner_config.generator, network);
         auto new_miners = miner_creator->create_miners(miner_config.params);
         auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
                                                         reward_scheme_config.params);
@@ -47,9 +49,12 @@ void Simulator::initialize() {
             pool_name = s.str();
         }
 
-        // TODO: add network difficulty class
-        auto pool = MiningPool::create(pool_name, pool_config.difficulty,
-                                       pool_config.uncle_block_prob, std::move(reward_scheme));
+        auto pool = MiningPool::create(pool_name,
+                                       pool_config.difficulty,
+                                       pool_config.uncle_block_prob,
+                                       std::move(reward_scheme),
+                                       network);
+        network->register_pool(pool);
         pool->add_observer(shared_from_this());
         for (auto miner : new_miners) {
             miner->join_pool(pool);
@@ -132,6 +137,10 @@ void Simulator::add_pool(std::shared_ptr<MiningPool> pool) {
 
 std::shared_ptr<Miner> Simulator::get_miner(const std::string& miner_address) {
   return miners[miner_address];
+}
+
+std::shared_ptr<Network> Simulator::get_network() const {
+    return network;
 }
 
 double Simulator::get_current_time() const {

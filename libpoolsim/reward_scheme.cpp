@@ -75,7 +75,8 @@ void PPSRewardScheme::handle_share(const std::string& miner_address, const Share
 
 void PPSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
     record->inc_shares_count();
-    //TODO: get network difficulty
+    //TODO: use network difficulty
+    uint64_t network_difficulty = get_mining_pool()->get_network()->get_difficulty();
     double p = get_mining_pool()->get_difficulty();
     record->inc_blocks_received((1-pool_fee)*p);
 }

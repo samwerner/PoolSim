@@ -5,6 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "miner.h"
+#include "network.h"
 #include "random.h"
 #include "factory.h"
 
@@ -48,25 +49,29 @@ private:
 
 class MinerCreator {
 public:
-  MinerCreator();
-  explicit MinerCreator(std::shared_ptr<Random> _random);
-  virtual std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) = 0;
+    explicit MinerCreator(std::shared_ptr<Network> network);
+    MinerCreator(std::shared_ptr<Network> network, std::shared_ptr<Random> _random);
+    virtual std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) = 0;
 protected:
-  std::shared_ptr<Random> random;
+    std::shared_ptr<Network> network;
+    std::shared_ptr<Random> random;
 };
 
-class CSVMinerCreator : public MinerCreator, public Creatable0<MinerCreator, CSVMinerCreator> {
+class CSVMinerCreator : public MinerCreator,
+                        public Creatable1<MinerCreator, CSVMinerCreator, std::shared_ptr<Network>> {
 public:
-  std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
+    explicit CSVMinerCreator(std::shared_ptr<Network> network);
+    std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
 };
 
 class RandomMinerCreator : public MinerCreator,
-                           public Creatable0<MinerCreator, RandomMinerCreator> {
+                           public Creatable1<MinerCreator, RandomMinerCreator, std::shared_ptr<Network>> {
 public:
-  std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
+    explicit RandomMinerCreator(std::shared_ptr<Network> network);
+    std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
 };
 
 
-MAKE_FACTORY(MinerCreatorFactory, MinerCreator)
+MAKE_FACTORY(MinerCreatorFactory, MinerCreator, std::shared_ptr<Network>)
 
 }

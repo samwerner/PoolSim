@@ -30,9 +30,15 @@ bool MinersCountStopCondition::should_stop(const MinerCreationState& state) {
 REGISTER(MinerCreatorStopCondition, MinersCountStopCondition, "miners_count")
 
 
-MinerCreator::MinerCreator() : MinerCreator(SystemRandom::get_instance()) {}
-MinerCreator::MinerCreator(std::shared_ptr<Random> _random)
-  : random(_random) {}
+MinerCreator::MinerCreator(std::shared_ptr<Network> network)
+    : MinerCreator(network, SystemRandom::get_instance()) {}
+MinerCreator::MinerCreator(std::shared_ptr<Network> _network, std::shared_ptr<Random> _random)
+    : network(_network), random(_random) {}
+
+
+CSVMinerCreator::CSVMinerCreator(std::shared_ptr<Network> network)
+    : MinerCreator(network) {}
+
 
 std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohmann::json& args) {
   std::vector<std::shared_ptr<Miner>> miners;
@@ -48,7 +54,7 @@ std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohman
     }
     auto behavior_params = args["behavior"].value("params", json());
     auto share_handler = ShareHandlerFactory::create(behavior_name, behavior_params);
-    auto miner = Miner::create(address, hashrate, std::move(share_handler));
+    auto miner = Miner::create(address, hashrate, std::move(share_handler), network);
     miners.push_back(miner);
     behavior_name.clear();
   }
@@ -58,6 +64,9 @@ std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohman
 
 REGISTER(MinerCreator, CSVMinerCreator, "csv")
 
+
+RandomMinerCreator::RandomMinerCreator(std::shared_ptr<Network> network)
+    : MinerCreator(network) {}
 
 std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nlohmann::json& args) {
   std::vector<std::shared_ptr<Miner>> miners;
@@ -74,7 +83,7 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
     std::string address = random->get_address();
     auto behavior_params = args["behavior"].value("params", json());
     auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"], behavior_params);
-    auto miner = Miner::create(address, hashrate, std::move(share_handler));
+    auto miner = Miner::create(address, hashrate, std::move(share_handler), network);
     miners.push_back(miner);
     state.miners_count++;
     state.total_hashrate += hashrate;

@@ -6,30 +6,38 @@ namespace poolsim {
 
 std::shared_ptr<MiningPool> MiningPool::create(
     const std::string& name,
-    uint64_t difficulty, double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme) {
-  return create(name, difficulty, uncle_prob, std::move(reward_scheme), SystemRandom::get_instance());
-}
-
-std::shared_ptr<MiningPool> MiningPool::create(
-    const std::string& name,
-    uint64_t difficulty, double uncle_prob,
+    uint64_t difficulty,
+    double uncle_prob,
     std::unique_ptr<RewardScheme> reward_scheme,
-    std::shared_ptr<Random> random) {
-  auto mining_pool = std::shared_ptr<MiningPool>(new MiningPool(name, difficulty, uncle_prob, random));
-  if (reward_scheme == nullptr) {
-    throw std::invalid_argument("reward_scheme cannot be null");
-  }
-  mining_pool->set_reward_scheme(std::move(reward_scheme));
-  return mining_pool;
+    std::shared_ptr<Network> network
+) {
+    return create(name, difficulty, uncle_prob, std::move(reward_scheme), network, SystemRandom::get_instance());
 }
 
-MiningPool::MiningPool(const std::string& name, uint64_t _difficulty,
-                       double _uncle_prob, std::shared_ptr<Random> _random)
-  : pool_name(name), difficulty(_difficulty), uncle_prob(_uncle_prob), random(_random) {}
+std::shared_ptr<MiningPool> MiningPool::create(const std::string& name,
+                                               uint64_t difficulty, double uncle_prob,
+                                               std::unique_ptr<RewardScheme> reward_scheme,
+                                               std::shared_ptr<Network> network,
+                                               std::shared_ptr<Random> random) {
+    auto mining_pool = std::shared_ptr<MiningPool>(new MiningPool(name, difficulty, uncle_prob, network, random));
+    if (reward_scheme == nullptr) {
+        throw std::invalid_argument("reward_scheme cannot be null");
+    }
+    mining_pool->set_reward_scheme(std::move(reward_scheme));
+    return mining_pool;
+}
+
+MiningPool::MiningPool(const std::string& name,
+                       uint64_t _difficulty,
+                       double _uncle_prob,
+                       std::shared_ptr<Network> _network,
+                       std::shared_ptr<Random> _random)
+    : pool_name(name), difficulty(_difficulty), uncle_prob(_uncle_prob),
+      network(_network), random(_random) {}
 
 void MiningPool::set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme) {
-  reward_scheme = std::move(_reward_scheme);
-  reward_scheme->set_mining_pool(shared_from_this());
+    reward_scheme = std::move(_reward_scheme);
+    reward_scheme->set_mining_pool(shared_from_this());
 }
 
 void MiningPool::join(const std::string& miner_address) {
@@ -42,6 +50,10 @@ void MiningPool::leave(const std::string& miner_address) {
 
 std::set<std::string> MiningPool::get_miners() {
   return miners;
+}
+
+std::shared_ptr<Network> MiningPool::get_network() const {
+    return network.lock();
 }
 
 uint64_t MiningPool::get_difficulty() const {

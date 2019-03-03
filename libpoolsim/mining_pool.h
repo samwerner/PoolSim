@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "reward_scheme.h"
+#include "network.h"
 #include "share.h"
 #include "random.h"
 #include "observer.h"
@@ -18,12 +19,19 @@ class MiningPool : public std::enable_shared_from_this<MiningPool>,
                    public Observable<BlockEvent> {
 public:
     static std::shared_ptr<MiningPool> create(
-        const std::string& name, uint64_t difficulty,
-        double uncle_prob, std::unique_ptr<RewardScheme> reward_scheme);
+        const std::string& name,
+        uint64_t difficulty,
+        double uncle_prob,
+        std::unique_ptr<RewardScheme> reward_scheme,
+        std::shared_ptr<Network> network);
 
     static std::shared_ptr<MiningPool> create(
-        const std::string& name, uint64_t difficulty, double uncle_prob,
-        std::unique_ptr<RewardScheme> reward_scheme, std::shared_ptr<Random> random);
+        const std::string& name,
+        uint64_t difficulty,
+        double uncle_prob,
+        std::unique_ptr<RewardScheme> reward_scheme,
+        std::shared_ptr<Network> network,
+        std::shared_ptr<Random> random);
 
     // Returns all the miners currently in the pool
     std::set<std::string> get_miners();
@@ -33,6 +41,9 @@ public:
 
     // Returns the share difficulty of the pool
     uint64_t get_difficulty() const;
+
+    // Returns the network instance
+    std::shared_ptr<Network> get_network() const;
 
     // Submit a share to the pool
     // The share can be either a network share or a pool share
@@ -53,7 +64,9 @@ public:
 
 protected:
     MiningPool(const std::string& name, uint64_t difficulty,
-               double uncle_prob, std::shared_ptr<Random> random);
+               double uncle_prob,
+               std::shared_ptr<Network> network,
+               std::shared_ptr<Random> random);
 
 private:
     // name of pool
@@ -68,6 +81,8 @@ private:
     std::unique_ptr<RewardScheme> reward_scheme;
     // total blocks mined by miners in pool
     unsigned long blocks_mined;
+    // Information about network
+    std::weak_ptr<Network> network;
     // Random instance
     std::shared_ptr<Random> random;
 };

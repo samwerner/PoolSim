@@ -69,6 +69,9 @@ public:
     // Returns the numbers of scheduled events
     size_t get_events_count() const;
 
+    // Returns the network instance
+    std::shared_ptr<Network> get_network() const;
+
     // Returns the next event
     Event get_next_event() const;
 
@@ -80,6 +83,9 @@ private:
 
     // List of block events
     std::vector<BlockEvent> block_events;
+
+    // Information about the network
+    std::shared_ptr<Network> network;
 
     // Interface able to return random numbers
     // used mostly for testing purposes
