@@ -6,15 +6,16 @@
 namespace poolsim {
 
 
-Miner::Miner(std::string _address, double _hashrate)
-  : address(_address), hashrate(_hashrate) {}
+Miner::Miner(std::string _address, double _hashrate, std::shared_ptr<Network> _network)
+  : address(_address), hashrate(_hashrate), network(_network) {}
 
 std::shared_ptr<Miner> Miner::create(std::string address, double hashrate,
-                    std::unique_ptr<ShareHandler> handler) {
+                    std::unique_ptr<ShareHandler> handler,
+                    std::shared_ptr<Network> network) {
   if (handler == nullptr) {
     throw std::invalid_argument("handler cannot be null");
   }
-  auto miner = std::shared_ptr<Miner>(new Miner(address, hashrate));
+  auto miner = std::shared_ptr<Miner>(new Miner(address, hashrate, network));
   miner->set_handler(std::move(handler));
   return miner;
 }
@@ -25,6 +26,10 @@ double Miner::get_hashrate() const { return hashrate; }
 
 std::shared_ptr<MiningPool> Miner::get_pool() const {
   return pool.lock();
+}
+
+std::shared_ptr<Network> Miner::get_network() const {
+    return network.lock();
 }
 
 void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
