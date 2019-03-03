@@ -23,6 +23,7 @@ struct PPLNSConfig : RewardConfig {
 
 struct BlockMetaData {
     uint64_t shares_per_block = 0;
+    double pool_luck = 0;
 };
 
 struct QBBlockMetaData : BlockMetaData {
@@ -42,11 +43,14 @@ public:
     // RewardScheme and MiningPool should be a 1 to 1 relationship
     void set_mining_pool(std::shared_ptr<MiningPool> mining_pool);
 
-    // returns the metadata needed when a block has been mined
+    // returns the metadata of the last block mined (including uncle blocks)
     virtual nlohmann::json get_block_metadata() = 0;
 
     // returns the metadata for a miner
     virtual nlohmann::json get_miner_metadata(const std::string& miner_address) = 0;
+
+    // returns the name of the reward scheme
+    virtual std::string get_scheme_name() const = 0;
 
     // Returns the mining_pool of this reward scheme as a shared_ptr
     // Use this rather than accessing the weak_ptr property
@@ -54,11 +58,17 @@ public:
     // sets the pool operator fee (expressed as a perecentage)
     void set_pool_fee(double _fee);
 
+    // returns the luck of the mining pool for the current round
+    double get_pool_luck();
+
     // USED FOR TESTING
     virtual double get_blocks_received(const std::string& miner_address) = 0;
     virtual uint64_t get_blocks_mined(const std::string& miner_address) = 0;
 
 protected:
+    // logic for distributing uncle block reward in pool
+    virtual void handle_uncle(const std::string& miner_address) = 0;
+    
     std::weak_ptr<MiningPool> mining_pool;
     // number of shares submitted per block mined (NOT including uncles)
     uint64_t shares_per_block = 0;
@@ -87,13 +97,12 @@ protected:
     // returns record of a miner if it exists, otherwise a new record is created and returned
     std::shared_ptr<RecordClass> find_record(const std::string& miner_address);
 
-    // stores the meta data associated to the last block mined
+    //stores the meta data associated to the last block mined
     BlockData block_meta_data;
-
+    
     // USED FOR TESTING
     virtual double get_blocks_received(const std::string& miner_address) override;
     virtual uint64_t get_blocks_mined(const std::string& miner_address) override;
-
 };
 
 template <typename T, typename RecordClass, typename BlockData>
@@ -141,8 +150,12 @@ class PPSRewardScheme: public BaseRewardScheme<PPSRewardScheme> {
 public:
     explicit PPSRewardScheme(const nlohmann::json& args);
 
+    std::string get_scheme_name() const override;
+
     void handle_share(const std::string& miner_address, const Share& share) override;
 private:
+    void handle_uncle(const std::string& miner_address) override;
+
     void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
 };
 
@@ -151,12 +164,16 @@ class PPLNSRewardScheme: public BaseRewardScheme<PPLNSRewardScheme> {
 public:
     explicit PPLNSRewardScheme(const nlohmann::json& args);
 
+    std::string get_scheme_name() const override;
+
     void handle_share(const std::string& miner_address, const Share& share) override;
 
     void set_n(uint64_t _n);
     // a flag for showing whether a total of n or more shares have been been submitted
     bool n_shares_submitted = false;
 private:
+    void handle_uncle(const std::string& miner_address) override;
+    
     void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
 
     // the number of last shares over which a reward will be distributed
@@ -172,11 +189,14 @@ class QBRewardScheme: public BaseRewardScheme<QBRewardScheme, QBRecord, QBBlockM
 public:
     explicit QBRewardScheme(const nlohmann::json& args);
 
+    std::string get_scheme_name() const override;
+
     void handle_share(const std::string& miner_address, const Share& share) override;
     
     uint64_t get_credits(const std::string& miner_address);
 
 protected:
+    void handle_uncle(const std::string& miner_address) override;
     // updates stats of top miner in pool and resets the top miners credits
     void reward_top_miner();
     // updates the given record based on the type of share accordingly 
@@ -190,9 +210,13 @@ class PROPRewardScheme: public BaseRewardScheme<PROPRewardScheme> {
 public:
     explicit PROPRewardScheme(const nlohmann::json& args);
 
+    std::string get_scheme_name() const override;
+
     void handle_share(const std::string& miner_address, const Share& share) override;
 
 private:
+    void handle_uncle(const std::string& miner_address) override;   
+    
     void update_record(std::shared_ptr<MinerRecord> record, const Share& share) override;
 };
 

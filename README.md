@@ -194,8 +194,9 @@ should run and execute the tests.
     - [x] PROP
 - [ ] Miner behaviors
     - [x] Default
-    - [ ] Stop mining
-    - [ ] Donate
+    - [ ] Withholding of valid shares (block withholding) 
+    - [ ] Stop submission of shares
+    - [ ] Donation of shares to a different address
 - [ ] Multiple simulations per run
     - [ ] Config file scheme
     - [ ] Simulator implementation

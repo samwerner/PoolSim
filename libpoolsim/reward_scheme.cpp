@@ -15,20 +15,23 @@ void from_json(const nlohmann::json& j, PPLNSConfig& r) {
     if (j.find("pool_fee") != j.end())
         j.at("pool_fee").get_to(r.pool_fee);
 }
-
 void from_json(const nlohmann::json& j, RewardConfig& r) {
+
     if (j.find("pool_fee") != j.end())
         j.at("pool_fee").get_to(r.pool_fee);
 }
 
 void to_json(nlohmann::json& j, const BlockMetaData& b) {
     j = nlohmann::json{
-        {"shares_per_block", b.shares_per_block}
+        {"shares_per_block", b.shares_per_block},
+        {"pool_luck", b.pool_luck}
     };
 }
+
 void to_json(nlohmann::json& j, const QBBlockMetaData& b) {
     j = nlohmann::json{
         {"shares_per_block", b.shares_per_block},
+        {"pool_luck", b.pool_luck},
         {"credit_balance_receiver", b.credit_balance_receiver},
         {"receiver_address", b.receiver_address},
         {"reset_balance_receiver", b.reset_balance_receiver},
@@ -51,12 +54,27 @@ std::shared_ptr<MiningPool> RewardScheme::get_mining_pool() {
   return mining_pool.lock();
 }
 
+double RewardScheme::get_pool_luck() {
+    if (shares_per_block == 0) {
+        return 0.0;
+    }
+    auto pool = get_mining_pool();
+    uint64_t network_difficulty = get_mining_pool()->get_network()->get_difficulty();
+    double exp_shares_per_block = (double)network_difficulty/pool->get_difficulty();
+    double pool_luck = (exp_shares_per_block / shares_per_block) * 100.0; 
+
+    return pool_luck;
+}
+
+std::string PPSRewardScheme::get_scheme_name() const {
+    return "PPS";
+}
+
 PPSRewardScheme::PPSRewardScheme(const nlohmann::json& _args) {
     RewardConfig pps_config;
     from_json(_args, pps_config);
     set_pool_fee(pps_config.pool_fee);
 }
-  
 
 void PPSRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
    shares_per_block++;
@@ -67,21 +85,37 @@ void PPSRewardScheme::handle_share(const std::string& miner_address, const Share
         return;
     
     block_meta_data.shares_per_block = shares_per_block;
+    block_meta_data.pool_luck = get_pool_luck();
 
     if (!share.is_uncle()) {
+        record->inc_blocks_mined();
         shares_per_block = 0;
+        return;
     }
+
+    handle_uncle(miner_address);
+    record->inc_uncles_mined();
+
+}
+
+void PPSRewardScheme::handle_uncle(const std::string& miner_address) {
+
+
 }
 
 void PPSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
     record->inc_shares_count();
-    //TODO: use network difficulty
     uint64_t network_difficulty = get_mining_pool()->get_network()->get_difficulty();
-    double p = get_mining_pool()->get_difficulty();
+    double p = get_mining_pool()->get_difficulty()/(double)network_difficulty;
     record->inc_blocks_received((1-pool_fee)*p);
 }
 
 REGISTER(RewardScheme, PPSRewardScheme, "pps")
+
+
+std::string PPLNSRewardScheme::get_scheme_name() const {
+    return "PPLNS";
+}
 
 PPLNSRewardScheme::PPLNSRewardScheme(const nlohmann::json& _args) {
     PPLNSConfig pplns_config;
@@ -107,6 +141,7 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
         return;
 
     block_meta_data.shares_per_block = shares_per_block;
+    block_meta_data.pool_luck = get_pool_luck();
 
     if (share.is_network_share()) {
         for (const std::string& miner_address : last_n_shares) {
@@ -135,9 +170,16 @@ void PPLNSRewardScheme::set_n(uint64_t _n) {
     n = _n;
 }
 
+void PPLNSRewardScheme::handle_uncle(const std::string& miner_address) {
+
+
+}
 
 REGISTER(RewardScheme, PPLNSRewardScheme, "pplns")
 
+std::string QBRewardScheme::get_scheme_name() const {
+    return "QB";
+}
 
 QBRewardScheme::QBRewardScheme(const nlohmann::json& _args) {
     RewardConfig qb_config;
@@ -204,11 +246,12 @@ void QBRewardScheme::handle_share(const std::string& miner_address, const Share&
         return;
     
     block_meta_data.shares_per_block = shares_per_block;
+    block_meta_data.pool_luck = get_pool_luck();
 
     if (share.is_network_share()) {
         this->reward_top_miner();
     } else if (share.is_uncle()) {
-        // TODO: decide on uncle reward scheme
+        handle_uncle(miner_address);
     }
 }
 
@@ -217,8 +260,15 @@ uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
     return record->get_credits();
 }
 
+void QBRewardScheme::handle_uncle(const std::string& miner_address) {
+
+}
 
 REGISTER(RewardScheme, QBRewardScheme, "qb")
+
+std::string PROPRewardScheme::get_scheme_name() const {
+    return "PROP";
+}
 
 PROPRewardScheme::PROPRewardScheme(const nlohmann::json& _args) {
     RewardConfig prop_config;
@@ -226,7 +276,6 @@ PROPRewardScheme::PROPRewardScheme(const nlohmann::json& _args) {
     set_pool_fee(prop_config.pool_fee);
 }
 
-// TODO: add test
 void PROPRewardScheme::handle_share(const std::string& miner_address, const Share& share) {
     shares_per_block++;
     auto record = find_record(miner_address);
@@ -236,6 +285,7 @@ void PROPRewardScheme::handle_share(const std::string& miner_address, const Shar
         return;
 
     block_meta_data.shares_per_block = shares_per_block;
+    block_meta_data.pool_luck = get_pool_luck();
 
     if (share.is_network_share()) {
         for (auto miner_record : records) {
@@ -245,14 +295,30 @@ void PROPRewardScheme::handle_share(const std::string& miner_address, const Shar
         }
         shares_per_block = 0;
     } else if (share.is_uncle()) {
-        // TODO: add uncle logic
+        handle_uncle(miner_address);
     }
 }
 
-//TODO: add test
+void PROPRewardScheme::handle_uncle(const std::string& miner_address) {
+    for (auto record : records) {
+        double reward = 1.0*(record->get_shares_per_round()/(double)shares_per_block);
+        record->inc_uncles_received(reward);
+    }
+}
+
 void PROPRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
     record->inc_shares_count();
     record->inc_shares_per_round();
+
+    if (!share.is_valid_block())
+        return;
+
+    if (share.is_uncle()) {
+        record->inc_uncles_mined();
+        return;
+    }
+
+    record->inc_blocks_mined();
 }
 
 REGISTER(RewardScheme, PROPRewardScheme, "prop")

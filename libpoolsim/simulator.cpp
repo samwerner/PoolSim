@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <cassert>
 
 #include <spdlog/spdlog.h>
 
@@ -48,7 +49,8 @@ void Simulator::initialize() {
             s << "pool-" << i;
             pool_name = s.str();
         }
-
+        
+        assert(pool_config.difficulty);
         auto pool = MiningPool::create(pool_name,
                                        pool_config.difficulty,
                                        pool_config.uncle_block_prob,
@@ -84,11 +86,22 @@ void Simulator::run() {
 
 void Simulator::save_simulation_data(const std::string& filepath) {
     json result;
-    json blocks = json::array();
+
+    result["blocks"] = json::array();
     for (auto block : block_events) {
-        blocks.push_back(block);
+        result["blocks"].push_back(block);
     }
-    result["blocks"] = blocks;
+
+    result["pools"] = json::array();
+    for (auto pool : pools) {
+        result["pools"].push_back(*pool);
+    }
+
+    result["miners"] = json::array();
+    for (auto miner_kv : miners) {
+        result["miners"].push_back(*miner_kv.second);
+    }
+
     std::ofstream o(filepath);
     o << std::setw(4) << result << std::endl;
 }
