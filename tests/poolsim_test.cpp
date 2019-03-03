@@ -13,6 +13,9 @@
 #include "miner_record.h"
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <vector>
+#include <iterator>
+
 
 using namespace poolsim;
 
@@ -179,6 +182,15 @@ TEST(SystemRandom, get_address) {
     auto address = SystemRandom::get_instance()->get_address();
     ASSERT_EQ(address.size(), 42);
     ASSERT_THAT(address, testing::MatchesRegex("0x[0-9a-f]{40}"));
+}
+
+TEST(RandomSample, random_element) {
+    std::vector<std::shared_ptr<MinerRecord>> records;
+    for (size_t i = 0; i < 3; i++) {
+        records.push_back(std::make_shared<MinerRecord>("SomeMiner_"+std::to_string(1)));
+    }
+    std::shared_ptr<MinerRecord> s = sample_element(records.begin(), records.end());
+    records.clear();
 }
 
 TEST(Share, equality) {

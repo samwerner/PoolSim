@@ -2,12 +2,24 @@
 
 #include <random>
 #include <memory>
+#include <iterator>
 
 #include "factory.h"
-
 #include <nlohmann/json.hpp>
 
 namespace poolsim {
+
+// returns a random element from a container
+template <typename T>
+T random_element(T begin, T end) {
+    const uint64_t n = std::distance(begin, end);
+    const uint64_t divisor = (RAND_MAX + 1)/n;
+    
+    uint64_t k;
+    do { k = std::rand() / divisor; } while (k >= n);
+    std::advance(begin, k);
+    return begin;
+}
 
 // Exception thrown if the Random class
 // has not yet been initialized exactly once

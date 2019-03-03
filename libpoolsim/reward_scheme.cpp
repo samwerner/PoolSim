@@ -95,12 +95,10 @@ void PPSRewardScheme::handle_share(const std::string& miner_address, const Share
 
     handle_uncle(miner_address);
     record->inc_uncles_mined();
-
 }
 
 void PPSRewardScheme::handle_uncle(const std::string& miner_address) {
-
-
+    // Not relevant for a traditional PPS scheme, as all shares are paid for directly by the pool
 }
 
 void PPSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
@@ -261,7 +259,7 @@ uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
 }
 
 void QBRewardScheme::handle_uncle(const std::string& miner_address) {
-
+    
 }
 
 REGISTER(RewardScheme, QBRewardScheme, "qb")
