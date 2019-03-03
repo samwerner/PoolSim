@@ -50,4 +50,6 @@ private:
     std::weak_ptr<Network> network;
 };
 
+void to_json(nlohmann::json& j, const Miner& data);
+
 }

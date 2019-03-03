@@ -39,14 +39,12 @@ echo "export PREFIX = $prefix" >> Makefile
 
 echo "export RELEASE = $release" >> Makefile
 
-if [ "$release" = "false" ]; then
-    extra_cxxflags="$extra_cxxflags -Wl,-rpath,\$(SELF_DIR)/build"
-elif [ "$release" = "true" ]; then
+if [ "$release" = "true" ]; then
     extra_cxxflags="$extra_cxxflags -O2"
 fi
 
 if [ "$debug" = "true" ] || { [ "$debug" = "default" ] && [ "$release" = "false" ]; }; then
-    extra_cxxflags="$extra_cxxflags -g -DDEBUG=1"
+    extra_cxxflags="$extra_cxxflags -g -DDEBUG=1 -Wl,-rpath,\$(SELF_DIR)/build"
 fi
 
 echo "EXTRA_CXXFLAGS=$extra_cxxflags" >> Makefile

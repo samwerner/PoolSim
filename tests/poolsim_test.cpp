@@ -36,6 +36,23 @@ const std::string pplns_simulation_string = R"({
   }]
 })";
 
+const std::string qb_simulation_string = R"({
+  "blocks": 5,
+  "network_difficulty": 1000,
+  "pools": [{
+    "uncle_block_prob": 0.05,
+    "difficulty": 100,
+    "reward_scheme": {
+        "type": "qb", "params": {}
+    },
+    "miners": {
+      "behavior": {"name": "default", "params": {}},
+      "generator": "csv",
+      "params": {"path": "miners.csv"}
+    }
+  }]
+})";
+
 const std::string pps_simulation_string = R"({
   "blocks": 5,
   "network_difficulty": 100,
@@ -113,6 +130,8 @@ public:
     MOCK_METHOD1(get_miner_metadata, nlohmann::json (const std::string&));
     MOCK_METHOD1(get_blocks_mined, uint64_t (const std::string&));
     MOCK_METHOD1(get_blocks_received, double (const std::string&));
+    MOCK_METHOD1(handle_uncle, void(const std::string& miner_address));
+    std::string get_scheme_name() const override { return "mock"; }
 };
 
 Simulation get_sample_simulation() {
@@ -195,15 +214,62 @@ TEST(Simulation, from_string) {
 }
 
 TEST(Network, setters_getters) {
-    Network network(100);
-    ASSERT_EQ(network.get_difficulty(), 100);
-    ASSERT_EQ(network.get_pools().size(), 0);
-    auto pool1 = MiningPool::create("pool1", 100, 0.001, get_mock_reward_scheme(), get_sample_network());
-    auto pool2 = MiningPool::create("pool2", 100, 0.001, get_mock_reward_scheme(), get_sample_network());
-    network.register_pool(pool1);
-    network.register_pool(pool2);
-    ASSERT_EQ(network.get_pools().size(), 2);
-    ASSERT_EQ(network.get_pools()[0], pool1);
+    auto network = std::make_shared<Network>(1000);
+    ASSERT_EQ(network->get_difficulty(), 1000);
+    ASSERT_EQ(network->get_pools().size(), 0);
+    auto pool1 = MiningPool::create("pool1", 100, 0.001, get_mock_reward_scheme(), network);
+    auto pool2 = MiningPool::create("pool2", 100, 0.001, get_mock_reward_scheme(), network);
+    network->register_pool(pool1);
+    network->register_pool(pool2);
+    ASSERT_EQ(pool1->get_network()->get_difficulty(), 1000);
+    ASSERT_EQ(network->get_pools().size(), 2);
+    ASSERT_EQ(network->get_pools()[0], pool1);
+}
+
+TEST(RewardScheme, get_pool_luck) {
+    
+    auto simulation = Simulation::from_string(qb_simulation_string);
+    ASSERT_EQ(simulation.pools.size(), 1);
+    auto reward_config = simulation.pools[0].reward_scheme_config;
+    ASSERT_EQ(reward_config.scheme_type, "qb");
+    auto params = reward_config.params;
+   
+    nlohmann::json j;
+    std::unique_ptr<QBRewardScheme> qb_ptr = std::unique_ptr<QBRewardScheme>(new QBRewardScheme(j));
+    auto base_ptr = RewardSchemeFactory::create(reward_config.scheme_type, reward_config.params);
+    auto qb = qb_ptr.get();
+
+    auto pool = simulation.pools[0];
+    auto network = std::make_shared<Network>(simulation.network_difficulty);
+    auto mining_pool = MiningPool::create("pool", pool.difficulty, pool.uncle_block_prob, std::move(qb_ptr), network);
+
+    ASSERT_EQ(mining_pool->get_network()->get_difficulty(), 1000);
+    ASSERT_EQ(mining_pool->get_difficulty(), 100);
+
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 0.0);
+    for (size_t i = 0; i < 5; i++) {
+        qb->handle_share("miner_A", Share(Share::Property::none));
+    }
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 200.0);
+
+    for (size_t i = 0; i < 5; i++) {
+        qb->handle_share("miner_A", Share(Share::Property::none));
+    }
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 100.0);
+    
+    for (size_t i = 0; i < 10; i++) {
+        qb->handle_share("miner_A", Share(Share::Property::none));
+    }
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 50.0);
+
+    qb->handle_share("miner_A", Share(Share::Property::valid_block));
+
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 0.0);
+
+    for (size_t i = 0; i < 5; i++) {
+        qb->handle_share("miner_A", Share(Share::Property::none));
+    }
+    ASSERT_FLOAT_EQ(qb->get_pool_luck(), 200.0);
 }
 
 TEST(Miner, getters) {
@@ -249,41 +315,49 @@ TEST(MiningPool, submit_share) {
 }
 
 TEST(QBRewardScheme, update_record) {
+    auto simulation = Simulation::from_string(qb_simulation_string);
+    ASSERT_EQ(simulation.pools.size(), 1);
+    auto reward_config = simulation.pools[0].reward_scheme_config;
+    ASSERT_EQ(reward_config.scheme_type, "qb");
+    auto params = reward_config.params;
+   
     nlohmann::json j;
-    std::unique_ptr<QBRewardScheme> reward_scheme(new QBRewardScheme(j));
-    auto random = std::make_shared<MockRandom>();
-    QBRewardScheme* reward_scheme_ptr = reward_scheme.get();
+    std::unique_ptr<QBRewardScheme> qb_ptr = std::unique_ptr<QBRewardScheme>(new QBRewardScheme(j));
+    auto base_ptr = RewardSchemeFactory::create(reward_config.scheme_type, reward_config.params);
+    auto qb = qb_ptr.get();
 
-    auto pool = MiningPool::create("pool", 100, 0.0, std::move(reward_scheme), get_sample_network(), random);
+    auto pool = simulation.pools[0];
+    auto network = std::make_shared<Network>(simulation.network_difficulty);
+    auto mining_pool = MiningPool::create("pool", pool.difficulty, pool.uncle_block_prob, std::move(qb_ptr), network);
 
-    EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
+    //EXPECT_CALL(*random, drand48()).WillOnce(testing::Return(0.2));
 
-    pool->submit_share("address_A", Share(Share::Property::none));
-    pool->submit_share("address_B", Share(Share::Property::none));
-    pool->submit_share("address_C", Share(Share::Property::none));
-    pool->submit_share("address_A", Share(Share::Property::none));
+    qb->handle_share("address_A", Share(Share::Property::none));
+    qb->handle_share("address_B", Share(Share::Property::none));
+    qb->handle_share("address_C", Share(Share::Property::none));
+    qb->handle_share("address_A", Share(Share::Property::none));
 
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 200);
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 100);
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_C"), 100);
+    ASSERT_EQ(qb->get_credits("address_A"), 200);
+    ASSERT_EQ(qb->get_credits("address_B"), 100);
+    ASSERT_EQ(qb->get_credits("address_C"), 100);
 
-    pool->submit_share("address_B", Share(Share::Property::none));
-    pool->submit_share("address_C", Share(Share::Property::none));
-    pool->submit_share("address_A", Share(Share::Property::none));
-    pool->submit_share("address_B", Share(Share::Property::none));
-    pool->submit_share("address_A", Share(Share::Property::none));
-    pool->submit_share("address_A", Share(Share::Property::none));
+    qb->handle_share("address_B", Share(Share::Property::none));
+    qb->handle_share("address_C", Share(Share::Property::none));
+    qb->handle_share("address_A", Share(Share::Property::none));
+    qb->handle_share("address_B", Share(Share::Property::none));
+    qb->handle_share("address_A", Share(Share::Property::none));
+    qb->handle_share("address_A", Share(Share::Property::none));
 
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 500);
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 300);
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_C"), 200);
+    ASSERT_EQ(qb->get_credits("address_A"), 500);
+    ASSERT_EQ(qb->get_credits("address_B"), 300);
+    ASSERT_EQ(qb->get_credits("address_C"), 200);
 
-    pool->submit_share("address_B", Share(Share::Property::valid_block));
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_A"), 100);
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 400);
+    qb->handle_share("address_B", Share(Share::Property::valid_block));
+    ASSERT_EQ(qb->get_credits("address_A"), 100);
+    ASSERT_EQ(qb->get_credits("address_B"), 400);
 
-    pool->submit_share("address_B", Share(Share::Property::uncle));
-    ASSERT_EQ(reward_scheme_ptr->get_credits("address_B"), 500);
+    qb->handle_share("address_B", Share(Share::Property::uncle));
+    ASSERT_EQ(qb->get_credits("address_B"), 500);
 }
 
 TEST(PPLNSRewardScheme, handle_share) {
@@ -293,9 +367,13 @@ TEST(PPLNSRewardScheme, handle_share) {
     ASSERT_EQ(reward_config.scheme_type, "pplns");
     ASSERT_EQ(reward_config.params["n"], 3);
     auto params = reward_config.params["n"];
-    auto pplns = RewardSchemeFactory::create(reward_config.scheme_type,
+    auto pplns_ptr = RewardSchemeFactory::create(reward_config.scheme_type,
                                                         reward_config.params);
+    auto pplns = pplns_ptr.get(); 
 
+    auto pool = simulation.pools[0];
+    auto network = std::make_shared<Network>(simulation.network_difficulty);
+    auto mining_pool = MiningPool::create("pool", pool.difficulty, pool.uncle_block_prob, std::move(pplns_ptr), network);
     pplns->handle_share("miner_D", Share(Share::Property::valid_block));
     ASSERT_EQ(pplns->get_blocks_received("miner_D"), 1);
     ASSERT_EQ(pplns->get_blocks_mined("miner_D"), 1);    
@@ -327,7 +405,7 @@ TEST(PPLNSRewardScheme, handle_share) {
 }
 
 
-TEST(PPSRewardScheme, DISABLED_handle_share) {
+TEST(PPSRewardScheme, handle_share) {
     auto simulation = Simulation::from_string(pps_simulation_string);
     ASSERT_EQ(simulation.pools.size(), 1);
     auto reward_config = simulation.pools[0].reward_scheme_config;
@@ -338,9 +416,9 @@ TEST(PPSRewardScheme, DISABLED_handle_share) {
                                                 reward_config.params);
     auto pps = pps_uptr.get();
 
-    // TODO: probably fix parameters here
+    auto pool_config = simulation.pools[0];
     auto network = get_sample_network();
-    auto pool = MiningPool::create("pool", 50, 0.001, std::move(pps_uptr), network);
+    auto pool = MiningPool::create("pool", pool_config.difficulty, pool_config.uncle_block_prob, std::move(pps_uptr), network);
 
     ASSERT_EQ(pool->get_network(), network);
     ASSERT_EQ(pps->get_mining_pool(), pool);

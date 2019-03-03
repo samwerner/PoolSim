@@ -36,11 +36,17 @@ public:
     // Returns all the miners currently in the pool
     std::set<std::string> get_miners();
 
+    // Returns the name of the reward scheme used by the pool
+    std::string get_scheme_name() const;
+
     // Returns the current number of miners
     size_t get_miners_count() const;
 
     // Returns the share difficulty of the pool
     uint64_t get_difficulty() const;
+
+    // Returns the name of the pool
+    std::string get_name() const;
 
     // Returns the network instance
     std::shared_ptr<Network> get_network() const;
@@ -61,6 +67,9 @@ public:
 
     // Set the reward scheme for this mining pool
     void set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme);
+
+    // Returns the metadata of all miners in the poool
+    nlohmann::json get_miners_metadata() const;
 
 protected:
     MiningPool(const std::string& name, uint64_t difficulty,
@@ -86,5 +95,7 @@ private:
     // Random instance
     std::shared_ptr<Random> random;
 };
+
+void to_json(nlohmann::json& j, const MiningPool& data);
 
 }

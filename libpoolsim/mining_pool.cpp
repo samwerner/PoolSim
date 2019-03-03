@@ -40,6 +40,10 @@ void MiningPool::set_reward_scheme(std::unique_ptr<RewardScheme> _reward_scheme)
     reward_scheme->set_mining_pool(shared_from_this());
 }
 
+std::string MiningPool::get_scheme_name() const {
+    return reward_scheme->get_scheme_name();
+}
+
 void MiningPool::join(const std::string& miner_address) {
   miners.insert(miner_address);
 }
@@ -64,6 +68,21 @@ size_t MiningPool::get_miners_count() const {
   return miners.size();
 }
 
+std::string MiningPool::get_name() const {
+  return pool_name;
+}
+
+nlohmann::json MiningPool::get_miners_metadata() const {
+    nlohmann::json result;
+    for (const std::string& address : miners) {
+        nlohmann::json miner;
+        miner["address"] = address;
+        miner["metadata"] = reward_scheme->get_miner_metadata(address);
+        result.push_back(miner);
+    }
+    return result;
+}
+
 void MiningPool::submit_share(const std::string& miner_address, const Share& share) {
     uint8_t flags = share.get_properties();
     if (share.is_network_share() && random->drand48() < uncle_prob) {
@@ -80,6 +99,13 @@ void MiningPool::submit_share(const std::string& miner_address, const Share& sha
         };
         notify(block_event);
     }
+}
+
+void to_json(nlohmann::json& j, const MiningPool& pool) {
+    j["name"] = pool.get_name();
+    j["difficulty"] = pool.get_difficulty();
+    j["reward_scheme"] = pool.get_scheme_name();
+    j["miners"] = pool.get_miners_metadata();
 }
 
 }

@@ -1,9 +1,9 @@
 {
-  "blocks": 1000,
-  "seed": 123,
+  "blocks": 100000,
+  "seed": 120,
   "network_difficulty": 10000,
   "pools": [{
-    "uncle_block_prob": 0.75,
+    "uncle_block_prob": 0.0,
     "difficulty": 10,
     "reward_scheme": {
       "type": "pplns",
@@ -20,10 +20,10 @@
       }
     }
   }, {
-    "uncle_block_prob": 0.05,
+    "uncle_block_prob": 0.0,
     "difficulty": 20,
     "reward_scheme": {
-      "type": "pps",
+      "type": "qb",
       "params": {
           "pool_fee": 0.05
       }

@@ -50,4 +50,9 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
   share_handler->set_miner(shared_from_this());
 }
 
+void to_json(nlohmann::json& j, const Miner& miner) {
+    j["address"] = miner.get_address();
+    j["hashrate"] = miner.get_hashrate();
+}
+
 }
