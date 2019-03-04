@@ -467,16 +467,16 @@ TEST(PPLNSRewardScheme, handle_share) {
 
     ASSERT_EQ(pplns->get_record("miner_A")->get_uncles_mined(), 1);
     ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_received(), 0.6666, 0.0001);
-
     ASSERT_NEAR(pplns->get_record("miner_B")->get_uncles_received(), 0.3333, 0.0001);
+    
     pplns->handle_share("miner_A", Share(Share::Property::uncle | Share::Property::valid_block));
     pplns->handle_share("miner_B", Share(Share::Property::uncle | Share::Property::valid_block));
     pplns->handle_share("miner_D", Share(Share::Property::uncle | Share::Property::valid_block));
-    ASSERT_EQ(pplns->get_record("miner_A")->get_uncles_mined(), 2);
+    ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_mined(), 2, 0.0001);
     ASSERT_EQ(pplns->get_record("miner_B")->get_uncles_mined(), 1);
     ASSERT_EQ(pplns->get_record("miner_C")->get_uncles_mined(), 0);
-    ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_received(), 2, 0.0001);
-    ASSERT_NEAR(pplns->get_record("miner_B")->get_uncles_received(), 1, 0.0001);
+    ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_received(), 2.3333, 0.0001);
+    ASSERT_NEAR(pplns->get_record("miner_B")->get_uncles_received(), 1.3333, 0.0001);
     ASSERT_EQ(pplns->get_blocks_mined("miner_B"), 1);
 }
 
@@ -487,8 +487,6 @@ TEST(PPLNSRewardScheme, last_n_shares) {
     ASSERT_EQ(reward_config.scheme_type, "pplns");
     ASSERT_EQ(reward_config.params["n"], 3);
     auto params = reward_config.params;
-   
-    //nlohmann::json j;
     std::unique_ptr<PPLNSRewardScheme> pplns_ptr = std::unique_ptr<PPLNSRewardScheme>(new PPLNSRewardScheme(reward_config.params));
     auto base_ptr = RewardSchemeFactory::create(reward_config.scheme_type, reward_config.params);
     auto pplns = pplns_ptr.get();
@@ -514,7 +512,6 @@ TEST(PPLNSRewardScheme, last_n_shares) {
 
     pplns->handle_share("miner_B", Share(Share::Property::valid_block));
     ASSERT_EQ(pplns->get_last_n_shares_size(), 3);
-    //ASSERT_EQ(base_ptr->get_blocks_mined("miner_B"), 1);
 }
 
 TEST(PPSRewardScheme, handle_share) {
@@ -562,7 +559,7 @@ TEST(PPSRewardScheme, handle_share) {
 }
 
 
-TEST(PROPRewardScheme, DISABLED_handle_share) {
+TEST(PROPRewardScheme, handle_share) {
     auto simulation = Simulation::from_string(prop_simulation_string);
     ASSERT_EQ(simulation.pools.size(), 1);
     auto reward_config = simulation.pools[0].reward_scheme_config;
@@ -572,7 +569,6 @@ TEST(PROPRewardScheme, DISABLED_handle_share) {
     auto prop_uptr = RewardSchemeFactory::create(reward_config.scheme_type,
                                                 reward_config.params);
     auto prop = prop_uptr.get();
-
     auto pool_config = simulation.pools[0];
     auto network = get_sample_network();
     auto pool = MiningPool::create("pool", pool_config.difficulty, pool_config.uncle_block_prob, std::move(prop_uptr), network);
@@ -605,12 +601,34 @@ TEST(PROPRewardScheme, DISABLED_handle_share) {
     ASSERT_FLOAT_EQ(prop->get_blocks_received("miner_G"), 0.5);
 
     prop->handle_share("miner_A", Share(Share::Property::none));
-    prop->handle_share("miner_B", Share(Share::Property::uncle));
+    prop->handle_share("miner_B", Share(Share::Property::uncle | Share::Property::valid_block));
     ASSERT_FLOAT_EQ(prop->get_record("miner_A")->get_uncles_received(), 0.5);
     ASSERT_FLOAT_EQ(prop->get_record("miner_B")->get_uncles_received(), 0.5);
 
-}
+    prop->handle_share("miner_B", Share(Share::Property::none));
+    prop->handle_share("miner_B", Share(Share::Property::uncle | Share::Property::valid_block));
+    ASSERT_FLOAT_EQ(prop->get_record("miner_A")->get_uncles_received(), 0.75);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_A")->get_uncles_mined(), 0);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_B")->get_uncles_received(), 1.25);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_B")->get_uncles_mined(),2);
+    
+    prop->handle_share("miner_A", Share(Share::Property::valid_block));
+    ASSERT_FLOAT_EQ(prop->get_blocks_received("miner_A"), 0.6);
+    ASSERT_FLOAT_EQ(prop->get_blocks_mined("miner_A"), 1);
 
+    prop->handle_share("miner_B", Share(Share::Property::none));
+    prop->handle_share("miner_C", Share(Share::Property::none));
+    prop->handle_share("miner_A", Share(Share::Property::none));
+    prop->handle_share("miner_A", Share(Share::Property::uncle | Share::Property::valid_block));
+    ASSERT_FLOAT_EQ(prop->get_record("miner_A")->get_uncles_received(), 1.25);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_A")->get_uncles_mined(), 1);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_B")->get_uncles_received(), 1.5);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_B")->get_uncles_mined(), 2);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_C")->get_uncles_received(), 0.25);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_C")->get_uncles_mined(), 0);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_F")->get_uncles_received(), 0);
+    ASSERT_FLOAT_EQ(prop->get_record("miner_F")->get_uncles_mined(), 0);
+}
 
 TEST(EventQueue, events_ordering) {
     EventQueue eq;
