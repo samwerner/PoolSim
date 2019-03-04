@@ -10,15 +10,15 @@
 namespace poolsim {
 
 // returns a random element from a container
-template <typename T>
-T random_element(T begin, T end) {
+template<typename It>
+typename std::iterator_traits<It>::reference random_element(It begin, It end) {
     const uint64_t n = std::distance(begin, end);
-    const uint64_t divisor = (RAND_MAX + 1)/n;
+    const uint64_t divisor = (static_cast<uint64_t>(RAND_MAX) + 1) / n;
     
     uint64_t k;
     do { k = std::rand() / divisor; } while (k >= n);
     std::advance(begin, k);
-    return begin;
+    return begin[0];
 }
 
 // Exception thrown if the Random class

@@ -64,6 +64,7 @@ public:
     // USED FOR TESTING
     virtual double get_blocks_received(const std::string& miner_address) = 0;
     virtual uint64_t get_blocks_mined(const std::string& miner_address) = 0;
+    virtual std::shared_ptr<MinerRecord> get_record(const std::string& miner_address) = 0;
 
 protected:
     // logic for distributing uncle block reward in pool
@@ -103,6 +104,7 @@ protected:
     // USED FOR TESTING
     virtual double get_blocks_received(const std::string& miner_address) override;
     virtual uint64_t get_blocks_mined(const std::string& miner_address) override;
+    virtual std::shared_ptr<MinerRecord> get_record(const std::string& miner_address) override;
 };
 
 template <typename T, typename RecordClass, typename BlockData>
@@ -145,6 +147,13 @@ uint64_t BaseRewardScheme<T, RecordClass, BlockData>::get_blocks_mined(const std
     return record->get_blocks_mined();
 }
 
+// USED FOR TESTING
+template<typename T, typename RecordClass, typename BlockData>
+std::shared_ptr<MinerRecord> BaseRewardScheme<T, RecordClass, BlockData>::get_record(const std::string& miner_address) {
+    auto record = find_record(miner_address);
+    return record;
+}
+
 // Pay-per-share reward scheme
 class PPSRewardScheme: public BaseRewardScheme<PPSRewardScheme> {
 public:
@@ -171,6 +180,11 @@ public:
     void set_n(uint64_t _n);
     // a flag for showing whether a total of n or more shares have been been submitted
     bool n_shares_submitted = false;
+
+    // USED FOR TESTS
+    std::list<std::string>& get_last_n_shares();
+    uint64_t get_last_n_shares_size() const;
+
 private:
     void handle_uncle(const std::string& miner_address) override;
     
@@ -196,6 +210,7 @@ public:
     uint64_t get_credits(const std::string& miner_address);
 
 protected:
+    // by default: sample a random miner from the pool for receiving the full uncle reward
     void handle_uncle(const std::string& miner_address) override;
     // updates stats of top miner in pool and resets the top miners credits
     void reward_top_miner();

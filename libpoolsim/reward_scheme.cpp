@@ -4,6 +4,7 @@
 #include "reward_scheme.h"
 #include "miner.h"
 #include "factory.h"
+#include "random.h"
 
 #include "mining_pool.h"
 #include "miner_record.h"
@@ -141,18 +142,16 @@ void PPLNSRewardScheme::handle_share(const std::string& miner_address, const Sha
     block_meta_data.shares_per_block = shares_per_block;
     block_meta_data.pool_luck = get_pool_luck();
 
-    if (share.is_network_share()) {
+    if (!share.is_uncle()) {
         for (const std::string& miner_address : last_n_shares) {
             auto record = find_record(miner_address);
             record->inc_blocks_received((1.0/last_n_shares.size()));
         }
         shares_per_block = 0;
-    } else if (share.is_uncle()) {
-        for (const std::string& miner_address : last_n_shares) {
-            auto record = find_record(miner_address);
-            record->inc_uncles_received(1.0/last_n_shares.size());
-        }
+        return;
     }
+
+    handle_uncle(miner_address);
 }
 
 void PPLNSRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
@@ -169,8 +168,10 @@ void PPLNSRewardScheme::set_n(uint64_t _n) {
 }
 
 void PPLNSRewardScheme::handle_uncle(const std::string& miner_address) {
-
-
+        for (const std::string& miner_address : last_n_shares) {
+            auto record = find_record(miner_address);
+            record->inc_uncles_received(1.0/last_n_shares.size());
+        }
 }
 
 REGISTER(RewardScheme, PPLNSRewardScheme, "pplns")
@@ -195,7 +196,6 @@ void QBRewardScheme::update_record(std::shared_ptr<QBRecord> record, const Share
     } else if (share.is_uncle())
         record->inc_uncles_mined();
 }
-
 
 void QBRewardScheme::reward_top_miner() {
     if (records.empty()) {
@@ -259,7 +259,8 @@ uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
 }
 
 void QBRewardScheme::handle_uncle(const std::string& miner_address) {
-    
+    auto random_miner = random_element(records.begin(), records.end());
+    random_miner->inc_uncles_received();
 }
 
 REGISTER(RewardScheme, QBRewardScheme, "qb")
@@ -299,9 +300,17 @@ void PROPRewardScheme::handle_share(const std::string& miner_address, const Shar
 
 void PROPRewardScheme::handle_uncle(const std::string& miner_address) {
     for (auto record : records) {
-        double reward = 1.0*(record->get_shares_per_round()/(double)shares_per_block);
+        double reward = (record->get_shares_per_round()/(double)shares_per_block);
         record->inc_uncles_received(reward);
     }
+}
+
+std::list<std::string>& PPLNSRewardScheme::get_last_n_shares() {
+    return last_n_shares;
+}
+
+uint64_t PPLNSRewardScheme::get_last_n_shares_size() const {
+    return last_n_shares.size();
 }
 
 void PROPRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const Share& share) {
@@ -322,3 +331,4 @@ void PROPRewardScheme::update_record(std::shared_ptr<MinerRecord> record, const 
 REGISTER(RewardScheme, PROPRewardScheme, "prop")
 
 }
+
