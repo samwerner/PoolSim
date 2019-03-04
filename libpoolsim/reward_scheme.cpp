@@ -168,10 +168,10 @@ void PPLNSRewardScheme::set_n(uint64_t _n) {
 }
 
 void PPLNSRewardScheme::handle_uncle(const std::string& miner_address) {
-        for (const std::string& miner_address : last_n_shares) {
-            auto record = find_record(miner_address);
-            record->inc_uncles_received(1.0/last_n_shares.size());
-        }
+    for (const std::string& miner_address : last_n_shares) {
+        auto record = find_record(miner_address);
+        record->inc_uncles_received(1.0/last_n_shares.size());
+    }
 }
 
 REGISTER(RewardScheme, PPLNSRewardScheme, "pplns")

@@ -418,7 +418,7 @@ TEST(QBRewardScheme, update_record) {
     ASSERT_EQ(qb->get_credits("address_B"), 500);
 }
 
-TEST(PPLNSRewardScheme, DISABLED_handle_share) {
+TEST(PPLNSRewardScheme, handle_share) {
     auto simulation = Simulation::from_string(pplns_simulation_string);
     ASSERT_EQ(simulation.pools.size(), 1);
     auto reward_config = simulation.pools[0].reward_scheme_config;
@@ -463,24 +463,21 @@ TEST(PPLNSRewardScheme, DISABLED_handle_share) {
     ASSERT_NEAR(pplns->get_blocks_received("miner_C"), 0.3333, 0.0001);
 
     ASSERT_EQ(pplns->get_record("miner_A")->get_uncles_received(), 0);
-    //pplns->get_record("miner_A")->inc_uncles_received(0.5);
-    pplns->handle_share("miner_A", Share(Share::Property::uncle));
+    pplns->handle_share("miner_A", Share(Share::Property::uncle | Share::Property::valid_block));
 
-   /*
     ASSERT_EQ(pplns->get_record("miner_A")->get_uncles_mined(), 1);
     ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_received(), 0.6666, 0.0001);
-    
+
     ASSERT_NEAR(pplns->get_record("miner_B")->get_uncles_received(), 0.3333, 0.0001);
-    pplns->handle_share("miner_A", Share(Share::Property::uncle));
-    pplns->handle_share("miner_B", Share(Share::Property::uncle));
-    pplns->handle_share("miner_D", Share(Share::Property::uncle));
+    pplns->handle_share("miner_A", Share(Share::Property::uncle | Share::Property::valid_block));
+    pplns->handle_share("miner_B", Share(Share::Property::uncle | Share::Property::valid_block));
+    pplns->handle_share("miner_D", Share(Share::Property::uncle | Share::Property::valid_block));
     ASSERT_EQ(pplns->get_record("miner_A")->get_uncles_mined(), 2);
     ASSERT_EQ(pplns->get_record("miner_B")->get_uncles_mined(), 1);
     ASSERT_EQ(pplns->get_record("miner_C")->get_uncles_mined(), 0);
     ASSERT_NEAR(pplns->get_record("miner_A")->get_uncles_received(), 2, 0.0001);
     ASSERT_NEAR(pplns->get_record("miner_B")->get_uncles_received(), 1, 0.0001);
     ASSERT_EQ(pplns->get_blocks_mined("miner_B"), 1);
-    */
 }
 
 TEST(PPLNSRewardScheme, last_n_shares) {
