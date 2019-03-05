@@ -69,7 +69,7 @@ public:
 protected:
     // logic for distributing uncle block reward in pool
     virtual void handle_uncle(const std::string& miner_address) = 0;
-    
+
     std::weak_ptr<MiningPool> mining_pool;
     // number of shares submitted per block mined (NOT including uncles)
     uint64_t shares_per_block = 0;
@@ -83,6 +83,10 @@ template <typename T, typename RecordClass=MinerRecord, typename BlockData=Block
 class BaseRewardScheme :
     public RewardScheme,
     public Creatable1<RewardScheme, T, const nlohmann::json&> {
+public:
+    // returns all the records
+    std::vector<std::shared_ptr<RecordClass>> get_records();
+
 protected:
     std::vector<std::shared_ptr<RecordClass>> records;
 
@@ -91,8 +95,6 @@ protected:
 
     // returns the metadata needed when a block has been mined
     virtual nlohmann::json get_block_metadata() override;
-
-    std::vector<std::shared_ptr<RecordClass>>& get_all_records();
 
 
     // returns the metadata for a miner
@@ -114,9 +116,9 @@ protected:
 };
 
 template <typename T, typename RecordClass, typename BlockData>
-std::vector<std::shared_ptr<RecordClass>>& BaseRewardScheme<T, RecordClass, BlockData>::get_all_records() {
+std::vector<std::shared_ptr<RecordClass>> BaseRewardScheme<T, RecordClass, BlockData>::get_records() {
     return records;
-  }
+}
 
 template <typename T, typename RecordClass, typename BlockData>
 std::shared_ptr<RecordClass> BaseRewardScheme<T, RecordClass, BlockData>::find_record(const std::string& miner_address) {
