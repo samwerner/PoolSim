@@ -109,7 +109,7 @@ QBWithholdingShareHandler::QBWithholdingShareHandler(const nlohmann::json& _args
 }
 
 void QBWithholdingShareHandler::handle_share(const Share& share) {
-    if (!(get_miner()->get_pool()->get_name() == "qb")) {
+    if (get_miner()->get_pool()->get_name() != "qb") {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
@@ -138,7 +138,7 @@ DonationShareHandler::DonationShareHandler(const nlohmann::json& _args) {
 }
 
 void DonationShareHandler::handle_share(const Share& share) {
-    if (!(get_miner()->get_pool()->get_name() == "qb")) {
+    if (get_miner()->get_pool()->get_name() != "qb") {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
@@ -216,7 +216,7 @@ QBPoolHopping::QBPoolHopping(const nlohmann::json& _args) {
 }
 
 void QBPoolHopping::handle_share(const Share& share) {
-    if (!(get_miner()->get_pool()->get_name() == "qb")) {
+    if (get_miner()->get_pool()->get_name() != "qb") {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
