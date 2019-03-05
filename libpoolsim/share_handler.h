@@ -63,13 +63,13 @@ public:
 protected:
     // Checks the specified condition logic under which a share should
     // be submitted
-    bool condition_true(std::vector<std::shared_ptr<QBRecord>>& records); 
+    bool should_attack(std::vector<std::shared_ptr<QBRecord>>& records);
+    // returns the address of the attack victim
+    std::string get_victim_address(std::vector<std::shared_ptr<QBRecord>>& records);
     // used to check if miner is in top N of the pool
     uint64_t top_n = 0;
     // used to check if credits of another miner are within a specified range
     double threshold = 1;
-    // saves the address of a miner
-    std::string victim_miner;
     // counts total number of shares withheld
     uint64_t shares_withheld = 0;
     // counts total number of shares donated to some other address
