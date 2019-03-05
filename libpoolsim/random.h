@@ -9,17 +9,6 @@
 
 namespace poolsim {
 
-// returns a random element from a container
-template<typename It>
-typename std::iterator_traits<It>::reference random_element(It begin, It end) {
-    const uint64_t n = std::distance(begin, end);
-    const uint64_t divisor = (static_cast<uint64_t>(RAND_MAX) + 1) / n;
-    
-    uint64_t k;
-    do { k = std::rand() / divisor; } while (k >= n);
-    std::advance(begin, k);
-    return begin[0];
-}
 
 // Exception thrown if the Random class
 // has not yet been initialized exactly once
@@ -35,15 +24,33 @@ private:
 // Interface used for mocking
 class Random {
 public:
-  virtual ~Random() {}
-  // Returns a random double between 0 and 1
-  virtual double drand48() = 0;
+    virtual ~Random() {}
+    // Returns a random double between 0 and 1
+    virtual double drand48() = 0;
 
-  // Returns a random address (0x prefix + 40 hex chars)
-  virtual std::string get_address() = 0;
+    // Returns a random address (0x prefix + 40 hex chars)
+    virtual std::string get_address() = 0;
 
-  virtual std::shared_ptr<std::default_random_engine> get_random_engine() = 0;
+    // returns a random integer between min and max
+    virtual int random_int(int min, int max) = 0;
+
+    // returns a random element from a container
+    template<typename It>
+    typename std::iterator_traits<It>::reference random_element(It begin, It end);
+
+    virtual std::shared_ptr<std::default_random_engine> get_random_engine() = 0;
 };
+
+template<typename It>
+typename std::iterator_traits<It>::reference Random::random_element(It begin, It end) {
+    const uint64_t n = std::distance(begin, end);
+    const uint64_t divisor = (static_cast<uint64_t>(RAND_MAX) + 1) / n;
+
+    uint64_t k;
+    do { k = random_int(0, RAND_MAX) / divisor; } while (k >= n);
+    std::advance(begin, k);
+    return begin[0];
+}
 
 
 // Singleton which delegates to
@@ -58,6 +65,8 @@ public:
 
   // Delegates to standard drand48()
   double drand48() override;
+
+  int random_int(int min, int max) override;
 
   std::shared_ptr<std::default_random_engine> get_random_engine();
 

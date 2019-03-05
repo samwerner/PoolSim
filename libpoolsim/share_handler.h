@@ -46,6 +46,9 @@ protected:
 
     // counts the total number of valid shares withheld
     uint64_t valid_shares_withheld = 0;
+
+    // random instance
+    std::shared_ptr<Random> random = SystemRandom::get_instance();
 };
 
 MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)

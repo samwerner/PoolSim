@@ -20,6 +20,11 @@ double SystemRandom::drand48() {
   return ::drand48();
 }
 
+int SystemRandom::random_int(int min, int max) {
+    std::uniform_int_distribution<int> dist(min, max);
+    return dist(*get_random_engine());
+}
+
 std::string SystemRandom::get_address() {
   std::stringstream result;
   std::uniform_int_distribution<int> dist(0, 15);
@@ -54,6 +59,7 @@ void SystemRandom::initialize(long seed) {
     throw RandomInitException("random already initialized");
   }
   initialized = true;
+  srand(seed);
   srand48(seed);
   get_instance()->get_random_engine()->seed(seed);
 }

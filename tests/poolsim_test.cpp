@@ -128,6 +128,7 @@ class MockRandom : public Random {
 public:
     MOCK_METHOD0(drand48, double());
     MOCK_METHOD0(get_address, std::string());
+    MOCK_METHOD2(random_int, int(int, int));
     MOCK_METHOD0(get_random_engine, std::shared_ptr<std::default_random_engine>());
 };
 
@@ -221,11 +222,11 @@ TEST(Random, random_element) {
         records.push_back(record);
     }
 
-    std::shared_ptr<MinerRecord> s = random_element(records.begin(), records.end());
+    std::shared_ptr<MinerRecord> s = SystemRandom::get_instance()->random_element(records.begin(), records.end());
     ASSERT_TRUE(IsBetweenInclusive(s->get_blocks_received(),0,2));
-    s = random_element(records.begin(), records.end());
+    s = SystemRandom::get_instance()->random_element(records.begin(), records.end());
     ASSERT_TRUE(IsBetweenInclusive(s->get_blocks_received(),0,2));
-    s = random_element(records.begin(), records.end());
+    s = SystemRandom::get_instance()->random_element(records.begin(), records.end());
     ASSERT_TRUE(IsBetweenInclusive(s->get_blocks_received(),0,2));
     records.clear();
 
@@ -235,9 +236,9 @@ TEST(Random, random_element) {
         records.push_back(record);
     }
 
-    s = random_element(records.begin(), records.end());
+    s = SystemRandom::get_instance()->random_element(records.begin(), records.end());
     ASSERT_TRUE(IsBetweenInclusive(s->get_blocks_received(),0,200));
-    s = random_element(records.begin(), records.end());
+    s = SystemRandom::get_instance()->random_element(records.begin(), records.end());
     ASSERT_TRUE(IsBetweenInclusive(s->get_blocks_received(),0,200));
 }
 

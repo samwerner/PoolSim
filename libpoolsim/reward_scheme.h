@@ -7,6 +7,7 @@
 
 #include "share.h"
 #include "factory.h"
+#include "random.h"
 #include "miner_record.h"
 
 namespace poolsim {
@@ -75,6 +76,8 @@ protected:
     uint64_t shares_per_block = 0;
     // the percentage of a block reward taken by the pool operator
     double pool_fee = 0;    
+    // random instance
+    std::shared_ptr<Random> random = SystemRandom::get_instance();
 };
 
 MAKE_FACTORY(RewardSchemeFactory, RewardScheme, const nlohmann::json&);

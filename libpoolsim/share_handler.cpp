@@ -169,7 +169,7 @@ MultipleAddressesShareHandler::MultipleAddressesShareHandler(const nlohmann::jso
     uint64_t addresses_count = config.addresses;
 
     for (size_t count = 0; count <= addresses_count; count++) {
-        std::string new_address = SystemRandom::get_instance()->get_address();
+        std::string new_address = random->get_address();
         get_miner()->get_pool()->join(new_address);
         addresses.push_back(new_address);
     }
@@ -180,7 +180,7 @@ uint64_t MultipleAddressesShareHandler::get_addresses_count() const {
 }
 
 std::string MultipleAddressesShareHandler::get_random_address() const {
-    return random_element(addresses.begin(), addresses.end());
+    return random->random_element(addresses.begin(), addresses.end());
 }
 
 void MultipleAddressesShareHandler::handle_share(const Share& share) {

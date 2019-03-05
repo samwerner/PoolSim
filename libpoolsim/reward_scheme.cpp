@@ -259,7 +259,7 @@ uint64_t QBRewardScheme::get_credits(const std::string& miner_address) {
 }
 
 void QBRewardScheme::handle_uncle(const std::string& miner_address) {
-    auto random_miner = random_element(records.begin(), records.end());
+    auto random_miner = random->random_element(records.begin(), records.end());
     random_miner->inc_uncles_received();
 }
 
