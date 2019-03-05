@@ -2,7 +2,10 @@
 #include "miner.h"
 #include "factory.h"
 #include "miner_record.h"
+#include "random.h"
+
 #include <iterator>
+#include <algorithm>
 
 namespace poolsim {
 
@@ -11,6 +14,15 @@ void from_json(const nlohmann::json& j, BehaviourConfig& b) {
             j.at("top_n").get_to(b.top_n);
         if (j.find("threshold") != j.end())
             j.at("threshold").get_to(b.threshold);
+}
+
+void from_json(const nlohmann::json& j, MultiAddressConfig& m){
+    if (j.find("top_n") != j.end())
+        j.at("top_n").get_to(m.top_n);
+    if (j.find("threshold") != j.end())
+        j.at("threshold").get_to(m.threshold);
+    if (j.find("threshold") != j.end())
+        j.at("addresses").get_to(m.addresses);
 }
 
 ShareHandler::~ShareHandler() {}
@@ -41,6 +53,23 @@ void WithholdingShareHandler::handle_share(const Share& share) {
 }
 
 REGISTER(ShareHandler, WithholdingShareHandler, "share_withholding")
+
+uint64_t QBShareHandler::get_shares_donated() const {
+    return shares_donated;
+}
+
+uint64_t QBShareHandler::get_shares_withheld() const {
+    return shares_withheld;
+}
+
+uint64_t QBShareHandler::get_valid_shares_donated() const {
+    return valid_shares_donated;
+}
+
+uint64_t QBShareHandler::get_valid_shares_withheld() const{
+    return valid_shares_withheld;
+}
+
 
 bool QBShareHandler::condition_true(std::vector<std::shared_ptr<QBRecord>>& records) {
     for (std::vector<std::shared_ptr<QBRecord>>::iterator record = records.begin(); record != records.end(); ++record) {
@@ -74,10 +103,15 @@ void QBWithholdingShareHandler::handle_share(const Share& share) {
     
     auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
-    if (condition_true(records)) {
-        // Do nothing == withhold share
-    } else
+    
+    if (!condition_true(records)) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;
+    }
+
+    shares_withheld++;
+    if (share.is_valid_block())
+        valid_shares_withheld++;
 }
 
 REGISTER(ShareHandler, QBWithholdingShareHandler, "qb_share_withholding")
@@ -98,30 +132,62 @@ void DonationShareHandler::handle_share(const Share& share) {
     
     auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
-    if (condition_true(records)) {
-        get_miner()->get_pool()->submit_share(victim_miner, share);
-    } else
+    
+    if (!condition_true(records)) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;
+    }
+
+    shares_donated++;
+    if (share.is_valid_block())
+        valid_shares_donated++;
+
+    get_miner()->get_pool()->submit_share(victim_miner, share);
 }
 
 REGISTER(ShareHandler, DonationShareHandler, "share_donation")
 
+MultipleAddressesShareHandler::MultipleAddressesShareHandler(const nlohmann::json& _args) {
+    MultiAddressConfig config;
+    from_json(_args, config);
+    top_n = config.top_n;
+    threshold = config.threshold;
+    uint64_t addresses_count = config.addresses;
 
-SecondWalletShareHandler::SecondWalletShareHandler(const nlohmann::json& _args) {
-
+    for (size_t count = 0; count <= addresses_count; count++) {
+        std::string new_address = SystemRandom::get_instance()->get_address();
+        get_miner()->get_pool()->join(new_address);
+        addresses.push_back(new_address);
+    }
 }
 
-void SecondWalletShareHandler::handle_share(const Share& share) {
-
+uint64_t MultipleAddressesShareHandler::get_addresses_count() const {
+    return addresses.size();
 }
 
-REGISTER(ShareHandler, SecondWalletShareHandler, "second_wallet")
-
-
-MultipleAddressesShareHandler::MultipleAddressesShareHandler(const nlohmann::json& _args) {}
+std::string MultipleAddressesShareHandler::get_random_address() const {
+    return random_element(addresses.begin(), addresses.end());
+}
 
 void MultipleAddressesShareHandler::handle_share(const Share& share) {
+    if (!(get_miner()->get_pool()->get_name() == "qb")) {
+        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;   
+    }
+    
+    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+    std::sort(records.begin(), records.end(), QBSortObj());
+    
+    if (!condition_true(records)) {
+        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;
+    }
 
+    shares_donated++;
+    if (share.is_valid_block())
+        valid_shares_donated++;
+
+    get_miner()->get_pool()->submit_share(get_random_address(), share);
 }
 
 REGISTER(ShareHandler, MultipleAddressesShareHandler, "multiple_addresses");

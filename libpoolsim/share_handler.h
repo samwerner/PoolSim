@@ -15,6 +15,10 @@ struct BehaviourConfig {
     double threshold = 0;
 };
 
+struct MultiAddressConfig : BehaviourConfig {
+    uint64_t addresses = 0;
+};
+
 class ShareHandler {
 public:
     virtual ~ShareHandler();
@@ -40,6 +44,15 @@ MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)
 class QBShareHandler : public ShareHandler {
 public:
     virtual void handle_share(const Share& share) = 0;
+
+    uint64_t get_shares_donated() const;
+
+    uint64_t get_shares_withheld() const;
+
+    uint64_t get_valid_shares_donated() const;
+
+    uint64_t get_valid_shares_withheld() const;
+    
 protected:
     // Checks the specified condition logic under which a share should
     // be submitted
@@ -50,6 +63,14 @@ protected:
     double threshold = 1;
     // saves the address of a miner
     std::string victim_miner;
+    // counts total number of shares withheld
+    uint64_t shares_withheld = 0;
+    // counts total number of shares donated to some other address
+    uint64_t shares_donated = 0;
+    // counts the total number of valid shares withheld
+    uint64_t valid_shares_withheld = 0;
+    // counts total number of valid shares donated
+    uint64_t valid_shares_donated = 0;
 };
 
 template <typename T, typename RewardClass=RewardScheme>
@@ -96,7 +117,7 @@ public:
     void handle_share(const Share& share) override;
 };
 
-// IMPLEMENTED: NO
+// IMPLEMENTED: YES
 // Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
@@ -108,20 +129,7 @@ public:
     void handle_share(const Share& share) override;
 };
 
-// IMPLEMENTED: NO
-// Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
-// and whether there is a miner with a credit balance of p% or less behind him. If this is true,
-// the miner submits his share to a second address he controls in the pool.
-// Else, the share is submitted as specified by the default behaviour.
-class SecondWalletShareHandler : public QBBaseShareHandler<SecondWalletShareHandler, QBRecord> {
-public:
-    explicit SecondWalletShareHandler(const nlohmann::json& args);
-    // Donates the share to a second wallet belonging to the miner if
-    // a defined condition is true
-    void handle_share(const Share& share) override;
-};
-
-// IMPLEMENTED: NO
+// IMPLEMENTED: YES
 // Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
@@ -132,11 +140,19 @@ public:
     // Donates the share to any of the other addresses belonging to
     // the miner in a pool
     void handle_share(const Share& share) override;
+
+    uint64_t get_addresses_count() const;
+private:
+    // list of all addresses in pool controlled by miner
+    std::vector<std::string> addresses;
+    // returns an address owned by the miner at random from the list of addresses
+    std::string get_random_address() const;
 };
 
 // TODO: implement pool-hopping between two queue-based mining pools.
 
 
 void from_json(const nlohmann::json& j, BehaviourConfig& b);
+void from_json(const nlohmann::json& j, MultiAddressConfig& m);
 
 }
