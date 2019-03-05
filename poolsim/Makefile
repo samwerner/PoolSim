@@ -15,8 +15,8 @@ install:
 uninstall:
 	rm -f $(PREFIX)/bin/$(notdir $(POOLSIM))
 
-$(POOLSIM): $(OBJS)
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+$(POOLSIM): $(OBJS) $(LIBPOOLSIM)
+	$(CXX) $(CXXFLAGS) $(patsubst $(LIBPOOLSIM),,$^) -o $@ $(LDFLAGS)
 
 build/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

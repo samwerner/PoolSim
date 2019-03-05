@@ -9,8 +9,8 @@ all: test
 build_dir:
 	mkdir -p build
 
-build/%_test: %_test.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@ $(LDFLAGS)
+build/%_test: %_test.cpp $(LIBPOOLSIM)
+	$(CXX) $(CXXFLAGS) $(patsubst $(LIBPOOLSIM),,$^) -o $@ $(LDFLAGS)
 
 build/%_test.run: build/%_test
 	./$^
