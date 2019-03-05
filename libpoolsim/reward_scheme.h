@@ -87,6 +87,8 @@ public:
     // returns all the records
     std::vector<std::shared_ptr<RecordClass>> get_records();
 
+    using record_class = RecordClass;
+
 protected:
     std::vector<std::shared_ptr<RecordClass>> records;
 

@@ -52,8 +52,8 @@ public:
     std::shared_ptr<Network> get_network() const;
 
     // Returns the current reward scheme
-    template <typename RewardSchemeClass, typename RecordClass>
-    std::vector<std::shared_ptr<RecordClass>> get_records();
+    template <typename RewardSchemeClass>
+    std::vector<std::shared_ptr<typename RewardSchemeClass::record_class>> get_records();
 
     // Submit a share to the pool
     // The share can be either a network share or a pool share
@@ -104,13 +104,8 @@ private:
 
 void to_json(nlohmann::json& j, const MiningPool& data);
 
-// FIXME: this forces the user to get pass in both the
-// scheme class and the record class but the scheme class
-// should be enough. Just not sure how to express
-// that RecordClass should be the RecordClass of the BaseScheme
-// i.e. something like std::iterator_traits<T>::reference
-template <typename RewardSchemeClass, typename RecordClass>
-std::vector<std::shared_ptr<RecordClass>> MiningPool::get_records() {
+template <typename RewardSchemeClass>
+std::vector<std::shared_ptr<typename RewardSchemeClass::record_class>> MiningPool::get_records() {
     auto reward_scheme_ptr = reward_scheme.get();
     auto downcasted_reward_scheme = static_cast<RewardSchemeClass*>(reward_scheme_ptr);
     return downcasted_reward_scheme->get_records();

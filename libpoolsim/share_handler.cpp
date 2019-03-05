@@ -47,7 +47,7 @@ QBWithholdingShareHandler::QBWithholdingShareHandler(const nlohmann::json& _args
 
 void QBWithholdingShareHandler::handle_share(const Share& share) {
     if (get_miner()->get_pool()->get_name() == "qb") {
-        auto records = get_miner()->get_pool()->get_records<QBRewardScheme, QBRecord>();
+        auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
     } else {
         // do something else?
     }
