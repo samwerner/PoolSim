@@ -19,6 +19,10 @@ struct MultiAddressConfig : BehaviourConfig {
     uint64_t addresses = 0;
 };
 
+struct QBHoppingConfig : BehaviourConfig {
+    double bad_luck_limit = 1;
+};
+
 class ShareHandler {
 public:
     virtual ~ShareHandler();
@@ -35,8 +39,13 @@ public:
     // Returns the miner of this handler as a shared_ptr
     // Use this rather than accessing the weak_ptr property
     std::shared_ptr<Miner> get_miner();
+
+    uint64_t get_valid_shares_withheld() const;
 protected:
     std::weak_ptr<Miner> miner;
+
+    // counts the total number of valid shares withheld
+    uint64_t valid_shares_withheld = 0;
 };
 
 MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)
@@ -50,8 +59,6 @@ public:
     uint64_t get_shares_withheld() const;
 
     uint64_t get_valid_shares_donated() const;
-
-    uint64_t get_valid_shares_withheld() const;
     
 protected:
     // Checks the specified condition logic under which a share should
@@ -67,8 +74,6 @@ protected:
     uint64_t shares_withheld = 0;
     // counts total number of shares donated to some other address
     uint64_t shares_donated = 0;
-    // counts the total number of valid shares withheld
-    uint64_t valid_shares_withheld = 0;
     // counts total number of valid shares donated
     uint64_t valid_shares_donated = 0;
 };
@@ -149,10 +154,25 @@ private:
     std::string get_random_address() const;
 };
 
-// TODO: implement pool-hopping between two queue-based mining pools.
+// IMPLEMENTED: YES
+// Behaviour: miner defines a bad luck limit and checks if the current pool is as unlucky or worse.
+// If it is, the miner checks the current luck for all other pools in the network and joins the pool
+// that is luckiest. 
+class QBPoolHopping : public QBBaseShareHandler<QBPoolHopping, QBRecord> {
+public:
+    explicit QBPoolHopping(const nlohmann::json& args);
 
+    void handle_share(const Share& share) override;
+private:
+    std::shared_ptr<MiningPool> get_luckiest_pool();
+    // the factor of how unlucky the pool needs to be before leaving the pool (e.g. bad luck = 2 = 50% luck)
+    double bad_luck_limit = 1;
+    // total number of times the miner has hopped to a different pool
+    uint64_t total_hopps = 0;
+}; 
 
 void from_json(const nlohmann::json& j, BehaviourConfig& b);
 void from_json(const nlohmann::json& j, MultiAddressConfig& m);
+void from_json(const nlohmann::json& j, QBHoppingConfig& m);
 
 }

@@ -68,6 +68,10 @@ size_t MiningPool::get_miners_count() const {
   return miners.size();
 }
 
+double MiningPool::get_luck() const {
+    return reward_scheme->get_pool_luck();
+}
+
 std::string MiningPool::get_name() const {
   return pool_name;
 }

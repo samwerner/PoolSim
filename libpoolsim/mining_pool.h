@@ -48,6 +48,9 @@ public:
     // Returns the name of the pool
     std::string get_name() const;
 
+    // Returns luck of the pool based on the shares submitted in the current round
+    double get_luck() const;
+
     // Returns the network instance
     std::shared_ptr<Network> get_network() const;
 

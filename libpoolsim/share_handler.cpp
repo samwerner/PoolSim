@@ -21,8 +21,17 @@ void from_json(const nlohmann::json& j, MultiAddressConfig& m){
         j.at("top_n").get_to(m.top_n);
     if (j.find("threshold") != j.end())
         j.at("threshold").get_to(m.threshold);
-    if (j.find("threshold") != j.end())
+    if (j.find("addresses") != j.end())
         j.at("addresses").get_to(m.addresses);
+}
+
+void from_json(const nlohmann::json& j, QBHoppingConfig& m){
+    if (j.find("top_n") != j.end())
+        j.at("top_n").get_to(m.top_n);
+    if (j.find("threshold") != j.end())
+        j.at("threshold").get_to(m.threshold);
+    if (j.find("bad_luck_limit") != j.end())
+        j.at("bad_luck_limit").get_to(m.bad_luck_limit);
 }
 
 ShareHandler::~ShareHandler() {}
@@ -50,6 +59,11 @@ WithholdingShareHandler::WithholdingShareHandler(const nlohmann::json& _args) {}
 void WithholdingShareHandler::handle_share(const Share& share) {
     if (!share.is_valid_block())
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+    
+}
+
+uint64_t ShareHandler::get_valid_shares_withheld() const{
+    return valid_shares_withheld;
 }
 
 REGISTER(ShareHandler, WithholdingShareHandler, "share_withholding")
@@ -65,11 +79,6 @@ uint64_t QBShareHandler::get_shares_withheld() const {
 uint64_t QBShareHandler::get_valid_shares_donated() const {
     return valid_shares_donated;
 }
-
-uint64_t QBShareHandler::get_valid_shares_withheld() const{
-    return valid_shares_withheld;
-}
-
 
 bool QBShareHandler::condition_true(std::vector<std::shared_ptr<QBRecord>>& records) {
     for (std::vector<std::shared_ptr<QBRecord>>::iterator record = records.begin(); record != records.end(); ++record) {
@@ -191,5 +200,61 @@ void MultipleAddressesShareHandler::handle_share(const Share& share) {
 }
 
 REGISTER(ShareHandler, MultipleAddressesShareHandler, "multiple_addresses");
+
+
+QBPoolHopping::QBPoolHopping(const nlohmann::json& _args) {
+    QBHoppingConfig config;
+    from_json(_args, config);
+    top_n = config.top_n;
+    threshold = config.threshold;
+    bad_luck_limit = config.bad_luck_limit;
+}
+
+void QBPoolHopping::handle_share(const Share& share) {
+    if (!(get_miner()->get_pool()->get_name() == "qb")) {
+        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;   
+    }
+    
+    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+    std::sort(records.begin(), records.end(), QBSortObj());
+    
+    /*
+    if (!condition_true(records)) {
+        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        return;
+    }
+    */
+
+    // Leave pool if pool is unlucky
+    if (get_miner()->get_pool()->get_luck() < 100.0/bad_luck_limit) {
+        
+        // Check which other pool is the luckiest 
+        std::shared_ptr<MiningPool> luckiest_pool = get_luckiest_pool();
+        if (luckiest_pool != get_miner()->get_pool()) {
+            get_miner()->join_pool(luckiest_pool);
+            total_hopps++;
+       }
+    }
+
+    get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+}
+
+std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
+    std::vector<std::shared_ptr<MiningPool>> pools = get_miner()->get_network()->get_pools();
+    double pool_luck = get_miner()->get_pool()->get_luck();
+    std::shared_ptr<MiningPool> luckiest_pool = get_miner()->get_pool();
+    for (auto pool : pools) {
+        if (pool->get_luck() > pool_luck && pool != luckiest_pool) {
+            pool_luck = pool->get_luck();
+            luckiest_pool = pool;
+        }
+    }
+    return luckiest_pool;
+}
+
+REGISTER(ShareHandler, QBPoolHopping, "qb_pool_hopping");
+
+
 
 }
