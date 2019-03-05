@@ -37,17 +37,33 @@ protected:
 
 MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)
 
-template <typename T, typename RwardClass=RewardScheme>
-class BaseShareHandler :
-    public ShareHandler,
-    public Creatable1<ShareHandler, T, const nlohmann::json&> {
-
+class QBShareHandler : public ShareHandler {
 public:
-    
-    
+    virtual void handle_share(const Share& share) = 0;
+protected:
+    // Checks the specified condition logic under which a share should
+    // be submitted
+    bool condition_true(std::vector<std::shared_ptr<QBRecord>>& records); 
+    // used to check if miner is in top N of the pool
+    uint64_t top_n = 0;
+    // used to check if credits of another miner are within a specified range
+    double threshold = 1;
+    // saves the address of a miner
+    std::string victim_miner;
 };
 
+template <typename T, typename RewardClass=RewardScheme>
+class BaseShareHandler :
+    public ShareHandler,
+    public Creatable1<ShareHandler, T, const nlohmann::json&> {   
+};
 
+template <typename T, typename RewardClass>
+class QBBaseShareHandler :
+    public QBShareHandler,
+    public Creatable1<QBShareHandler, T, const nlohmann::json&> {
+};
+  
 // Default implementation for ShareHandler
 class DefaultShareHandler: public BaseShareHandler<DefaultShareHandler> {
 public:
@@ -67,12 +83,13 @@ public:
     void handle_share(const Share& share) override;
 };
 
-// IMPLEMENTED: NO
+// IMPLEMENTED: YES
 // Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class QBWithholdingShareHandler : public BaseShareHandler<QBWithholdingShareHandler, QBRewardScheme> {
+class QBWithholdingShareHandler : public QBBaseShareHandler<QBWithholdingShareHandler, QBRecord> {
+//class QBWithholdingShareHandler : public BaseShareHandler<QBWithholdingShareHandler, QBRewardScheme> {
 public:
     explicit QBWithholdingShareHandler(const nlohmann::json& args);
     // Withholds valid shares (including uncles) from submitting to pool operator
@@ -84,7 +101,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class DonationShareHandler : public BaseShareHandler<DonationShareHandler> {
+class DonationShareHandler : public QBBaseShareHandler<DonationShareHandler, QBRecord> {
 public:
     explicit DonationShareHandler(const nlohmann::json& args);
     // Donates the share to a specified address if a defined condition is true
@@ -96,7 +113,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a second address he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class SecondWalletShareHandler : public BaseShareHandler<SecondWalletShareHandler> {
+class SecondWalletShareHandler : public QBBaseShareHandler<SecondWalletShareHandler, QBRecord> {
 public:
     explicit SecondWalletShareHandler(const nlohmann::json& args);
     // Donates the share to a second wallet belonging to the miner if
@@ -109,7 +126,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class MultipleAddressesShareHandler : public BaseShareHandler<MultipleAddressesShareHandler> {
+class MultipleAddressesShareHandler : public QBBaseShareHandler<MultipleAddressesShareHandler, QBRecord> {
 public:
     explicit MultipleAddressesShareHandler(const nlohmann::json& args);
     // Donates the share to any of the other addresses belonging to

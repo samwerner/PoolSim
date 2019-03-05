@@ -75,8 +75,6 @@ public:
     // Returns the metadata of all miners in the poool
     nlohmann::json get_miners_metadata() const;
 
-    //std::vector<std::shared_ptr<MinerRecord>> get_miner_records();
-
 protected:
     MiningPool(const std::string& name, uint64_t difficulty,
                double uncle_prob,
