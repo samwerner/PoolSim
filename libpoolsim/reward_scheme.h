@@ -92,6 +92,9 @@ protected:
     // returns the metadata needed when a block has been mined
     virtual nlohmann::json get_block_metadata() override;
 
+    std::vector<std::shared_ptr<RecordClass>>& get_all_records();
+
+
     // returns the metadata for a miner
     virtual nlohmann::json get_miner_metadata(const std::string& miner_address) override;
 
@@ -100,12 +103,20 @@ protected:
 
     //stores the meta data associated to the last block mined
     BlockData block_meta_data;
+
+    // returns the list of all miner records
+    //std::vector<shared_ptr<RecordClass>> get_all_records();
     
     // USED FOR TESTING
     virtual double get_blocks_received(const std::string& miner_address) override;
     virtual uint64_t get_blocks_mined(const std::string& miner_address) override;
     virtual std::shared_ptr<MinerRecord> get_record(const std::string& miner_address) override;
 };
+
+template <typename T, typename RecordClass, typename BlockData>
+std::vector<std::shared_ptr<RecordClass>>& BaseRewardScheme<T, RecordClass, BlockData>::get_all_records() {
+    return records;
+  }
 
 template <typename T, typename RecordClass, typename BlockData>
 std::shared_ptr<RecordClass> BaseRewardScheme<T, RecordClass, BlockData>::find_record(const std::string& miner_address) {
@@ -178,8 +189,6 @@ public:
     void handle_share(const std::string& miner_address, const Share& share) override;
 
     void set_n(uint64_t _n);
-    // a flag for showing whether a total of n or more shares have been been submitted
-    bool n_shares_submitted = false;
 
     // USED FOR TESTS
     std::list<std::string>& get_last_n_shares();

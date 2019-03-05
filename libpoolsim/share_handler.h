@@ -10,33 +10,41 @@ namespace poolsim {
 
 class Miner;
 
+struct BehaviourConfig {
+    uint64_t top_n = 0;
+    double threshold = 0;
+};
+
 class ShareHandler {
 public:
-  virtual ~ShareHandler();
+    virtual ~ShareHandler();
 
-  // Miners delegates to this method to handle the share that it found
-  // TODO: Probaby add information about the environment here
-  // e.g. info about other mining pools, current network difficulty, etc
-  virtual void handle_share(const Share& share) = 0;
+    // Miners delegates to this method to handle the share that it found
+    // TODO: Probaby add information about the environment here
+    // e.g. info about other mining pools, current network difficulty, etc
+    virtual void handle_share(const Share& share) = 0;
 
-  // Set the miner for this share handler
-  // ShareHandler and Miner should must a 1 to 1 relationship
-  void set_miner(std::shared_ptr<Miner> miner);
+    // Set the miner for this share handler
+    // ShareHandler and Miner must be a 1 to 1 relationship
+    void set_miner(std::shared_ptr<Miner> miner);
 
-  // Returns the miner of this handler as a shared_ptr
-  // Use this rather than accessing the weak_ptr property
-  std::shared_ptr<Miner> get_miner();
+    // Returns the miner of this handler as a shared_ptr
+    // Use this rather than accessing the weak_ptr property
+    std::shared_ptr<Miner> get_miner();
 protected:
-  std::weak_ptr<Miner> miner;
+    std::weak_ptr<Miner> miner;
 };
 
 MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)
 
-
-template <typename T>
+template <typename T, typename RwardClass=RewardScheme>
 class BaseShareHandler :
-  public ShareHandler,
-  public Creatable1<ShareHandler, T, const nlohmann::json&> {
+    public ShareHandler,
+    public Creatable1<ShareHandler, T, const nlohmann::json&> {
+
+public:
+    
+    
 };
 
 
@@ -47,5 +55,71 @@ public:
   // Simply submits the share to the mining pool
   virtual void handle_share(const Share& share) override;
 };
+
+// IMPLEMENTED: YES
+// Behaviour: if the share is valid, the miner does not submit the share to the pool. This is 
+// a traditional block withholding attack.
+// Else, the share is submitted as specified by the default behaviour. 
+class WithholdingShareHandler : public BaseShareHandler<WithholdingShareHandler> {
+public:
+    explicit WithholdingShareHandler(const nlohmann::json& args);
+    // Withholds valid shares (including uncles) from submitting to pool operator
+    void handle_share(const Share& share) override;
+};
+
+// IMPLEMENTED: NO
+// Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
+// and whether there is a miner with a credit balance of p% or less behind him. If this is true,
+// the miner submits his share to a different address of the N addresses he controls in the pool.
+// Else, the share is submitted as specified by the default behaviour.
+class QBWithholdingShareHandler : public BaseShareHandler<QBWithholdingShareHandler, QBRewardScheme> {
+public:
+    explicit QBWithholdingShareHandler(const nlohmann::json& args);
+    // Withholds valid shares (including uncles) from submitting to pool operator
+    void handle_share(const Share& share) override;
+};
+
+// IMPLEMENTED: NO
+// Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
+// and whether there is a miner with a credit balance of p% or less behind him. If this is true,
+// the miner submits his share to a different address of the N addresses he controls in the pool.
+// Else, the share is submitted as specified by the default behaviour.
+class DonationShareHandler : public BaseShareHandler<DonationShareHandler> {
+public:
+    explicit DonationShareHandler(const nlohmann::json& args);
+    // Donates the share to a specified address if a defined condition is true
+    void handle_share(const Share& share) override;
+};
+
+// IMPLEMENTED: NO
+// Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
+// and whether there is a miner with a credit balance of p% or less behind him. If this is true,
+// the miner submits his share to a second address he controls in the pool.
+// Else, the share is submitted as specified by the default behaviour.
+class SecondWalletShareHandler : public BaseShareHandler<SecondWalletShareHandler> {
+public:
+    explicit SecondWalletShareHandler(const nlohmann::json& args);
+    // Donates the share to a second wallet belonging to the miner if
+    // a defined condition is true
+    void handle_share(const Share& share) override;
+};
+
+// IMPLEMENTED: NO
+// Behaviour: miner checks if he is currently in the top N positions in the queue of the pool
+// and whether there is a miner with a credit balance of p% or less behind him. If this is true,
+// the miner submits his share to a different address of the N addresses he controls in the pool.
+// Else, the share is submitted as specified by the default behaviour.
+class MultipleAddressesShareHandler : public BaseShareHandler<MultipleAddressesShareHandler> {
+public:
+    explicit MultipleAddressesShareHandler(const nlohmann::json& args);
+    // Donates the share to any of the other addresses belonging to
+    // the miner in a pool
+    void handle_share(const Share& share) override;
+};
+
+// TODO: implement pool-hopping between two queue-based mining pools.
+
+
+void from_json(const nlohmann::json& j, BehaviourConfig& b);
 
 }
