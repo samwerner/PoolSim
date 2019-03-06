@@ -1,0 +1,61 @@
+{
+    "output": "results/qb-pools-results.json.gz",
+    "blocks": 100000,
+    "seed": 120,
+    "network_difficulty": 1000000,
+    "pools": [{
+        "uncle_block_prob": 0.0,
+        "difficulty": 10000,
+        "reward_scheme": {"type": "qb"},
+        "miners": [{
+            "generator": "random",
+            "params": {
+                "behavior": {"name": "default"},
+                "hashrate": {
+                    "distribution": "lognormal",
+                    "params": {
+                        "mean": 1.0,
+                        "stddev": 0.5,
+                        "minimum": 0.001,
+                        "maximum": 40
+                    }
+                },
+                "stop_condition": {
+                    "type": "miners_count",
+                    "params": {"value": 1000}
+                }
+            }
+        }, {
+            "generator": "inline",
+            "params": {
+                "miners": [{
+                    "address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
+                    "hashrate": 15
+                }]
+            }
+        }]
+    }, {
+        "uncle_block_prob": 0.0,
+        "difficulty": 10000,
+        "reward_scheme": {"type": "qb"},
+        "miners": [{
+            "generator": "random",
+            "params": {
+                "behavior": {"name": "default"},
+                "hashrate": {
+                    "distribution": "lognormal",
+                    "params": {
+                        "mean": 1.0,
+                        "stddev": 0.5,
+                        "minimum": 0.001,
+                        "maximum": 40
+                    }
+                },
+                "stop_condition": {
+                    "type": "miners_count",
+                    "params": {"value": 1000}
+                }
+            }
+        }]
+    }]
+}
