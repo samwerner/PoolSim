@@ -58,6 +58,10 @@ public:
     template <typename RewardSchemeClass>
     std::vector<std::shared_ptr<typename RewardSchemeClass::record_class>> get_records();
 
+    // Returns the reward scheme block metadata
+    template <typename RewardSchemeClass>
+    typename RewardSchemeClass::block_metadata_class get_block_metadata();
+
     // Submit a share to the pool
     // The share can be either a network share or a pool share
     // TODO: when the share is a network share this should probably return
@@ -78,6 +82,9 @@ public:
     // Returns the metadata of all miners in the poool
     nlohmann::json get_miners_metadata() const;
 
+    // Returns the total number of blocks mined
+    uint64_t get_blocks_mined() const;
+
 protected:
     MiningPool(const std::string& name, uint64_t difficulty,
                double uncle_prob,
@@ -96,7 +103,7 @@ private:
     // reward scheme used by pool for distributing block rewards among miners
     std::unique_ptr<RewardScheme> reward_scheme;
     // total blocks mined by miners in pool
-    unsigned long blocks_mined;
+    uint64_t blocks_mined = 0;
     // Information about network
     std::weak_ptr<Network> network;
     // Random instance
@@ -110,6 +117,13 @@ std::vector<std::shared_ptr<typename RewardSchemeClass::record_class>> MiningPoo
     auto reward_scheme_ptr = reward_scheme.get();
     auto downcasted_reward_scheme = static_cast<RewardSchemeClass*>(reward_scheme_ptr);
     return downcasted_reward_scheme->get_records();
+}
+
+template <typename RewardSchemeClass>
+typename RewardSchemeClass::block_metadata_class MiningPool::get_block_metadata() {
+    auto reward_scheme_ptr = reward_scheme.get();
+    auto downcasted_reward_scheme = static_cast<RewardSchemeClass*>(reward_scheme_ptr);
+    return downcasted_reward_scheme->get_block_metadata();
 }
 
 }

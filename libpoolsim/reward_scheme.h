@@ -32,6 +32,8 @@ struct QBBlockMetaData : BlockMetaData {
     std::string receiver_address;
     uint64_t reset_balance_receiver = 0;
     double prop_credits_lost = 0;
+    double total_credits_lost = 0;
+    double average_credits_lost = 0;
 };
 
 class RewardScheme {
@@ -44,8 +46,8 @@ public:
     // RewardScheme and MiningPool should be a 1 to 1 relationship
     void set_mining_pool(std::shared_ptr<MiningPool> mining_pool);
 
-    // returns the metadata of the last block mined (including uncle blocks)
-    virtual nlohmann::json get_block_metadata() = 0;
+    // returns the metadata of the last block mined as json (including uncle blocks)
+    virtual nlohmann::json get_json_metadata() = 0;
 
     // returns the metadata for a miner
     virtual nlohmann::json get_miner_metadata(const std::string& miner_address) = 0;
@@ -90,7 +92,11 @@ public:
     // returns all the records
     std::vector<std::shared_ptr<RecordClass>> get_records();
 
+    // returns the last block metadat
+    BlockData get_block_metadata() const;
+
     using record_class = RecordClass;
+    using block_metadata_class = BlockData;
 
 protected:
     std::vector<std::shared_ptr<RecordClass>> records;
@@ -99,8 +105,7 @@ protected:
     virtual void update_record(std::shared_ptr<RecordClass> record, const Share& share) = 0;
 
     // returns the metadata needed when a block has been mined
-    virtual nlohmann::json get_block_metadata() override;
-
+    virtual nlohmann::json get_json_metadata() override;
 
     // returns the metadata for a miner
     virtual nlohmann::json get_miner_metadata(const std::string& miner_address) override;
@@ -126,6 +131,12 @@ std::vector<std::shared_ptr<RecordClass>> BaseRewardScheme<T, RecordClass, Block
 }
 
 template <typename T, typename RecordClass, typename BlockData>
+BlockData BaseRewardScheme<T, RecordClass, BlockData>::get_block_metadata() const {
+    return block_meta_data;
+}
+
+
+template <typename T, typename RecordClass, typename BlockData>
 std::shared_ptr<RecordClass> BaseRewardScheme<T, RecordClass, BlockData>::find_record(const std::string& miner_address) {
   for (auto iter = records.begin(); iter != records.end(); ++iter) {
     if ((*iter)->get_miner_address() == miner_address)
@@ -138,7 +149,7 @@ std::shared_ptr<RecordClass> BaseRewardScheme<T, RecordClass, BlockData>::find_r
 }
 
 template<typename T, typename RecordClass, typename BlockData>
-nlohmann::json BaseRewardScheme<T, RecordClass, BlockData>::get_block_metadata() {
+nlohmann::json BaseRewardScheme<T, RecordClass, BlockData>::get_json_metadata() {
     nlohmann::json j;
     to_json(j, block_meta_data);
     return j;

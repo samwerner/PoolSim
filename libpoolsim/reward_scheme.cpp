@@ -36,7 +36,9 @@ void to_json(nlohmann::json& j, const QBBlockMetaData& b) {
         {"credit_balance_receiver", b.credit_balance_receiver},
         {"receiver_address", b.receiver_address},
         {"reset_balance_receiver", b.reset_balance_receiver},
-        {"proportion_credits_lost", b.prop_credits_lost}
+        {"proportion_credits_lost", b.prop_credits_lost},
+        {"total_credits_lost", b.total_credits_lost},
+        {"average_credits_lost", b.average_credits_lost}
     };
 }
 
@@ -222,6 +224,9 @@ void QBRewardScheme::reward_top_miner() {
         block_meta_data.prop_credits_lost = (double)records[1]->get_credits()/credits_sum;
     else
         block_meta_data.prop_credits_lost = 0;
+
+    block_meta_data.total_credits_lost += block_meta_data.prop_credits_lost;
+    block_meta_data.average_credits_lost = block_meta_data.total_credits_lost / get_mining_pool()->get_blocks_mined();
 
     shares_per_block = 0;
     records[0]->set_credits(credits_diff);

@@ -23,6 +23,7 @@ struct QBHoppingConfig : BehaviourConfig {
     double bad_luck_limit = 1;
 };
 
+
 class ShareHandler {
 public:
     virtual ~ShareHandler();

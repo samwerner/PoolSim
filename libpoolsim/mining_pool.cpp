@@ -76,6 +76,10 @@ std::string MiningPool::get_name() const {
   return pool_name;
 }
 
+uint64_t MiningPool::get_blocks_mined() const {
+  return blocks_mined;
+}
+
 nlohmann::json MiningPool::get_miners_metadata() const {
     nlohmann::json result;
     for (const std::string& address : miners) {
@@ -87,19 +91,22 @@ nlohmann::json MiningPool::get_miners_metadata() const {
     return result;
 }
 
-void MiningPool::submit_share(const std::string& miner_address, const Share& share) {
-    uint8_t flags = share.get_properties();
-    if (share.is_network_share() && random->drand48() < uncle_prob) {
-        flags |= Share::Property::uncle;
+void MiningPool::submit_share(const std::string& miner_address, const Share& submitted_share) {
+    Share share = submitted_share;
+    if (share.is_valid_block() && random->drand48() < uncle_prob) {
+        share = Share(share.get_properties() | Share::Property::uncle);
     }
-    reward_scheme->handle_share(miner_address, Share(flags));
+    if (share.is_network_share()) {
+        blocks_mined++;
+    }
+    reward_scheme->handle_share(miner_address, share);
     if (share.is_valid_block()) {
         BlockEvent block_event {
             .time = 0,
             .is_uncle = share.is_uncle(),
             .pool_name = pool_name,
             .miner_address = miner_address,
-            .reward_scheme_data = reward_scheme->get_block_metadata()
+            .reward_scheme_data = reward_scheme->get_json_metadata()
         };
         notify(block_event);
     }

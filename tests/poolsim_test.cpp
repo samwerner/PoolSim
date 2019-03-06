@@ -155,7 +155,7 @@ public:
 class MockRewardScheme : public RewardScheme {
 public:
     MOCK_METHOD2(handle_share, void(const std::string&, const Share&));
-    MOCK_METHOD0(get_block_metadata, nlohmann::json());
+    MOCK_METHOD0(get_json_metadata, nlohmann::json());
     MOCK_METHOD1(get_miner_metadata, nlohmann::json (const std::string&));
     MOCK_METHOD1(get_blocks_mined, uint64_t (const std::string&));
     MOCK_METHOD1(get_blocks_received, double (const std::string&));
