@@ -1,0 +1,18 @@
+{
+    "blocks": 100000,
+    "seed": 120,
+    "network_difficulty": 1000000,
+    "pools": [{
+        "name": "pps-pool",
+        "uncle_block_prob": 0.0,
+        "difficulty": 10000,
+        "reward_scheme": {"type": "pps"},
+        "miners": {
+            "generator": "csv",
+            "params": {
+                "behavior": {"name": "default"},
+                "path": "miners/benign.csv"
+            }
+        }
+    }]
+}

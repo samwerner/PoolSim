@@ -1,0 +1,18 @@
+{
+    "blocks": 100000,
+    "seed": 120,
+    "network_difficulty": 1000000,
+    "pools": [{
+        "name": "pplns-pool",
+        "uncle_block_prob": 0.0,
+        "difficulty": 10000,
+        "reward_scheme": {"type": "pplns", "params": {"n": 200}},
+        "miners": {
+            "generator": "csv",
+            "params": {
+                "behavior": {"name": "default"},
+                "path": "miners/benign.csv"
+            }
+        }
+    }]
+}
