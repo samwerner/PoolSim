@@ -53,6 +53,9 @@ std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohman
       behavior_name = args["behavior"]["name"];
     }
     auto behavior_params = args["behavior"].value("params", json());
+    if (behavior_params.find(behavior_name) != behavior_params.end()) {
+        behavior_params = behavior_params[behavior_name];
+    }
     auto share_handler = ShareHandlerFactory::create(behavior_name, behavior_params);
     auto miner = Miner::create(address, hashrate, std::move(share_handler), network);
     miners.push_back(miner);

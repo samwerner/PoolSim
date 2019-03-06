@@ -4,16 +4,18 @@
 #include "miner_record.h"
 #include "random.h"
 
+#include <spdlog/spdlog.h>
+
 #include <iterator>
 #include <algorithm>
 
 namespace poolsim {
 
 void from_json(const nlohmann::json& j, BehaviourConfig& b) {
-        if (j.find("top_n") != j.end())
-            j.at("top_n").get_to(b.top_n);
-        if (j.find("threshold") != j.end())
-            j.at("threshold").get_to(b.threshold);
+    if (j.find("top_n") != j.end())
+        j.at("top_n").get_to(b.top_n);
+    if (j.find("threshold") != j.end())
+        j.at("threshold").get_to(b.threshold);
 }
 
 void from_json(const nlohmann::json& j, MultiAddressConfig& m){
@@ -40,7 +42,7 @@ void ShareHandler::set_miner(std::shared_ptr<Miner> _miner) {
   miner = _miner;
 }
 
-std::shared_ptr<Miner> ShareHandler::get_miner() {
+const std::shared_ptr<Miner> ShareHandler::get_miner() const {
   return miner.lock();
 }
 
@@ -84,17 +86,17 @@ bool QBShareHandler::should_attack(std::vector<std::shared_ptr<QBRecord>>& recor
     return get_victim_address(records) != "";
 }
 
-std::string QBShareHandler::get_victim_address(std::vector<std::shared_ptr<QBRecord>>& records) {
-    for (std::vector<std::shared_ptr<QBRecord>>::iterator record = records.begin(); record != records.end(); ++record) {
-        if (static_cast<uint64_t>(std::distance(records.begin(), record)) > top_n)
-            return "";
+bool QBShareHandler::is_pool_queue_based() const {
+    return get_miner()->get_pool()->get_scheme_name() == "QB";
+}
 
-        if ((*record)->get_miner() == this->get_miner()->get_address()) {
-            uint64_t victim_index = std::distance(records.begin(), record)+1;
-            uint64_t victim_credits = records[victim_index]->get_credits();
-            std::string victim_address = records[victim_index]->get_miner();
-            if ((*record)->get_credits()*threshold <= victim_credits) {
-                return victim_address;
+std::string QBShareHandler::get_victim_address(std::vector<std::shared_ptr<QBRecord>>& records) {
+    for (size_t i = 0; i + 1 < records.size() && i < top_n; i++) {
+        auto record = records[i];
+        if (record->get_miner_address() == get_miner()->get_address()) {
+            auto victim = records[i + 1];
+            if (record->get_credits() * threshold <= victim->get_credits()) {
+                return victim->get_miner_address();
             } 
         }
     }
@@ -109,7 +111,7 @@ QBWithholdingShareHandler::QBWithholdingShareHandler(const nlohmann::json& _args
 }
 
 void QBWithholdingShareHandler::handle_share(const Share& share) {
-    if (get_miner()->get_pool()->get_name() != "qb") {
+    if (!is_pool_queue_based()) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
@@ -138,7 +140,7 @@ DonationShareHandler::DonationShareHandler(const nlohmann::json& _args) {
 }
 
 void DonationShareHandler::handle_share(const Share& share) {
-    if (get_miner()->get_pool()->get_name() != "qb") {
+    if (!is_pool_queue_based()) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
@@ -167,10 +169,12 @@ MultipleAddressesShareHandler::MultipleAddressesShareHandler(const nlohmann::jso
     top_n = config.top_n;
     threshold = config.threshold;
     uint64_t addresses_count = config.addresses;
+    if (addresses_count == 0) {
+        throw std::invalid_argument("'addresses' must be set when using multiple_addresses");
+    }
 
-    for (size_t count = 0; count <= addresses_count; count++) {
+    for (size_t count = 0; count < addresses_count; count++) {
         std::string new_address = random->get_address();
-        get_miner()->get_pool()->join(new_address);
         addresses.push_back(new_address);
     }
 }
@@ -184,7 +188,7 @@ std::string MultipleAddressesShareHandler::get_random_address() const {
 }
 
 void MultipleAddressesShareHandler::handle_share(const Share& share) {
-    if (get_miner()->get_pool()->get_name() != "qb") {
+    if (!is_pool_queue_based()) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
         return;   
     }
@@ -201,7 +205,11 @@ void MultipleAddressesShareHandler::handle_share(const Share& share) {
     if (share.is_valid_block())
         valid_shares_donated++;
 
-    get_miner()->get_pool()->submit_share(get_random_address(), share);
+
+    std::string other_address = get_random_address();
+    // NOTE: join will be a no-op if the other address is already in the pool
+    get_miner()->get_pool()->join(other_address);
+    get_miner()->get_pool()->submit_share(other_address, share);
 }
 
 REGISTER(ShareHandler, MultipleAddressesShareHandler, "multiple_addresses");
@@ -216,14 +224,14 @@ QBPoolHopping::QBPoolHopping(const nlohmann::json& _args) {
 }
 
 void QBPoolHopping::handle_share(const Share& share) {
-    if (get_miner()->get_pool()->get_name() != "qb") {
+    if (!is_pool_queue_based()) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
-        return;   
+        return;
     }
-    
+
     auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
-    
+
     /*
     if (!should_attack(records)) {
         get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);

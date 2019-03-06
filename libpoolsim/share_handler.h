@@ -38,7 +38,7 @@ public:
 
     // Returns the miner of this handler as a shared_ptr
     // Use this rather than accessing the weak_ptr property
-    std::shared_ptr<Miner> get_miner();
+    const std::shared_ptr<Miner> get_miner() const;
 
     uint64_t get_valid_shares_withheld() const;
 protected:
@@ -64,6 +64,8 @@ public:
     uint64_t get_valid_shares_donated() const;
     
 protected:
+    // Checks if the current mining pool uses a queue based reward scheme
+    bool is_pool_queue_based() const;
     // Checks the specified condition logic under which a share should
     // be submitted
     bool should_attack(std::vector<std::shared_ptr<QBRecord>>& records);

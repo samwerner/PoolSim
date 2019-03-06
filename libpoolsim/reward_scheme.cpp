@@ -205,7 +205,7 @@ void QBRewardScheme::reward_top_miner() {
     if (records.size() == 1) {
         records[0]->inc_blocks_received();
         block_meta_data.credit_balance_receiver = records[0]->get_credits();
-        block_meta_data.receiver_address = records[0]->get_miner();
+        block_meta_data.receiver_address = records[0]->get_miner_address();
         shares_per_block = 0;
         return;
     }
@@ -213,7 +213,7 @@ void QBRewardScheme::reward_top_miner() {
     std::sort(records.begin(), records.end(), QBSortObj());
     records[0]->inc_blocks_received();
     block_meta_data.credit_balance_receiver = records[0]->get_credits();
-    block_meta_data.receiver_address = records[0]->get_miner();
+    block_meta_data.receiver_address = records[0]->get_miner_address();
     uint64_t credits_diff = records[0]->get_credits() - records[1]->get_credits();
     block_meta_data.reset_balance_receiver = credits_diff;
 

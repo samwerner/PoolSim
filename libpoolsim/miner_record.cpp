@@ -5,7 +5,7 @@ namespace poolsim {
 
 MinerRecord::MinerRecord(std::string miner_address) : address(miner_address) {}
 
-std::string MinerRecord::get_miner() const {
+std::string MinerRecord::get_miner_address() const {
     return address;
 }
 
@@ -89,8 +89,14 @@ void QBRecord::update_avg_credits_per_block() {
 }
 
 void to_json(nlohmann::json& j, const MinerRecord& data) {
-    j = nlohmann::json{{"miner_address", data.get_miner()}, {"blocks_mined", data.get_blocks_mined()}, {"blocks_received", data.get_blocks_received()},
-                        {"uncles_mined", data.get_uncles_mined()}, {"uncles_received", data.get_uncles_received()}, {"share_count", data.get_shares_count()}};
+    j = nlohmann::json{
+        {"miner_address", data.get_miner_address()},
+        {"blocks_mined", data.get_blocks_mined()},
+        {"blocks_received", data.get_blocks_received()},
+        {"uncles_mined", data.get_uncles_mined()},
+        {"uncles_received", data.get_uncles_received()},
+        {"share_count", data.get_shares_count()}
+    };
 }
 
 }

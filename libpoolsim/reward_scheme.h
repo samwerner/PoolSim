@@ -128,7 +128,7 @@ std::vector<std::shared_ptr<RecordClass>> BaseRewardScheme<T, RecordClass, Block
 template <typename T, typename RecordClass, typename BlockData>
 std::shared_ptr<RecordClass> BaseRewardScheme<T, RecordClass, BlockData>::find_record(const std::string& miner_address) {
   for (auto iter = records.begin(); iter != records.end(); ++iter) {
-    if ((*iter)->get_miner() == miner_address)
+    if ((*iter)->get_miner_address() == miner_address)
       return (*iter);
   }
 

@@ -28,7 +28,7 @@ public:
     // resets the number of shares submitted per round by miner to zero
     void reset_shares_per_round();
     // returns address of miner to which record belongs
-    std::string get_miner() const;
+    std::string get_miner_address() const;
     // returns the number of shares submitted
     uint64_t get_shares_count() const;
     // returns the number of uncle blocks mined by the miner
