@@ -11,7 +11,7 @@ namespace poolsim {
 class NotRegisteredException : public std::exception {
 public:
   explicit NotRegisteredException(const std::string& name);
-  virtual char const* what() const throw();
+  char const* what() const throw() override;
 private:
   std::string name;
 };
