@@ -18,4 +18,10 @@ uint64_t Network::get_difficulty() const { return difficulty; }
 
 void Network::set_difficulty(uint64_t _difficulty) { difficulty = _difficulty; }
 
+uint64_t Network::get_current_time() const { return current_time; }
+void Network::set_current_time(uint64_t _current_time) { current_time = _current_time; }
+
+uint64_t Network::get_current_block() const { return current_block; }
+void Network::inc_current_block() { current_block++; }
+
 }

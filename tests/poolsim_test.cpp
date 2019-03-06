@@ -697,30 +697,33 @@ TEST(Simulator, schedule_miner) {
 
 TEST(Simulator, process_event) {
     auto simulation = Simulation::from_string(simulation_string);
-    auto pool = MiningPool::create("pool", 50, 0.001, get_mock_reward_scheme(), get_sample_network());
-    auto miner = std::make_shared<MockMiner>("address", 25, get_sample_network());
-    miner->join_pool(pool);
     auto random = std::make_shared<MockRandom>();  
     auto simulator = std::make_shared<Simulator>(simulation, random);
+    auto network = simulator->get_network();
+
+    auto pool = MiningPool::create("pool", 50, 0.001, get_mock_reward_scheme(), network);
+    auto miner = std::make_shared<MockMiner>("address", 25, network);
+    miner->join_pool(pool);
+
     simulator->add_miner(miner);
     Event event(miner->get_address(), 5);
-    ASSERT_EQ(simulator->get_blocks_mined(), 0);
-    ASSERT_EQ(simulator->get_current_time(), 0);
+    ASSERT_EQ(network->get_current_block(), 0);
+    ASSERT_EQ(network->get_current_time(), 0);
     // drand48() called once in process_event and once in schedule_miner
     EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.3));
     // 0.3 < 0.5 -> network share
-    EXPECT_CALL(*miner, process_share(Share(true))).Times(1);
+    EXPECT_CALL(*miner, process_share(Share(Share::Property::valid_block))).Times(1);
     simulator->process_event(event);
-    ASSERT_EQ(simulator->get_blocks_mined(), 1);
-    ASSERT_EQ(simulator->get_current_time(), 5);
+    ASSERT_EQ(network->get_current_block(), 1);
+    ASSERT_EQ(network->get_current_time(), 5);
 
     Event event2(miner->get_address(), 10);
     EXPECT_CALL(*random, drand48()).Times(2).WillRepeatedly(testing::Return(0.8));
     // 0.8 > 0.5 -> not network share
-    EXPECT_CALL(*miner, process_share(Share(false))).Times(1);
+    EXPECT_CALL(*miner, process_share(Share(Share::Property::none))).Times(1);
     simulator->process_event(event2);
-    ASSERT_EQ(simulator->get_blocks_mined(), 1);
-    ASSERT_EQ(simulator->get_current_time(), 10);
+    ASSERT_EQ(network->get_current_block(), 1);
+    ASSERT_EQ(network->get_current_time(), 10);
 }
 
 TEST(Simulator, initialize) {

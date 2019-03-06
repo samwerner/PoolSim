@@ -44,6 +44,15 @@ public:
     // Use this rather than accessing the weak_ptr property
     const std::shared_ptr<Miner> get_miner() const;
 
+    // Returns the network
+    const std::shared_ptr<Network> get_network() const;
+
+    // Returns the pool
+    std::shared_ptr<MiningPool> get_pool() const;
+
+    // Returns the address
+    std::string get_address() const;
+
     uint64_t get_valid_shares_withheld() const;
 protected:
     std::weak_ptr<Miner> miner;
@@ -87,13 +96,13 @@ protected:
     uint64_t valid_shares_donated = 0;
 };
 
-template <typename T, typename RewardClass=RewardScheme>
+template <typename T>
 class BaseShareHandler :
     public ShareHandler,
     public Creatable1<ShareHandler, T, const nlohmann::json&> {   
 };
 
-template <typename T, typename RewardClass>
+template <typename T>
 class QBBaseShareHandler :
     public QBShareHandler,
     public Creatable1<ShareHandler, T, const nlohmann::json&> {
@@ -127,7 +136,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class QBWithholdingShareHandler : public QBBaseShareHandler<QBWithholdingShareHandler, QBRecord> {
+class QBWithholdingShareHandler : public QBBaseShareHandler<QBWithholdingShareHandler> {
 //class QBWithholdingShareHandler : public BaseShareHandler<QBWithholdingShareHandler, QBRewardScheme> {
 public:
     explicit QBWithholdingShareHandler(const nlohmann::json& args);
@@ -142,7 +151,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class DonationShareHandler : public QBBaseShareHandler<DonationShareHandler, QBRecord> {
+class DonationShareHandler : public QBBaseShareHandler<DonationShareHandler> {
 public:
     explicit DonationShareHandler(const nlohmann::json& args);
     // Donates the share to a specified address if a defined condition is true
@@ -156,7 +165,7 @@ public:
 // and whether there is a miner with a credit balance of p% or less behind him. If this is true,
 // the miner submits his share to a different address of the N addresses he controls in the pool.
 // Else, the share is submitted as specified by the default behaviour.
-class MultipleAddressesShareHandler : public QBBaseShareHandler<MultipleAddressesShareHandler, QBRecord> {
+class MultipleAddressesShareHandler : public QBBaseShareHandler<MultipleAddressesShareHandler> {
 public:
     explicit MultipleAddressesShareHandler(const nlohmann::json& args);
     // Donates the share to any of the other addresses belonging to
@@ -177,7 +186,7 @@ private:
 // Behaviour: miner defines a bad luck limit and checks if the current pool is as unlucky or worse.
 // If it is, the miner checks the current luck for all other pools in the network and joins the pool
 // that is luckiest. 
-class QBPoolHopping : public QBBaseShareHandler<QBPoolHopping, QBRecord> {
+class QBPoolHopping : public QBBaseShareHandler<QBPoolHopping> {
 public:
     explicit QBPoolHopping(const nlohmann::json& args);
 

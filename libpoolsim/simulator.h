@@ -54,12 +54,6 @@ public:
     // Returns the miner with the given address:
     std::shared_ptr<Miner> get_miner(const std::string& miner_address);
 
-    // Returns the current number of blocks mined
-    uint64_t get_blocks_mined() const;
-
-    // Returns the current time
-    double get_current_time() const;
-
     // Returns the numbers of pool
     size_t get_pools_count() const;
 
@@ -100,13 +94,8 @@ private:
     // Miners in the current simulation
     std::map<std::string, std::shared_ptr<Miner>> miners;
 
+    // Duration of the simulation
     int64_t duration;
-
-    // Current time
-    double current_time;
-
-    // Total number of blocks mined
-    uint64_t blocks_mined;
 
     // Outputs the result to a file
     void output_result(const nlohmann::json& result) const;

@@ -46,12 +46,24 @@ const std::shared_ptr<Miner> ShareHandler::get_miner() const {
   return miner.lock();
 }
 
+const std::shared_ptr<Network> ShareHandler::get_network() const {
+    return get_miner()->get_network();
+}
+
+std::shared_ptr<MiningPool> ShareHandler::get_pool() const {
+    return get_miner()->get_pool();
+}
+
+std::string ShareHandler::get_address() const {
+    return get_miner()->get_address();
+}
+
 // NOTE: this particular class probably does not need for args
 // but it must accept them because of the current factory implementation
 DefaultShareHandler::DefaultShareHandler(const nlohmann::json& _args) {}
 
 void DefaultShareHandler::handle_share(const Share& share) {
-  get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+    get_pool()->submit_share(get_address(), share);
 }
 
 std::string DefaultShareHandler::get_name() const {
@@ -64,7 +76,7 @@ WithholdingShareHandler::WithholdingShareHandler(const nlohmann::json& _args) {}
 
 void WithholdingShareHandler::handle_share(const Share& share) {
     if (!share.is_valid_block())
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
     
 }
 
@@ -95,13 +107,13 @@ bool QBShareHandler::should_attack(std::vector<std::shared_ptr<QBRecord>>& recor
 }
 
 bool QBShareHandler::is_pool_queue_based() const {
-    return get_miner()->get_pool()->get_scheme_name() == "QB";
+    return get_pool()->get_scheme_name() == "QB";
 }
 
 std::string QBShareHandler::get_victim_address(std::vector<std::shared_ptr<QBRecord>>& records) {
     for (size_t i = 0; i + 1 < records.size() && i < top_n; i++) {
         auto record = records[i];
-        if (record->get_miner_address() == get_miner()->get_address()) {
+        if (record->get_miner_address() == get_address()) {
             auto victim = records[i + 1];
             if (record->get_credits() * threshold <= victim->get_credits()) {
                 return victim->get_miner_address();
@@ -120,15 +132,15 @@ QBWithholdingShareHandler::QBWithholdingShareHandler(const nlohmann::json& _args
 
 void QBWithholdingShareHandler::handle_share(const Share& share) {
     if (!is_pool_queue_based()) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;   
     }
     
-    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+    auto records = get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
     
     if (!should_attack(records)) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;
     }
 
@@ -153,16 +165,16 @@ DonationShareHandler::DonationShareHandler(const nlohmann::json& _args) {
 
 void DonationShareHandler::handle_share(const Share& share) {
     if (!is_pool_queue_based()) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;   
     }
     
-    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+    auto records = get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
     
     std::string victim_address = get_victim_address(records);
     if (victim_address == "") {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;
     }
 
@@ -170,7 +182,7 @@ void DonationShareHandler::handle_share(const Share& share) {
     if (share.is_valid_block())
         valid_shares_donated++;
 
-    get_miner()->get_pool()->submit_share(victim_address, share);
+    get_pool()->submit_share(victim_address, share);
 }
 
 std::string DonationShareHandler::get_name() const {
@@ -205,15 +217,15 @@ std::string MultipleAddressesShareHandler::get_random_address() const {
 
 void MultipleAddressesShareHandler::handle_share(const Share& share) {
     if (!is_pool_queue_based()) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;   
     }
     
-    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+    auto records = get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
     
     if (!should_attack(records)) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;
     }
 
@@ -224,8 +236,8 @@ void MultipleAddressesShareHandler::handle_share(const Share& share) {
 
     std::string other_address = get_random_address();
     // NOTE: join will be a no-op if the other address is already in the pool
-    get_miner()->get_pool()->join(other_address);
-    get_miner()->get_pool()->submit_share(other_address, share);
+    get_pool()->join(other_address);
+    get_pool()->submit_share(other_address, share);
 }
 
 std::string MultipleAddressesShareHandler::get_name() const {
@@ -245,11 +257,12 @@ QBPoolHopping::QBPoolHopping(const nlohmann::json& _args) {
 
 void QBPoolHopping::handle_share(const Share& share) {
     if (!is_pool_queue_based()) {
-        get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+        get_pool()->submit_share(get_address(), share);
         return;
     }
 
-    auto records = get_miner()->get_pool()->get_records<QBRewardScheme>();
+
+    auto records = get_pool()->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
 
     /*
@@ -260,23 +273,23 @@ void QBPoolHopping::handle_share(const Share& share) {
     */
 
     // Leave pool if pool is unlucky
-    if (get_miner()->get_pool()->get_luck() < 100.0/bad_luck_limit) {
+    if (get_pool()->get_luck() < 100.0/bad_luck_limit) {
         
         // Check which other pool is the luckiest 
         std::shared_ptr<MiningPool> luckiest_pool = get_luckiest_pool();
-        if (luckiest_pool != get_miner()->get_pool()) {
+        if (luckiest_pool != get_pool()) {
             get_miner()->join_pool(luckiest_pool);
             total_hopps++;
        }
     }
 
-    get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
+    get_pool()->submit_share(get_address(), share);
 }
 
 std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
-    std::vector<std::shared_ptr<MiningPool>> pools = get_miner()->get_network()->get_pools();
-    double pool_luck = get_miner()->get_pool()->get_luck();
-    std::shared_ptr<MiningPool> luckiest_pool = get_miner()->get_pool();
+    std::vector<std::shared_ptr<MiningPool>> pools = get_network()->get_pools();
+    double pool_luck = get_pool()->get_luck();
+    std::shared_ptr<MiningPool> luckiest_pool = get_pool();
     for (auto pool : pools) {
         if (pool->get_luck() > pool_luck && pool != luckiest_pool) {
             pool_luck = pool->get_luck();
