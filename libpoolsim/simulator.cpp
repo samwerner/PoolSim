@@ -78,7 +78,7 @@ void Simulator::run() {
   schedule_all();
 
   spdlog::info("running {} blocks", simulation.blocks);
-  while (get_blocks_mined() <= simulation.blocks) {
+  while (get_blocks_mined() < simulation.blocks) {
     auto event = queue.pop();
     process_event(event);
   }
