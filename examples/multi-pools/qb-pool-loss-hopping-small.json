@@ -1,5 +1,5 @@
 {
-    "output": "results/qb-pool-luck-frequent-hopping-results.json.gz",
+    "output": "results/qb-pool-loss-hopping-small-results.json.gz",
     "blocks": 100000,
     "seed": 120,
     "network_difficulty": 1000000,
@@ -22,7 +22,7 @@
                 },
                 "stop_condition": {
                     "type": "miners_count",
-                    "params": {"value": 1000}
+                    "params": {"value": 50}
                 }
             }
         }, {
@@ -32,10 +32,7 @@
                     "address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
                     "hashrate": 15,
                     "behavior": {
-                        "name": "qb_luck_pool_hopping",
-                        "params": {
-                            "bad_luck_limit": 1
-                        }
+                        "name": "qb_loss_pool_hopping"
                     }
                 }]
             }
@@ -59,7 +56,7 @@
                 },
                 "stop_condition": {
                     "type": "miners_count",
-                    "params": {"value": 1000}
+                    "params": {"value": 50}
                 }
             }
         }]

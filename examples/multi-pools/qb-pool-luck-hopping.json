@@ -32,7 +32,7 @@
                     "address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
                     "hashrate": 15,
                     "behavior": {
-                        "name": "qb_pool_hopping",
+                        "name": "qb_luck_pool_hopping",
                         "params": {
                             "bad_luck_limit": 2
                         }

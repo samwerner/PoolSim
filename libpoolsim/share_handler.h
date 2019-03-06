@@ -19,7 +19,7 @@ struct MultiAddressConfig : BehaviourConfig {
     uint64_t addresses = 0;
 };
 
-struct QBHoppingConfig : BehaviourConfig {
+struct QBLuckHoppingConfig : BehaviourConfig {
     double bad_luck_limit = 1;
 };
 
@@ -50,7 +50,6 @@ public:
 
     // Returns the pool
     std::shared_ptr<MiningPool> get_pool() const;
-
 
     // Returns the address
     std::string get_address() const;
@@ -203,28 +202,56 @@ struct HopEvent {
 // Behaviour: miner defines a bad luck limit and checks if the current pool is as unlucky or worse.
 // If it is, the miner checks the current luck for all other pools in the network and joins the pool
 // that is luckiest. 
-class QBPoolHopping : public QBBaseShareHandler<QBPoolHopping> {
+class QBPoolHopping : public QBShareHandler {
 public:
-    explicit QBPoolHopping(const nlohmann::json& args);
-
     void handle_share(const Share& share) override;
 
-    std::string get_name() const override;
-
     nlohmann::json get_json_metadata() override;
+protected:
+    virtual std::shared_ptr<MiningPool> get_hop_target() = 0;
+    virtual bool should_hop() = 0;
 private:
-    std::shared_ptr<MiningPool> get_luckiest_pool();
-    // the factor of how unlucky the pool needs to be before leaving the pool (e.g. bad luck = 2 = 50% luck)
-    double bad_luck_limit = 1;
-
     // list of hop events
     std::vector<HopEvent> hop_events;
 }; 
+
+
+template <typename T>
+class QBBasePoolHopping : public QBPoolHopping,
+                          public Creatable1<ShareHandler, T, const nlohmann::json&> {
+
+};
+
+
+class QBLuckPoolHopping : public QBBasePoolHopping<QBLuckPoolHopping> {
+public:
+    explicit QBLuckPoolHopping(const nlohmann::json& args);
+    std::string get_name() const override;
+
+protected:
+    std::shared_ptr<MiningPool> get_hop_target();
+    bool should_hop();
+private:
+    // the factor of how unlucky the pool needs to be before leaving the pool (e.g. bad luck = 2 = 50% luck)
+    double bad_luck_limit = 1;
+};
+
+
+class QBLossPoolHopping : public QBBasePoolHopping<QBLossPoolHopping> {
+public:
+    explicit QBLossPoolHopping(const nlohmann::json& args);
+    std::string get_name() const override;
+
+protected:
+    std::shared_ptr<MiningPool> get_hop_target();
+    bool should_hop();
+};
+
 
 void to_json(nlohmann::json& j, const HopEvent& data);
 
 void from_json(const nlohmann::json& j, BehaviourConfig& b);
 void from_json(const nlohmann::json& j, MultiAddressConfig& m);
-void from_json(const nlohmann::json& j, QBHoppingConfig& m);
+void from_json(const nlohmann::json& j, QBLuckHoppingConfig& m);
 
 }

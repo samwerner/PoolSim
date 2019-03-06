@@ -27,7 +27,7 @@ void from_json(const nlohmann::json& j, MultiAddressConfig& m){
         j.at("addresses").get_to(m.addresses);
 }
 
-void from_json(const nlohmann::json& j, QBHoppingConfig& m){
+void from_json(const nlohmann::json& j, QBLuckHoppingConfig& m){
     if (j.find("top_n") != j.end())
         j.at("top_n").get_to(m.top_n);
     if (j.find("threshold") != j.end())
@@ -35,6 +35,13 @@ void from_json(const nlohmann::json& j, QBHoppingConfig& m){
     if (j.find("bad_luck_limit") != j.end())
         j.at("bad_luck_limit").get_to(m.bad_luck_limit);
 }
+
+void to_json(nlohmann::json& j, const HopEvent& event) {
+    j["previous_pool"] = event.previous_pool;
+    j["next_pool"] = event.next_pool;
+    j["time"] = event.time;
+}
+
 
 ShareHandler::~ShareHandler() {}
 
@@ -246,13 +253,10 @@ std::string MultipleAddressesShareHandler::get_name() const {
 
 REGISTER(ShareHandler, MultipleAddressesShareHandler, "multiple_addresses");
 
-
-QBPoolHopping::QBPoolHopping(const nlohmann::json& _args) {
-    QBHoppingConfig config;
-    from_json(_args, config);
-    top_n = config.top_n;
-    threshold = config.threshold;
-    bad_luck_limit = config.bad_luck_limit;
+nlohmann::json QBPoolHopping::get_json_metadata() {
+    nlohmann::json j;
+    j["hop_events"] = hop_events;
+    return j;
 }
 
 void QBPoolHopping::handle_share(const Share& share) {
@@ -273,16 +277,15 @@ void QBPoolHopping::handle_share(const Share& share) {
     }
     */
 
-    // Leave pool if pool is unlucky
-    if (current_pool->get_luck() < 100.0 / bad_luck_limit) {
-        
-        // Check which other pool is the luckiest 
-        auto luckiest_pool = get_luckiest_pool();
-        if (luckiest_pool != current_pool) {
-            get_miner()->join_pool(luckiest_pool);
+    // Leave pool if condition met
+    if (should_hop()) {
+        // Check which pool we should hop to
+        auto pool_to_hop = get_hop_target();
+        if (pool_to_hop != current_pool) {
+            get_miner()->join_pool(pool_to_hop);
             HopEvent event {
                 .previous_pool = current_pool->get_name(),
-                .next_pool = luckiest_pool->get_name(),
+                .next_pool = pool_to_hop->get_name(),
                 .time = get_network()->get_current_time()
             };
             hop_events.push_back(event);
@@ -292,13 +295,18 @@ void QBPoolHopping::handle_share(const Share& share) {
     get_pool()->submit_share(get_address(), share);
 }
 
-nlohmann::json QBPoolHopping::get_json_metadata() {
-    nlohmann::json j;
-    j["hop_events"] = hop_events;
-    return j;
+
+
+QBLuckPoolHopping::QBLuckPoolHopping(const nlohmann::json& _args) {
+    QBLuckHoppingConfig config;
+    from_json(_args, config);
+    top_n = config.top_n;
+    threshold = config.threshold;
+    bad_luck_limit = config.bad_luck_limit;
 }
 
-std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
+
+std::shared_ptr<MiningPool> QBLuckPoolHopping::get_hop_target() {
     std::vector<std::shared_ptr<MiningPool>> pools = get_network()->get_pools();
     double pool_luck = get_pool()->get_luck();
     std::shared_ptr<MiningPool> luckiest_pool = get_pool();
@@ -311,17 +319,50 @@ std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
     return luckiest_pool;
 }
 
-std::string QBPoolHopping::get_name() const {
-    return "qb_pool_hopping";
+bool QBLuckPoolHopping::should_hop() {
+    return get_pool()->get_luck() < 100.0 / bad_luck_limit;
 }
 
-void to_json(nlohmann::json& j, const HopEvent& event) {
-    j["previous_pool"] = event.previous_pool;
-    j["next_pool"] = event.next_pool;
-    j["time"] = event.time;
+std::string QBLuckPoolHopping::get_name() const {
+    return "qb_luck_pool_hopping";
 }
 
-REGISTER(ShareHandler, QBPoolHopping, "qb_pool_hopping");
+REGISTER(ShareHandler, QBLuckPoolHopping, "qb_luck_pool_hopping");
+
+
+QBLossPoolHopping::QBLossPoolHopping(const nlohmann::json& _args) {
+    BehaviourConfig config;
+    from_json(_args, config);
+    top_n = config.top_n;
+    threshold = config.threshold;
+}
+
+std::shared_ptr<MiningPool> QBLossPoolHopping::get_hop_target() {
+    std::vector<std::shared_ptr<MiningPool>> pools = get_network()->get_pools();
+    auto max_loss = get_pool()->get_block_metadata<QBRewardScheme>().average_credits_lost;
+    auto best_pool = get_pool();
+    for (auto pool : pools) {
+        auto pool_loss = pool->get_block_metadata<QBRewardScheme>().average_credits_lost;
+        if (pool_loss > max_loss && pool != best_pool) {
+            max_loss = pool_loss;
+            best_pool = pool;
+        }
+    }
+    return best_pool;
+}
+
+bool QBLossPoolHopping::should_hop() {
+    return true;
+}
+
+std::string QBLossPoolHopping::get_name() const {
+    return "qb_loss_pool_hopping";
+}
+
+REGISTER(ShareHandler, QBLossPoolHopping, "qb_loss_pool_hopping");
+
+
+
 
 
 
