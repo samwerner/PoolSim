@@ -39,7 +39,7 @@ struct PoolConfig {
     RewardSchemeConfig reward_scheme_config;
 
     // How to create initial miners for this pool
-    MinerConfig miner_config;
+    std::vector<MinerConfig> miners_config;
 };
 
 struct Simulation {

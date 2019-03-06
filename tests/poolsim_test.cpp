@@ -32,11 +32,11 @@ const std::string pplns_simulation_string = R"({
             "n": 3
         }
     },
-    "miners": {
+    "miners": [{
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
-    }
+    }]
   }]
 })";
 
@@ -52,11 +52,11 @@ const std::string prop_simulation_string = R"({
             "pool_fee": 0
         }
     },
-    "miners": {
+    "miners": [{
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
-    }
+    }]
   }]
 })";
 
@@ -70,11 +70,11 @@ const std::string qb_simulation_string = R"({
     "reward_scheme": {
         "type": "qb", "params": {}
     },
-    "miners": {
+    "miners": [{
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
-    }
+    }]
   }]
 })";
 
@@ -90,11 +90,11 @@ const std::string pps_simulation_string = R"({
             "pool_fee": 0
         }
     },
-    "miners": {
+    "miners": [{
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
-    }
+    }]
   }]
 })";
 
@@ -107,11 +107,11 @@ const std::string simulation_string = R"({
     "uncle_block_prob": 0.001,
     "difficulty": 10,
     "reward_scheme": {"type": "pps", "params": {}},
-    "miners": {
+    "miners": [{
       "behavior": {"name": "default", "params": {}},
       "generator": "csv",
       "params": {"path": "miners.csv"}
-    }
+    }]
   }]
 })";
 
@@ -165,8 +165,8 @@ public:
 
 Simulation get_sample_simulation() {
     auto simulation_json = nlohmann::json::parse(simulation_string);
-    simulation_json["pools"][0]["miners"]["generator"] = "random";
-    simulation_json["pools"][0]["miners"]["params"] = random_miners_params;
+    simulation_json["pools"][0]["miners"][0]["generator"] = "random";
+    simulation_json["pools"][0]["miners"][0]["params"] = random_miners_params;
     return simulation_json.get<Simulation>();
 }
 
@@ -274,7 +274,7 @@ TEST(Simulation, from_string) {
     auto pool = simulation.pools[0];
     ASSERT_EQ(pool.difficulty, 10);
     ASSERT_FLOAT_EQ(pool.uncle_block_prob, 0.001);
-    auto miner_config = pool.miner_config;
+    auto miner_config = pool.miners_config[0];
     ASSERT_EQ(miner_config.generator, "csv");
     ASSERT_EQ(miner_config.params["path"], "miners.csv");
 }

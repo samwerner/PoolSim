@@ -13,13 +13,13 @@
                 "pool_fee": 0
             }
         },
-        "miners": {
+        "miners": [{
             "generator": "csv",
             "params": {
                 "behavior": {"name": "default"},
                 "path": "tests/fixtures/sample_miners.csv"
             }
-        }
+        }]
     }, {
         "uncle_block_prob": 0.0,
         "difficulty": 20,
@@ -29,7 +29,7 @@
                 "pool_fee": 0.05
             }
         },
-        "miners": {
+        "miners": [{
             "generator": "random",
             "params": {
                 "behavior": {"name": "default"},
@@ -42,6 +42,6 @@
                     "params": {"value": 100}
                 }
             }
-        }
+        }]
     }]
 }

@@ -8,7 +8,7 @@
         "uncle_block_prob": 0.0,
         "difficulty": 10000,
         "reward_scheme": {"type": "qb"},
-        "miners": {
+        "miners": [{
             "generator": "csv",
             "params": {
                 "path": "miners/witholding.csv",
@@ -21,6 +21,6 @@
                     }
                 }
             }
-        }
+        }]
     }]
 }

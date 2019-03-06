@@ -44,20 +44,33 @@ std::shared_ptr<Simulator> Simulator::from_config_file(const std::string& filepa
 void Simulator::initialize() {
     for (size_t i = 0; i < simulation.pools.size(); i++) {
         auto pool_config = simulation.pools[i];
-        auto miner_config = pool_config.miner_config;
-        auto reward_scheme_config = pool_config.reward_scheme_config;
-        auto miner_creator = MinerCreatorFactory::create(miner_config.generator, network);
-        auto new_miners = miner_creator->create_miners(miner_config.params);
-        auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
-                                                        reward_scheme_config.params);
+
+        if (pool_config.difficulty == 0) {
+            throw std::invalid_argument("pool difficulty should be greater than 0");
+        }
+
+        // Get or generate pool name
         std::string pool_name = pool_config.name;
         if (pool_name.empty()) {
             std::stringstream s;
             s << "pool-" << i;
             pool_name = s.str();
         }
-        
-        assert(pool_config.difficulty);
+
+        // Create all the miners in the configuration
+        std::vector<std::shared_ptr<Miner>> pool_miners;
+        for (const MinerConfig& miner_config : pool_config.miners_config) {
+            auto miner_creator = MinerCreatorFactory::create(miner_config.generator, network);
+            auto new_miners = miner_creator->create_miners(miner_config.params);
+            pool_miners.insert(pool_miners.end(), new_miners.begin(), new_miners.end());
+        }
+
+        // Create pool reward scheme
+        auto reward_scheme_config = pool_config.reward_scheme_config;
+        auto reward_scheme = RewardSchemeFactory::create(reward_scheme_config.scheme_type,
+                                                         reward_scheme_config.params);
+
+        // Create and initialize pool
         auto pool = MiningPool::create(pool_name,
                                        pool_config.difficulty,
                                        pool_config.uncle_block_prob,
@@ -65,11 +78,13 @@ void Simulator::initialize() {
                                        network);
         network->register_pool(pool);
         pool->add_observer(shared_from_this());
-        for (auto miner : new_miners) {
+        add_pool(pool);
+
+        // Add all miners to pool and simulator
+        for (auto miner : pool_miners) {
             miner->join_pool(pool);
             add_miner(miner);
         }
-        add_pool(pool);
     }
 }
 

@@ -8,12 +8,12 @@
         "uncle_block_prob": 0.0,
         "difficulty": 10000,
         "reward_scheme": {"type": "pplns", "params": {"n": 200}},
-        "miners": {
+        "miners": [{
             "generator": "csv",
             "params": {
                 "behavior": {"name": "default"},
                 "path": "miners/benign.csv"
             }
-        }
+        }]
     }]
 }
