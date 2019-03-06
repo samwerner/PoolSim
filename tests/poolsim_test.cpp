@@ -119,7 +119,7 @@ const nlohmann::json random_miners_params = R"({
   "behavior": {"name": "default", "params": {}},
   "hashrate": {
     "distribution": "normal",
-    "params": {"mean": 10.0, "variance": 30.0}
+    "params": {"mean": 10.0, "stddev": 1.5}
   },
   "stop_condition": {
     "type": "miners_count",
@@ -747,7 +747,7 @@ TEST(Random, UniformDistribution) {
 }
 
 TEST(Random, NormalDistribution) {
-  auto args = R"({"mean": 0.0, "variance": 1.0})"_json;
+  auto args = R"({"mean": 0.0, "stddev": 1.0})"_json;
   auto dist = DistributionFactory::create("normal", args);
   double value = dist->get();
   ASSERT_GE(value, -5.0);
@@ -778,12 +778,12 @@ TEST(MinerCreator, RandomMinerCreator) {
     auto args = R"({
         "behavior": {"name": "default", "params": {}},
         "hashrate": {
-        "distribution": "normal",
-        "params": {"mean": 10.0, "variance": 30.0}
+            "distribution": "normal",
+            "params": {"mean": 10.0, "stddev": 1.5, "minimum": 2.0, "maximum": 40.0}
         },
         "stop_condition": {
-        "type": "miners_count",
-        "params": {"value": 100}
+            "type": "miners_count",
+            "params": {"value": 100}
         }
     })"_json;
     auto creator = MinerCreatorFactory::create("random", get_sample_network());
@@ -796,6 +796,8 @@ TEST(MinerCreator, RandomMinerCreator) {
     uint64_t total_hashrate = 0;
     for (auto miner : miners) {
         total_hashrate += miner->get_hashrate();
+        ASSERT_GE(miner->get_hashrate(), 2.0);
+        ASSERT_LE(miner->get_hashrate(), 40.0);
     }
     ASSERT_GE(total_hashrate, 100);
 }

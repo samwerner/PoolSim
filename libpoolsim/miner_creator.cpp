@@ -7,6 +7,7 @@ namespace poolsim {
 
 using nlohmann::json;
 
+const double default_min_hashrate = 0.01;
 
 MinerCreationState::MinerCreationState(size_t _miners_count, uint64_t _total_hashrate)
   : miners_count(_miners_count), total_hashrate(_total_hashrate) {}
@@ -79,10 +80,19 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
                                                                  args["stop_condition"]["params"]);
   MinerCreationState state;
   while (!stop_condition->should_stop(state)) {
-    double hashrate = -1;
-    while (hashrate < 0) {
-      hashrate = hashrate_distribution->get();
+    double hashrate = hashrate_distribution->get();
+
+    // do not allow negative hashrate
+    if (hashrate < 0) {
+      hashrate = args["hashrate"].value("minimum", default_min_hashrate);
     }
+
+    // truncate if maximum hashrate is set
+    double max_hashrate = args["hashrate"].value("maximum", -1);
+    if (max_hashrate > 0 && hashrate > max_hashrate) {
+        hashrate = max_hashrate;
+    }
+
     std::string address = random->get_address();
     auto behavior_params = args["behavior"].value("params", json());
     auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"], behavior_params);

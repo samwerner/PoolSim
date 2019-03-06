@@ -35,7 +35,12 @@
                 "behavior": {"name": "default"},
                 "hashrate": {
                     "distribution": "normal",
-                    "params": {"mean": 10.0, "variance": 10.0}
+                    "params": {
+                        "mean": 10.0,
+                        "stddev": 2.0,
+                        "minimum": 0.1,
+                        "maximum": 40.0
+                    }
                 },
                 "stop_condition": {
                     "type": "total_hashrate",

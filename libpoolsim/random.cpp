@@ -71,14 +71,14 @@ Distribution::Distribution() : Distribution(SystemRandom::get_instance()) {}
 Distribution::Distribution(std::shared_ptr<Random> _random)
   : random(_random) {}
 
-NormalDistribution::NormalDistribution(double mean, double variance)
-  : Distribution(), dist(std::normal_distribution<double>(mean, variance)) {}
+NormalDistribution::NormalDistribution(double mean, double stddev)
+  : Distribution(), dist(std::normal_distribution<double>(mean, stddev)) {}
 
-NormalDistribution::NormalDistribution(double mean, double variance, std::shared_ptr<Random> _random)
-  : Distribution(_random), dist(std::normal_distribution<double>(mean, variance)) {}
+NormalDistribution::NormalDistribution(double mean, double stddev, std::shared_ptr<Random> _random)
+  : Distribution(_random), dist(std::normal_distribution<double>(mean, stddev)) {}
 
 NormalDistribution::NormalDistribution(const json& args)
-  : Distribution(), dist(std::normal_distribution<double>(args["mean"], args["variance"])) {}
+  : Distribution(), dist(std::normal_distribution<double>(args["mean"], args["stddev"])) {}
 
 double NormalDistribution::get() {
   return dist(*random->get_random_engine());
@@ -86,14 +86,14 @@ double NormalDistribution::get() {
 
 REGISTER(Distribution, NormalDistribution, "normal")
 
-LogNormalDistribution::LogNormalDistribution(double mean, double variance)
-  : Distribution(), dist(std::lognormal_distribution<double>(mean, variance)) {}
+LogNormalDistribution::LogNormalDistribution(double mean, double stddev)
+  : Distribution(), dist(std::lognormal_distribution<double>(mean, stddev)) {}
 
-LogNormalDistribution::LogNormalDistribution(double mean, double variance, std::shared_ptr<Random> _random)
-  : Distribution(_random), dist(std::lognormal_distribution<double>(mean, variance)) {}
+LogNormalDistribution::LogNormalDistribution(double mean, double stddev, std::shared_ptr<Random> _random)
+  : Distribution(_random), dist(std::lognormal_distribution<double>(mean, stddev)) {}
 
 LogNormalDistribution::LogNormalDistribution(const json& args)
-  : Distribution(), dist(std::lognormal_distribution<double>(args["mean"], args["variance"])) {}
+  : Distribution(), dist(std::lognormal_distribution<double>(args["mean"], args["stddev"])) {}
 
 double LogNormalDistribution::get() {
   return dist(*random->get_random_engine());

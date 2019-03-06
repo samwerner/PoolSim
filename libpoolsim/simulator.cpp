@@ -163,7 +163,9 @@ void Simulator::process_event(const Event& event) {
   uint8_t share_flags = Share::Property::none;
   if (is_network_share) {
     blocks_mined++;
-    if (blocks_mined % 100 == 0) {
+    if (blocks_mined % 10000 == 0) {
+      spdlog::info("progress: {} / {}", blocks_mined, simulation.blocks);
+    } else if (blocks_mined % 100 == 0) {
       spdlog::debug("progress: {} / {}", blocks_mined, simulation.blocks);
     }
     share_flags |= Share::Property::valid_block;
