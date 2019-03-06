@@ -90,7 +90,7 @@ class BaseShareHandler :
 template <typename T, typename RewardClass>
 class QBBaseShareHandler :
     public QBShareHandler,
-    public Creatable1<QBShareHandler, T, const nlohmann::json&> {
+    public Creatable1<ShareHandler, T, const nlohmann::json&> {
 };
   
 // Default implementation for ShareHandler
