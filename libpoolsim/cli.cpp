@@ -18,8 +18,6 @@ Cli::Cli() {
     app->add_option("-c,--config", args->config_filepath, "configuration file")
        ->required()
        ->check(CLI::ExistingFile);
-    app->add_option("-o,--output", args->output_filepath, "output file")
-       ->required();
     app->add_flag("--debug", args->debug, "enable debug logs");
 }
 
@@ -34,7 +32,7 @@ int Cli::run(int argc, char* argv[]) {
     auto simulator = Simulator::from_config_file(args->config_filepath);
     simulator->run();
 
-    simulator->save_simulation_data(args->output_filepath);
+    simulator->save_simulation_data();
 
     return 0;
 }

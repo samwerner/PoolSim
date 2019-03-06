@@ -21,6 +21,7 @@ using namespace poolsim;
 
 
 const std::string pplns_simulation_string = R"({
+  "output": "results.json",
   "blocks": 5,
   "network_difficulty": 100,
   "pools": [{
@@ -40,6 +41,7 @@ const std::string pplns_simulation_string = R"({
 })";
 
 const std::string prop_simulation_string = R"({
+  "output": "results.json",
   "blocks": 5,
   "network_difficulty": 100,
   "pools": [{
@@ -59,6 +61,7 @@ const std::string prop_simulation_string = R"({
 })";
 
 const std::string qb_simulation_string = R"({
+  "output": "results.json",
   "blocks": 5,
   "network_difficulty": 1000,
   "pools": [{
@@ -76,6 +79,7 @@ const std::string qb_simulation_string = R"({
 })";
 
 const std::string pps_simulation_string = R"({
+  "output": "results.json",
   "blocks": 5,
   "network_difficulty": 100,
   "pools": [{
@@ -96,6 +100,7 @@ const std::string pps_simulation_string = R"({
 
 
 const std::string simulation_string = R"({
+  "output": "results.json",
   "blocks": 5,
   "network_difficulty": 100,
   "pools": [{

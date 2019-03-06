@@ -50,6 +50,9 @@ struct Simulation {
     // Creates a Simulation from a JSON string
     static Simulation from_string(const std::string& string);
 
+    // The output file for the simulation
+    std::string output;
+
     // The number of blocks to reach before ending the simulation
     uint64_t blocks;
 

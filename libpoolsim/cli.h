@@ -10,7 +10,6 @@ namespace poolsim {
 
 struct CliArgs {
     std::string config_filepath;
-    std::string output_filepath;
     bool debug;
 };
 

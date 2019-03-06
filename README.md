@@ -3,6 +3,7 @@
 ## Requirements
 
 * C++11 compiler
+* [Boost iostream][boost-iostreams] (optional, to save gzip compressed results)
 * [Google Test][google-test] and Google Mock (only for tests, packages `google-mock` and `libgtest-dev` on Ubuntu)
 
 NOTE: On Ubuntu, Google Mock and Google Test must be compiled.
@@ -202,3 +203,4 @@ should run and execute the tests.
     - [ ] Simulator implementation
 
 [google-test]: https://github.com/google/googletest
+[boost-iostreams]: https://www.boost.org/doc/libs/1_69_0/libs/iostreams/doc/index.html

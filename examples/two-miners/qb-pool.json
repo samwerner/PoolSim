@@ -1,4 +1,5 @@
 {
+    "output": "results/qb-pool-results.json.gz",
     "blocks": 100000,
     "seed": 120,
     "network_difficulty": 1000000,

@@ -91,7 +91,8 @@ void Simulator::run() {
   }
 }
 
-void output_result(const std::string& filepath, const json& result) {
+void Simulator::output_result(const json& result) const {
+    auto filepath = simulation.output;
     if (filepath.substr(filepath.size() - 3, 3) != ".gz") {
         std::ofstream o(filepath, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
         o << std::setw(4) << result << std::endl;
@@ -107,11 +108,11 @@ void output_result(const std::string& filepath, const json& result) {
     std::ostream o(&out);
     o << std::setw(4) << result << std::endl;
     #else
-    throw std::invalid_argument("libboost not found, cannot output gz");
+    throw std::invalid_argument("boost not found, cannot output gz");
     #endif
 }
 
-void Simulator::save_simulation_data(const std::string& filepath) {
+void Simulator::save_simulation_data() {
     json result;
 
     result["blocks"] = json::array();
@@ -129,7 +130,7 @@ void Simulator::save_simulation_data(const std::string& filepath) {
         result["miners"].push_back(*miner_kv.second);
     }
 
-    output_result(filepath, result);
+    output_result(result);
 }
 
 void Simulator::schedule_all() {

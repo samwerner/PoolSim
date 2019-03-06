@@ -1,46 +1,47 @@
 {
-  "blocks": 100000,
-  "seed": 120,
-  "network_difficulty": 10000,
-  "pools": [{
-    "uncle_block_prob": 0.0,
-    "difficulty": 10,
-    "reward_scheme": {
-      "type": "pplns",
-      "params": {
-          "n": 200,
-          "pool_fee": 0
-      }
-    },
-    "miners": {
-      "generator": "csv",
-      "params": {
-        "behavior": {"name": "default"},
-        "path": "tests/fixtures/sample_miners.csv"
-      }
-    }
-  }, {
-    "uncle_block_prob": 0.0,
-    "difficulty": 20,
-    "reward_scheme": {
-      "type": "qb",
-      "params": {
-          "pool_fee": 0.05
-      }
-    },
-    "miners": {
-      "generator": "random",
-      "params": {
-        "behavior": {"name": "default"},
-        "hashrate": {
-          "distribution": "normal",
-          "params": {"mean": 10.0, "variance": 10.0}
+    "output": "results.json",
+    "blocks": 100000,
+    "seed": 120,
+    "network_difficulty": 10000,
+    "pools": [{
+        "uncle_block_prob": 0.0,
+        "difficulty": 10,
+        "reward_scheme": {
+            "type": "pplns",
+            "params": {
+                "n": 200,
+                "pool_fee": 0
+            }
         },
-        "stop_condition": {
-          "type": "total_hashrate",
-          "params": {"value": 100}
+        "miners": {
+            "generator": "csv",
+            "params": {
+                "behavior": {"name": "default"},
+                "path": "tests/fixtures/sample_miners.csv"
+            }
         }
-      }
-    }
-  }]
+    }, {
+        "uncle_block_prob": 0.0,
+        "difficulty": 20,
+        "reward_scheme": {
+            "type": "qb",
+            "params": {
+                "pool_fee": 0.05
+            }
+        },
+        "miners": {
+            "generator": "random",
+            "params": {
+                "behavior": {"name": "default"},
+                "hashrate": {
+                    "distribution": "normal",
+                    "params": {"mean": 10.0, "variance": 10.0}
+                },
+                "stop_condition": {
+                    "type": "total_hashrate",
+                    "params": {"value": 100}
+                }
+            }
+        }
+    }]
 }

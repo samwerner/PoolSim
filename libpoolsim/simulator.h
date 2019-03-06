@@ -32,7 +32,7 @@ public:
     void initialize();
 
     // Saves the simulation data to a file
-    void save_simulation_data(const std::string& filepath);
+    void save_simulation_data();
 
     // Schedules all the miners
     // This should only be used for the first initialization
@@ -105,6 +105,9 @@ private:
 
     // Total number of blocks mined
     uint64_t blocks_mined;
+
+    // Outputs the result to a file
+    void output_result(const nlohmann::json& result) const;
 };
 
 }
