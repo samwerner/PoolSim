@@ -1,0 +1,26 @@
+{
+    "output": "results/qb-pool-share-donation-results.json.gz",
+    "blocks": 100000,
+    "seed": 120,
+    "network_difficulty": 1000000,
+    "pools": [{
+        "name": "qb-pool",
+        "uncle_block_prob": 0.0,
+        "difficulty": 10000,
+        "reward_scheme": {"type": "qb"},
+        "miners": {
+            "generator": "csv",
+            "params": {
+                "path": "miners/share_donation.csv",
+                "behavior": {
+                    "params": {
+                        "share_donation": {
+                            "top_n": 1,
+                            "threshold": 0.9
+                        }
+                    }
+                }
+            }
+        }
+    }]
+}
