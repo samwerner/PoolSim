@@ -36,6 +36,9 @@ public:
     // ShareHandler and Miner must be a 1 to 1 relationship
     void set_miner(std::shared_ptr<Miner> miner);
 
+    // Returns the name of the share handler
+    virtual std::string get_name() const = 0;
+
     // Returns the miner of this handler as a shared_ptr
     // Use this rather than accessing the weak_ptr property
     const std::shared_ptr<Miner> get_miner() const;
@@ -98,9 +101,11 @@ class QBBaseShareHandler :
 // Default implementation for ShareHandler
 class DefaultShareHandler: public BaseShareHandler<DefaultShareHandler> {
 public:
-  explicit DefaultShareHandler(const nlohmann::json& args);
-  // Simply submits the share to the mining pool
-  virtual void handle_share(const Share& share) override;
+    explicit DefaultShareHandler(const nlohmann::json& args);
+    // Simply submits the share to the mining pool
+    virtual void handle_share(const Share& share) override;
+
+    std::string get_name() const override;
 };
 
 // IMPLEMENTED: YES
@@ -112,6 +117,8 @@ public:
     explicit WithholdingShareHandler(const nlohmann::json& args);
     // Withholds valid shares (including uncles) from submitting to pool operator
     void handle_share(const Share& share) override;
+
+    std::string get_name() const override;
 };
 
 // IMPLEMENTED: YES
@@ -125,6 +132,8 @@ public:
     explicit QBWithholdingShareHandler(const nlohmann::json& args);
     // Withholds valid shares (including uncles) from submitting to pool operator
     void handle_share(const Share& share) override;
+
+    std::string get_name() const override;
 };
 
 // IMPLEMENTED: YES
@@ -137,6 +146,8 @@ public:
     explicit DonationShareHandler(const nlohmann::json& args);
     // Donates the share to a specified address if a defined condition is true
     void handle_share(const Share& share) override;
+
+    std::string get_name() const override;
 };
 
 // IMPLEMENTED: YES
@@ -152,6 +163,8 @@ public:
     void handle_share(const Share& share) override;
 
     uint64_t get_addresses_count() const;
+
+    std::string get_name() const override;
 private:
     // list of all addresses in pool controlled by miner
     std::vector<std::string> addresses;
@@ -168,6 +181,8 @@ public:
     explicit QBPoolHopping(const nlohmann::json& args);
 
     void handle_share(const Share& share) override;
+
+    std::string get_name() const override;
 private:
     std::shared_ptr<MiningPool> get_luckiest_pool();
     // the factor of how unlucky the pool needs to be before leaving the pool (e.g. bad luck = 2 = 50% luck)

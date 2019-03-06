@@ -53,7 +53,7 @@ std::vector<std::shared_ptr<Miner>> CSVMinerCreator::create_miners(const nlohman
     if (behavior_name.empty()) {
       behavior_name = args["behavior"]["name"];
     }
-    auto behavior_params = args["behavior"].value("params", json());
+    auto behavior_params = args["behavior"].value("params", json::object());
     if (behavior_params.find(behavior_name) != behavior_params.end()) {
         behavior_params = behavior_params[behavior_name];
     }
@@ -94,7 +94,7 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
     }
 
     std::string address = random->get_address();
-    auto behavior_params = args["behavior"].value("params", json());
+    auto behavior_params = args["behavior"].value("params", json::object());
     auto share_handler = ShareHandlerFactory::create(args["behavior"]["name"], behavior_params);
     auto miner = Miner::create(address, hashrate, std::move(share_handler), network);
     miners.push_back(miner);
@@ -105,5 +105,27 @@ std::vector<std::shared_ptr<Miner>> RandomMinerCreator::create_miners(const nloh
 }
 
 REGISTER(MinerCreator, RandomMinerCreator, "random")
+
+InlineMinerCreator::InlineMinerCreator(std::shared_ptr<Network> network)
+    : MinerCreator(network) {}
+
+
+std::vector<std::shared_ptr<Miner>> InlineMinerCreator::create_miners(const json& args) {
+    std::vector<std::shared_ptr<Miner>> miners;
+    for (const json& miner_info : args["miners"]) {
+        std::string address = miner_info.value("address", random->get_address());
+        double hashrate = miner_info["hashrate"];
+        json behavior_info = miner_info.value("behavior", json::object());
+        json behavior_params = behavior_info.value("params", json::object());
+        std::string behavior_name = behavior_info.value("name", "default");
+        auto share_handler = ShareHandlerFactory::create(behavior_name, behavior_params);
+        auto miner = Miner::create(address, hashrate, std::move(share_handler), network);
+        miners.push_back(miner);
+    }
+    return miners;
+}
+
+REGISTER(MinerCreator, InlineMinerCreator, "inline")
+
 
 }

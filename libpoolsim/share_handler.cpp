@@ -54,6 +54,10 @@ void DefaultShareHandler::handle_share(const Share& share) {
   get_miner()->get_pool()->submit_share(get_miner()->get_address(), share);
 }
 
+std::string DefaultShareHandler::get_name() const {
+    return "default";
+}
+
 REGISTER(ShareHandler, DefaultShareHandler, "default")
 
 WithholdingShareHandler::WithholdingShareHandler(const nlohmann::json& _args) {}
@@ -66,6 +70,10 @@ void WithholdingShareHandler::handle_share(const Share& share) {
 
 uint64_t ShareHandler::get_valid_shares_withheld() const{
     return valid_shares_withheld;
+}
+
+std::string WithholdingShareHandler::get_name() const {
+    return "share_withholding";
 }
 
 REGISTER(ShareHandler, WithholdingShareHandler, "share_withholding")
@@ -129,6 +137,10 @@ void QBWithholdingShareHandler::handle_share(const Share& share) {
         valid_shares_withheld++;
 }
 
+std::string QBWithholdingShareHandler::get_name() const {
+    return "qb_share_withholding";
+}
+
 REGISTER(ShareHandler, QBWithholdingShareHandler, "qb_share_withholding")
 
 
@@ -159,6 +171,10 @@ void DonationShareHandler::handle_share(const Share& share) {
         valid_shares_donated++;
 
     get_miner()->get_pool()->submit_share(victim_address, share);
+}
+
+std::string DonationShareHandler::get_name() const {
+    return "share_donation";
 }
 
 REGISTER(ShareHandler, DonationShareHandler, "share_donation")
@@ -210,6 +226,10 @@ void MultipleAddressesShareHandler::handle_share(const Share& share) {
     // NOTE: join will be a no-op if the other address is already in the pool
     get_miner()->get_pool()->join(other_address);
     get_miner()->get_pool()->submit_share(other_address, share);
+}
+
+std::string MultipleAddressesShareHandler::get_name() const {
+    return "multiple_addresses";
 }
 
 REGISTER(ShareHandler, MultipleAddressesShareHandler, "multiple_addresses");
@@ -264,6 +284,10 @@ std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
         }
     }
     return luckiest_pool;
+}
+
+std::string QBPoolHopping::get_name() const {
+    return "qb_pool_hopping";
 }
 
 REGISTER(ShareHandler, QBPoolHopping, "qb_pool_hopping");

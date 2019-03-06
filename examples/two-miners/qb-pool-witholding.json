@@ -9,17 +9,22 @@
         "difficulty": 10000,
         "reward_scheme": {"type": "qb"},
         "miners": [{
-            "generator": "csv",
+            "generator": "inline",
             "params": {
-                "path": "miners/witholding.csv",
-                "behavior": {
-                    "params": {
-                        "qb_share_withholding": {
+                "miners": [{
+                    "hashrate": 1.0,
+                    "address": "0x7da82c7ab4771ff031b66538d2fb9b0b047f6cf9"
+                }, {
+                    "hashrate": 10.0,
+                    "address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
+                    "behavior": {
+                        "name": "qb_share_withholding",
+                        "params": {
                             "top_n": 1,
                             "threshold": 0.9
                         }
                     }
-                }
+                }]
             }
         }]
     }]

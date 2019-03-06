@@ -43,6 +43,8 @@ public:
     // Returns the total amount of work done
     uint64_t get_total_work() const;
 
+    // returns the name of the share handler
+    std::string get_handler_name() const;
 protected:
     Miner(std::string _address, double _hashrate, std::shared_ptr<Network> network);
 

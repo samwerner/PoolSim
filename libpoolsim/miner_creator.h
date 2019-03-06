@@ -71,6 +71,14 @@ public:
     std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
 };
 
+class InlineMinerCreator : public MinerCreator,
+                           public Creatable1<MinerCreator, InlineMinerCreator, std::shared_ptr<Network>> {
+public:
+    explicit InlineMinerCreator(std::shared_ptr<Network> network);
+    std::vector<std::shared_ptr<Miner>> create_miners(const nlohmann::json& args) override;
+};
+
+
 
 MAKE_FACTORY(MinerCreatorFactory, MinerCreator, std::shared_ptr<Network>)
 

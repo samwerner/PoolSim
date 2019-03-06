@@ -12,7 +12,7 @@
             "generator": "csv",
             "params": {
                 "behavior": {"name": "default"},
-                "path": "miners/benign.csv"
+                "path": "miners.csv"
             }
         }]
     }]

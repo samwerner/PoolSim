@@ -148,6 +148,7 @@ public:
 class MockShareHandler : public ShareHandler {
 public:
     MOCK_METHOD1(handle_share, void(const Share&));
+    std::string get_name() const override { return "mock"; }
 };
 
 
@@ -814,6 +815,27 @@ TEST(MinerCreator, CSVMinerCreator) {
     ASSERT_FLOAT_EQ(miners[1]->get_hashrate(), 2);
     ASSERT_FLOAT_EQ(miners[2]->get_hashrate(), 3);
 }
+
+TEST(MinerCreator, InlineMinerCreator) {
+    auto args = R"({
+        "miners": [
+            {"hashrate": 1.0, "address": "0x7da82c7ab4771ff031b66538d2fb9b0b047f6cf9"},
+            {"address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
+             "behavior": {"name": "share_donation"},
+             "hashrate": 10}
+        ]
+    })"_json;
+    auto creator = MinerCreatorFactory::create("inline", get_sample_network());
+    auto miners = creator->create_miners(args);
+    ASSERT_EQ(miners.size(), 2);
+    ASSERT_EQ(miners[0]->get_handler_name(), "default");
+    ASSERT_FLOAT_EQ(miners[0]->get_hashrate(), 1);
+    ASSERT_EQ(miners[0]->get_address(), "0x7da82c7ab4771ff031b66538d2fb9b0b047f6cf9");
+    ASSERT_FLOAT_EQ(miners[1]->get_hashrate(), 10);
+    ASSERT_EQ(miners[1]->get_handler_name(), "share_donation");
+    ASSERT_EQ(miners[1]->get_address(), "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444");
+}
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

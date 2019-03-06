@@ -40,6 +40,11 @@ uint64_t Miner::get_total_work() const {
     return total_work;
 }
 
+
+std::string Miner::get_handler_name() const {
+    return share_handler->get_name();
+}
+
 void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
   if (get_pool() != nullptr) {
     get_pool()->leave(get_address());
@@ -64,6 +69,7 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
 
 void to_json(nlohmann::json& j, const Miner& miner) {
     j["address"] = miner.get_address();
+    j["behavior"] = miner.get_handler_name();
     j["hashrate"] = miner.get_hashrate();
     j["blocks_found"] = miner.get_blocks_found();
     j["total_work"] = miner.get_total_work();
