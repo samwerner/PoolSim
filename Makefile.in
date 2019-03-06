@@ -2,7 +2,7 @@ export POOLSIM := $(SELF_DIR)/build/poolsim
 export LIBPOOLSIM := $(SELF_DIR)/build/libpoolsim.so
 export CXX := g++
 export CXXFLAGS := -std=c++11 -Wall -fPIC -I$(SELF_DIR)/libpoolsim -I$(SELF_DIR)/vendor -L$(SELF_DIR)/build $(EXTRA_CXXFLAGS)
-export LDFLAGS := -pthread
+export LDFLAGS := -pthread $(EXTRA_LDFLAGS)
 
 all: $(POOLSIM)
 

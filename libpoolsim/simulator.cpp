@@ -4,6 +4,13 @@
 #include <iomanip>
 #include <cassert>
 
+
+#ifdef USE_BOOST_IOSTREAMS
+#include <boost/iostreams/filtering_streambuf.hpp>
+#include <boost/iostreams/copy.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+#endif
+
 #include <spdlog/spdlog.h>
 
 #include "simulator.h"
@@ -84,6 +91,26 @@ void Simulator::run() {
   }
 }
 
+void output_result(const std::string& filepath, const json& result) {
+    if (filepath.substr(filepath.size() - 3, 3) != ".gz") {
+        std::ofstream o(filepath, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+        o << std::setw(4) << result << std::endl;
+        return;
+    }
+
+    #ifdef USE_BOOST_IOSTREAMS
+    std::ofstream file(filepath, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+    boost::iostreams::filtering_streambuf<boost::iostreams::output> out;
+    out.push(boost::iostreams::gzip_compressor());
+    out.push(file);
+
+    std::ostream o(&out);
+    o << std::setw(4) << result << std::endl;
+    #else
+    throw std::invalid_argument("libboost not found, cannot output gz");
+    #endif
+}
+
 void Simulator::save_simulation_data(const std::string& filepath) {
     json result;
 
@@ -102,8 +129,7 @@ void Simulator::save_simulation_data(const std::string& filepath) {
         result["miners"].push_back(*miner_kv.second);
     }
 
-    std::ofstream o(filepath);
-    o << std::setw(4) << result << std::endl;
+    output_result(filepath, result);
 }
 
 void Simulator::schedule_all() {

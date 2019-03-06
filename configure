@@ -3,6 +3,7 @@
 prefix=/usr/local
 debug="default"
 extra_cxxflags="$CXXFLAGS"
+extra_ldflags="$LDFLAGS"
 release=false
 
 for arg in "$@"; do
@@ -47,6 +48,12 @@ if [ "$debug" = "true" ] || { [ "$debug" = "default" ] && [ "$release" = "false"
     extra_cxxflags="$extra_cxxflags -g -DDEBUG=1 -Wl,-rpath,\$(SELF_DIR)/build"
 fi
 
+if ldconfig -p | grep -q libboost_iostreams; then
+    extra_cxxflags="$extra_cxxflags -DUSE_BOOST_IOSTREAMS=1"
+    extra_ldflags="$extra_ldflags -lboost_iostreams"
+fi
+
 echo "EXTRA_CXXFLAGS=$extra_cxxflags" >> Makefile
+echo "EXTRA_LDFLAGS=$extra_ldflags" >> Makefile
 cat Makefile.in >> Makefile
 echo 'configuration complete, type make to build.'
