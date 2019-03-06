@@ -103,6 +103,18 @@ private:
   std::normal_distribution<double> dist;
 };
 
+class LogNormalDistribution : public Distribution,
+                              public Creatable1<Distribution, LogNormalDistribution, const nlohmann::json&> {
+public:
+  explicit LogNormalDistribution(const nlohmann::json& args);
+  LogNormalDistribution(double mean, double variance);
+  LogNormalDistribution(double mean, double variance, std::shared_ptr<Random> random);
+  virtual double get();
+private:
+  std::lognormal_distribution<double> dist;
+};
+
+
 class UniformDistribution : public Distribution,
                             public Creatable1<Distribution, UniformDistribution, const nlohmann::json&> {
 public:

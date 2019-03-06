@@ -86,6 +86,22 @@ double NormalDistribution::get() {
 
 REGISTER(Distribution, NormalDistribution, "normal")
 
+LogNormalDistribution::LogNormalDistribution(double mean, double variance)
+  : Distribution(), dist(std::lognormal_distribution<double>(mean, variance)) {}
+
+LogNormalDistribution::LogNormalDistribution(double mean, double variance, std::shared_ptr<Random> _random)
+  : Distribution(_random), dist(std::lognormal_distribution<double>(mean, variance)) {}
+
+LogNormalDistribution::LogNormalDistribution(const json& args)
+  : Distribution(), dist(std::lognormal_distribution<double>(args["mean"], args["variance"])) {}
+
+double LogNormalDistribution::get() {
+  return dist(*random->get_random_engine());
+}
+
+REGISTER(Distribution, LogNormalDistribution, "lognormal")
+
+
 UniformDistribution::UniformDistribution(double low, double high)
   : Distribution(), dist(std::uniform_real_distribution<double>(low, high)) {}
 
