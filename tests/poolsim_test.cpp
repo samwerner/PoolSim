@@ -177,8 +177,8 @@ std::shared_ptr<Simulator> get_sample_simulator() {
     return std::make_shared<Simulator>(get_sample_simulation());
 }
 
-std::unique_ptr<ShareHandler> get_mock_share_handler() {
-    return std::unique_ptr<ShareHandler>(new MockShareHandler);
+std::unique_ptr<MockShareHandler> get_mock_share_handler() {
+    return std::unique_ptr<MockShareHandler>(new MockShareHandler);
 }
 
 std::unique_ptr<MockRewardScheme> get_mock_reward_scheme() {
@@ -355,6 +355,33 @@ TEST(Miner, join_pool) {
     ASSERT_EQ(pool2->get_miners_count(), 1);
     ASSERT_EQ(miner->get_pool(), pool2);
 }
+
+TEST(Miner, handle_share) {
+    auto share_handler = get_mock_share_handler();
+    MockShareHandler* share_handler_ptr = share_handler.get();
+    auto network = get_sample_network();
+    auto miner = Miner::create("random_address", 123, std::move(share_handler), network);
+    auto pool = MiningPool::create("pool", 100, 0.001, get_mock_reward_scheme(), get_sample_network());
+    miner->join_pool(pool);
+    Share share(Share::Property::none);
+    EXPECT_CALL(*share_handler_ptr, handle_share(share));
+    miner->process_share(share);
+    ASSERT_EQ(miner->get_total_work(), 100);
+    ASSERT_EQ(miner->get_blocks_found(), 0);
+
+    Share network_share(Share::Property::valid_block);
+    EXPECT_CALL(*share_handler_ptr, handle_share(network_share));
+    miner->process_share(network_share);
+    ASSERT_EQ(miner->get_total_work(), 200);
+    ASSERT_EQ(miner->get_blocks_found(), 1);
+
+    Share uncle_share(Share::Property::valid_block | Share::Property::uncle);
+    EXPECT_CALL(*share_handler_ptr, handle_share(uncle_share));
+    miner->process_share(uncle_share);
+    ASSERT_EQ(miner->get_total_work(), 300);
+    ASSERT_EQ(miner->get_blocks_found(), 1);
+}
+
 
 TEST(MiningPool, submit_share) {
     auto reward_scheme = get_mock_reward_scheme();

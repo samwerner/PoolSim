@@ -37,6 +37,11 @@ public:
     // Returns the network instance
     std::shared_ptr<Network> get_network() const;
 
+    // Returns the number of blocks found
+    uint64_t get_blocks_found() const;
+
+    // Returns the total amount of work done
+    uint64_t get_total_work() const;
 
 protected:
     Miner(std::string _address, double _hashrate, std::shared_ptr<Network> network);
@@ -45,6 +50,9 @@ private:
     std::string address;
     double hashrate;
     std::weak_ptr<MiningPool> pool;
+
+    uint64_t blocks_found = 0;
+    uint64_t total_work = 0;
 
     std::unique_ptr<ShareHandler> share_handler;
     std::weak_ptr<Network> network;

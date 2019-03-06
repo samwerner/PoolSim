@@ -32,6 +32,14 @@ std::shared_ptr<Network> Miner::get_network() const {
     return network.lock();
 }
 
+uint64_t Miner::get_blocks_found() const {
+    return blocks_found;
+}
+
+uint64_t Miner::get_total_work() const {
+    return total_work;
+}
+
 void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
   if (get_pool() != nullptr) {
     get_pool()->leave(get_address());
@@ -42,7 +50,11 @@ void Miner::join_pool(std::shared_ptr<MiningPool> _pool) {
 }
 
 void Miner::process_share(const Share& share) {
-  share_handler->handle_share(share);
+    total_work += get_pool()->get_difficulty();
+    if (share.is_network_share()) {
+        blocks_found++;
+    }
+    share_handler->handle_share(share);
 }
 
 void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
@@ -53,6 +65,8 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
 void to_json(nlohmann::json& j, const Miner& miner) {
     j["address"] = miner.get_address();
     j["hashrate"] = miner.get_hashrate();
+    j["blocks_found"] = miner.get_blocks_found();
+    j["total_work"] = miner.get_total_work();
 }
 
 }
