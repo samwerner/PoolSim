@@ -49,7 +49,9 @@ void MiningPool::join(const std::string& miner_address) {
 }
 
 void MiningPool::leave(const std::string& miner_address) {
-  miners.erase(miner_address);
+    // NOTE: we still want to serialize the records later on
+    // so we simply keep all the miners who have ever joined
+    // the pool as part of it
 }
 
 std::set<std::string> MiningPool::get_miners() {

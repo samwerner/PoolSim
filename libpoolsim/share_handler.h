@@ -29,16 +29,17 @@ public:
     virtual ~ShareHandler();
 
     // Miners delegates to this method to handle the share that it found
-    // TODO: Probaby add information about the environment here
-    // e.g. info about other mining pools, current network difficulty, etc
     virtual void handle_share(const Share& share) = 0;
+
+    // Returns the name of the share handler
+    virtual std::string get_name() const = 0;
+
+    // Returns the metadata of the share handler (if any)
+    virtual nlohmann::json get_json_metadata() = 0;
 
     // Set the miner for this share handler
     // ShareHandler and Miner must be a 1 to 1 relationship
     void set_miner(std::shared_ptr<Miner> miner);
-
-    // Returns the name of the share handler
-    virtual std::string get_name() const = 0;
 
     // Returns the miner of this handler as a shared_ptr
     // Use this rather than accessing the weak_ptr property
@@ -50,15 +51,11 @@ public:
     // Returns the pool
     std::shared_ptr<MiningPool> get_pool() const;
 
+
     // Returns the address
     std::string get_address() const;
-
-    uint64_t get_valid_shares_withheld() const;
 protected:
     std::weak_ptr<Miner> miner;
-
-    // counts the total number of valid shares withheld
-    uint64_t valid_shares_withheld = 0;
 
     // random instance
     std::shared_ptr<Random> random = SystemRandom::get_instance();
@@ -69,6 +66,8 @@ MAKE_FACTORY(ShareHandlerFactory, ShareHandler, const nlohmann::json&)
 class QBShareHandler : public ShareHandler {
 public:
     virtual void handle_share(const Share& share) = 0;
+
+    nlohmann::json get_json_metadata() override;
 
     uint64_t get_shares_donated() const;
 
@@ -100,7 +99,15 @@ template <typename T>
 class BaseShareHandler :
     public ShareHandler,
     public Creatable1<ShareHandler, T, const nlohmann::json&> {   
+public:
+    nlohmann::json get_json_metadata() override;
 };
+
+template <typename T>
+nlohmann::json BaseShareHandler<T>::get_json_metadata() {
+    return nlohmann::json::object();
+}
+
 
 template <typename T>
 class QBBaseShareHandler :
@@ -144,6 +151,9 @@ public:
     void handle_share(const Share& share) override;
 
     std::string get_name() const override;
+private:
+    // counts the total number of valid shares withheld
+    uint64_t valid_shares_withheld = 0;
 };
 
 // IMPLEMENTED: YES
@@ -182,6 +192,13 @@ private:
     std::string get_random_address() const;
 };
 
+
+struct HopEvent {
+    std::string previous_pool;
+    std::string next_pool;
+    uint64_t time;
+};
+
 // IMPLEMENTED: YES
 // Behaviour: miner defines a bad luck limit and checks if the current pool is as unlucky or worse.
 // If it is, the miner checks the current luck for all other pools in the network and joins the pool
@@ -193,13 +210,18 @@ public:
     void handle_share(const Share& share) override;
 
     std::string get_name() const override;
+
+    nlohmann::json get_json_metadata() override;
 private:
     std::shared_ptr<MiningPool> get_luckiest_pool();
     // the factor of how unlucky the pool needs to be before leaving the pool (e.g. bad luck = 2 = 50% luck)
     double bad_luck_limit = 1;
-    // total number of times the miner has hopped to a different pool
-    uint64_t total_hopps = 0;
+
+    // list of hop events
+    std::vector<HopEvent> hop_events;
 }; 
+
+void to_json(nlohmann::json& j, const HopEvent& data);
 
 void from_json(const nlohmann::json& j, BehaviourConfig& b);
 void from_json(const nlohmann::json& j, MultiAddressConfig& m);

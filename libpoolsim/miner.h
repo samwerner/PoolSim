@@ -45,6 +45,9 @@ public:
 
     // returns the name of the share handler
     std::string get_handler_name() const;
+
+    // returns the metadata of the handler
+    nlohmann::json get_handler_metadata() const;
 protected:
     Miner(std::string _address, double _hashrate, std::shared_ptr<Network> network);
 

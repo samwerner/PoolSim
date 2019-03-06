@@ -80,15 +80,15 @@ void WithholdingShareHandler::handle_share(const Share& share) {
     
 }
 
-uint64_t ShareHandler::get_valid_shares_withheld() const{
-    return valid_shares_withheld;
-}
-
 std::string WithholdingShareHandler::get_name() const {
     return "share_withholding";
 }
 
 REGISTER(ShareHandler, WithholdingShareHandler, "share_withholding")
+
+nlohmann::json QBShareHandler::get_json_metadata() {
+    return nlohmann::json::object();
+}
 
 uint64_t QBShareHandler::get_shares_donated() const {
     return shares_donated;
@@ -261,8 +261,9 @@ void QBPoolHopping::handle_share(const Share& share) {
         return;
     }
 
+    auto current_pool = get_pool();
 
-    auto records = get_pool()->get_records<QBRewardScheme>();
+    auto records = current_pool->get_records<QBRewardScheme>();
     std::sort(records.begin(), records.end(), QBSortObj());
 
     /*
@@ -273,17 +274,28 @@ void QBPoolHopping::handle_share(const Share& share) {
     */
 
     // Leave pool if pool is unlucky
-    if (get_pool()->get_luck() < 100.0/bad_luck_limit) {
+    if (current_pool->get_luck() < 100.0 / bad_luck_limit) {
         
         // Check which other pool is the luckiest 
-        std::shared_ptr<MiningPool> luckiest_pool = get_luckiest_pool();
-        if (luckiest_pool != get_pool()) {
+        auto luckiest_pool = get_luckiest_pool();
+        if (luckiest_pool != current_pool) {
             get_miner()->join_pool(luckiest_pool);
-            total_hopps++;
+            HopEvent event {
+                .previous_pool = current_pool->get_name(),
+                .next_pool = luckiest_pool->get_name(),
+                .time = get_network()->get_current_time()
+            };
+            hop_events.push_back(event);
        }
     }
 
     get_pool()->submit_share(get_address(), share);
+}
+
+nlohmann::json QBPoolHopping::get_json_metadata() {
+    nlohmann::json j;
+    j["hop_events"] = hop_events;
+    return j;
 }
 
 std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
@@ -301,6 +313,12 @@ std::shared_ptr<MiningPool> QBPoolHopping::get_luckiest_pool() {
 
 std::string QBPoolHopping::get_name() const {
     return "qb_pool_hopping";
+}
+
+void to_json(nlohmann::json& j, const HopEvent& event) {
+    j["previous_pool"] = event.previous_pool;
+    j["next_pool"] = event.next_pool;
+    j["time"] = event.time;
 }
 
 REGISTER(ShareHandler, QBPoolHopping, "qb_pool_hopping");

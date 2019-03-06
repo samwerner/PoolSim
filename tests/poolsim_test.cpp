@@ -148,6 +148,7 @@ public:
 class MockShareHandler : public ShareHandler {
 public:
     MOCK_METHOD1(handle_share, void(const Share&));
+    MOCK_METHOD0(get_json_metadata, nlohmann::json());
     std::string get_name() const override { return "mock"; }
 };
 
@@ -357,9 +358,11 @@ TEST(Miner, join_pool) {
     ASSERT_EQ(pool2->get_miners_count(), 0);
     ASSERT_EQ(miner->get_pool(), pool1);
     miner->join_pool(pool2);
-    ASSERT_EQ(pool1->get_miners_count(), 0);
+    ASSERT_EQ(pool1->get_miners_count(), 1);
     ASSERT_EQ(pool2->get_miners_count(), 1);
     ASSERT_EQ(miner->get_pool(), pool2);
+    miner->join_pool(pool1);
+    ASSERT_EQ(pool1->get_miners_count(), 1);
 }
 
 TEST(Miner, handle_share) {

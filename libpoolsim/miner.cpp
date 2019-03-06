@@ -67,12 +67,17 @@ void Miner::set_handler(std::unique_ptr<ShareHandler> _share_handler) {
   share_handler->set_miner(shared_from_this());
 }
 
+nlohmann::json Miner::get_handler_metadata() const {
+    return share_handler->get_json_metadata();
+}
+
 void to_json(nlohmann::json& j, const Miner& miner) {
     j["address"] = miner.get_address();
     j["behavior"] = miner.get_handler_name();
     j["hashrate"] = miner.get_hashrate();
     j["blocks_found"] = miner.get_blocks_found();
     j["total_work"] = miner.get_total_work();
+    j["handler_metadata"] = miner.get_handler_metadata();
 }
 
 }
