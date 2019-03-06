@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cassert>
+#include <chrono>
 
 
 #ifdef USE_BOOST_IOSTREAMS
@@ -89,21 +90,27 @@ void Simulator::initialize() {
 }
 
 void Simulator::run() {
-  initialize();
+    initialize();
 
-  spdlog::debug("loaded {} pools with a total of {} miners", pools.size(), miners.size());
+    spdlog::debug("loaded {} pools with a total of {} miners", pools.size(), miners.size());
 
-  if (pools.empty() || miners.empty()) {
+    if (pools.empty() || miners.empty()) {
     throw InvalidSimulationException("simulation must have at least one miner and one pool");
-  }
+    }
 
-  schedule_all();
+    schedule_all();
 
-  spdlog::info("running {} blocks", simulation.blocks);
-  while (get_blocks_mined() < simulation.blocks) {
-    auto event = queue.pop();
-    process_event(event);
-  }
+    spdlog::info("running {} blocks", simulation.blocks);
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    while (get_blocks_mined() < simulation.blocks) {
+        auto event = queue.pop();
+        process_event(event);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
 void Simulator::output_result(const json& result) const {
@@ -129,6 +136,8 @@ void Simulator::output_result(const json& result) const {
 
 void Simulator::save_simulation_data() {
     json result;
+
+    result["runtime_milliseconds"] = duration;
 
     result["blocks"] = json::array();
     for (auto block : block_events) {

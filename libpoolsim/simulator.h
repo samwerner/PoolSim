@@ -100,6 +100,8 @@ private:
     // Miners in the current simulation
     std::map<std::string, std::shared_ptr<Miner>> miners;
 
+    int64_t duration;
+
     // Current time
     double current_time;
 
