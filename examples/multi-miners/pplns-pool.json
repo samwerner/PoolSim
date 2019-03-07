@@ -1,13 +1,13 @@
 {
-    "output": "results/qb-pool-share-donation-results.json.gz",
+    "output": "results/pplns-pool-results.json.gz",
     "blocks": 100000,
     "seed": 120,
     "network_difficulty": 1000000,
     "pools": [{
-        "name": "qb-pool",
+        "name": "pplns-pool",
         "uncle_block_prob": 0.0,
         "difficulty": 10000,
-        "reward_scheme": {"type": "qb"},
+        "reward_scheme": {"type": "pplns", "params": {"n": 200}},
         "miners": [{
             "generator": "random",
             "params": {
@@ -32,13 +32,7 @@
                 "miners": [{
                     "address": "0xaa1a6e3e6ef20068f7f8d8c835d2d22fd5116444",
                     "hashrate": 15,
-                    "behavior": {
-                        "name": "share_donation",
-                        "params": {
-                            "top_n": 1,
-                            "threshold": 0.9
-                        }
-                    }
+                    "behavior": {"name": "default"}
                 }, {
                     "address": "0x7da82c7ab4771ff031b66538d2fb9b0b047f6cf9",
                     "hashrate": 1,
