@@ -193,11 +193,14 @@ should run and execute the tests.
     - [x] PPLNS
     - [x] QB
     - [x] PROP
-- [ ] Miner behaviors
+- [x] Miner behaviors
     - [x] Default
-    - [ ] Withholding of valid shares (block withholding) 
-    - [ ] Stop submission of shares
-    - [ ] Donation of shares to a different address
+    - [x] Withholding of valid shares (block withholding)
+    - [x] Stop submission of shares
+    - [x] Donation of shares to a different address
+    - [x] Pool hopping
+        - [x] Luck based
+        - [x] Average credit lost based
 - [ ] Multiple simulations per run
     - [ ] Config file scheme
     - [ ] Simulator implementation
