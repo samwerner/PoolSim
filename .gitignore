@@ -5,4 +5,4 @@ vendor/*
 build/
 dist/
 /Makefile
-examples/*/results/
+results/
