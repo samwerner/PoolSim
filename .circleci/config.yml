@@ -9,7 +9,7 @@ jobs:
 
       - run:
           name: Install dependencies
-          command: apt update && apt install -y build-essential google-mock libgtest-dev googletest cmake wget curl
+          command: apt update && apt install -y build-essential google-mock libgtest-dev googletest cmake wget curl libboost-iostreams-dev
       
       - run:
           name: Compile gtest
