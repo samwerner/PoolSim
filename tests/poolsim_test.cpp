@@ -202,14 +202,8 @@ std::unique_ptr<MockRewardScheme> get_mock_reward_scheme() {
 }
 
 
-// XXX: this should be at te top of the test suite
-// because it expects SystemRandom not to be initialized
-// and it performs the initialization
-// if we someday need to parallelize the test suite we can think
-// about how to make this less ugly but for now it should work just fine
 TEST(SystemRandom, initialization) {
-    ASSERT_THROW(SystemRandom::get_instance(), RandomInitException);
-    SystemRandom::initialize(0);
+    ASSERT_NO_THROW(SystemRandom::ensure_initialized(0));
     ASSERT_NO_THROW(SystemRandom::get_instance());
     // NOTE: expected value with seed = 0
     ASSERT_FLOAT_EQ(SystemRandom::get_instance()->drand48(), 0.170828);
@@ -844,6 +838,7 @@ TEST(MinerCreator, InlineMinerCreator) {
 
 
 int main(int argc, char **argv) {
+    SystemRandom::ensure_initialized(0);
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include <CLI11.hpp>
 #include <spdlog/spdlog.h>
 
 #include "cli.h"

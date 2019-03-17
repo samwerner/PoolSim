@@ -1,7 +1,7 @@
 #include "miner_creator.h"
 #include "share_handler.h"
 
-#include "csv.h"
+#include <csv.h>
 
 namespace poolsim {
 

@@ -10,7 +10,7 @@ jobs:
       - run:
           name: Install dependencies
           command: apt update && apt install -y build-essential google-mock libgtest-dev googletest cmake wget curl libboost-iostreams-dev
-      
+
       - run:
           name: Compile gtest
           command: >
@@ -22,8 +22,12 @@ jobs:
 
       - run:
           name: Compile app
-          command: ./configure && make -j3
+          command: >
+            mkdir build &&
+            cd build &&
+            cmake -DBUILD_TESTING=on -DCMAKE_BUILD_TYPE=Debug .. &&
+            make -j5
 
       - run:
           name: Run tests
-          command: make test
+          command: cd build && make test

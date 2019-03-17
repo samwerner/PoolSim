@@ -20,22 +20,23 @@ make install
 ## Installation
 
 The default install location will be `/usr/local`. You can override this
-by passing the `--prefix=/path/to/install` to `./configure`.
+by passing the `-DCMAKE_INSTALL_PREFIX:PATH=/path/to/install` to `cmake`.
 
 Run the following commands to install the simulator.
 
 ```
-./configure --release
+mkdir build && cd build
+cmake ..
 make
 make install
 ```
 
 Depending on the location, you may need `sudo` for `make install`.
-Everything can be uninstalled using `make uninstall`.
+A list of installed files is saved in `install_manifest.txt`
+Everything can be removed using `xargs rm -f < install_manifest.txt`.
 
 NOTE: if you get an 'error while loading shared libraries', try to run
 `ldconfig /path/to/install/lib` after installing.
-
 
 ## Running the simulator
 
@@ -156,23 +157,21 @@ REGISTER(RewardScheme, NewRewardScheme, "some_name")
 Run
 
 ```
-./configure
+mkdir build && cd build
+cmake -DBUILD_TESTING=on -DCMAKE_BUILD_TYPE=Debug ..
 make
 ```
 
-The executable will be at `build/poolsim`.
+The executable will be at `build/poolsim/poolsim`.
 
 ### Running the tests
 
 Tests require Google Test and Google Mock.
-Running
+Run the following command from the build directory.
 
 ```
-make test
+make all test
 ```
-
-should run and execute the tests.
-
 
 ## Progress
 
