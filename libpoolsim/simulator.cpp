@@ -115,6 +115,8 @@ void Simulator::run() {
 
 void Simulator::output_result(const json& result) const {
     auto filepath = simulation.output;
+    // FIXME: throw if the filepath does not exist or create it
+
     if (filepath.substr(filepath.size() - 3, 3) != ".gz") {
         std::ofstream o(filepath, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
         o << std::setw(4) << result << std::endl;
