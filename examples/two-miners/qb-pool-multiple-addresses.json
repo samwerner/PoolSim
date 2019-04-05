@@ -20,7 +20,7 @@
                     "behavior": {
                         "name": "multiple_addresses",
                         "params": {
-                            "top_n": 1,
+                            "top_n": 2,
                             "threshold": 0.9,
                             "addresses": 1
                         }
