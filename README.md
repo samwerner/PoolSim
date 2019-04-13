@@ -1,5 +1,7 @@
 # PoolSim
 
+[![CircleCI](https://circleci.com/gh/samwerner/PoolSim.svg?style=svg)](https://circleci.com/gh/samwerner/PoolSim)
+
 ## Requirements
 
 * C++11 compiler
