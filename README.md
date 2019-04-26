@@ -1,4 +1,6 @@
-# PoolSim
+#
+
+<img src="images/poolsim_logo.svg" width="300">
 
 [![CircleCI](https://circleci.com/gh/samwerner/PoolSim.svg?style=svg)](https://circleci.com/gh/samwerner/PoolSim)
 
