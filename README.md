@@ -153,6 +153,68 @@ void NewRewardScheme::handle_share(const std::string& miner_address, const Share
 REGISTER(RewardScheme, NewRewardScheme, "some_name")
 ```
 
+## Configuration
+
+PoolSim is configured via a json configuration file in the following format:
+
+```json
+{
+    "output": "results.json",
+    "blocks": 50000,
+    "seed": 120,
+    "network_difficulty": 1000000000,
+    "pools": [{
+        "uncle_block_prob": 0.0,
+        "difficulty": 50000000,
+        "reward_scheme": {
+            "type": "qb",
+            "params": {
+                "n": 0,
+                "pool_fee": 0
+            }
+        },
+        "miners": [{
+            "generator": "random",
+            "params": {
+                "behavior": {"name": "default"},
+                "hashrate": {
+                    "distribution": "lognormal",
+                    "params": {
+                        "mean": 0.95909,
+                        "stddev": 1.742,
+                        "minimum": 1.0,
+                        "maximum": 1.5
+                    }
+                },
+                "stop_condition": {
+                    "type": "total_hashrate",
+                    "params": {"value": 200}
+                }
+            }
+        }]
+    }]
+}
+```
+
+The value for the `output` key specifies the destination of the result file produced by the simulator.
+The `pools` key takes a list of mining pools that should be simulated. This can be useful when wanting to
+compare the performance of miners across mining pools using different reward schemes (e.g. `qb` or queue-based, or
+`pplns`). Note that a simulation containing multiple pools may contain mining pools with
+different pool difficulty levels and fees.
+
+The are two general approaches for generating miners in PoolSim. The user may either pass in a csv file containing miner
+address and hash rate, or, alternatively, have the hash rates sampled from either a `normal` or `lognormal` distribution.
+The parameters of the distribution need to be specified as shown in the example config.
+A `minimum` and/or `maximum` can be specified for setting upper and lower bounds for the
+hash rate distribution in the pool.
+The hash rates are sampled until a `stop_condition` is met. This condition can be specified to be either `total_hashrate`,
+which is the sum of all hash rates in a pool, or `miners_count`, which refers to the total number of miners in a pool.
+
+The mining strategies, or the miner `behaviour`, may be specified as the respective value. 
+The `default` behaviour does not specify any mining strategy, i.e. honest mining. 
+Other behaviours may be defined on a custom basis.
+
+
 ## Contributing
 
 ### Development build
@@ -176,7 +238,6 @@ make test
 ```
 
 should run and execute the tests.
-
 
 ## Progress
 
