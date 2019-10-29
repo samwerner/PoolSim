@@ -14,6 +14,7 @@
 #include "miner_creator.h"
 #include "observer.h"
 #include "block_event.h"
+#include "network_param_handler.h"
 
 namespace poolsim {
 
@@ -29,7 +30,10 @@ public:
 
     // Initializes the simulator
     // creates pools and miners
-    void initialize();
+    void initialize_pool_simulation();
+
+    // configures initial network parameters
+    void initialize_network_simulation();
 
     // Saves the simulation data to a file
     void save_simulation_data();
@@ -42,8 +46,12 @@ public:
     // This will also schedule the next event for the miner
     void process_event(const Event& event);
 
+    void process_network_event(const Event& event);
+
     // Schedules a single miner
     void schedule_miner(const std::shared_ptr<Miner> miner);
+
+    void schedule_network();
 
     // Adds a miner to the simulator
     void add_miner(std::shared_ptr<Miner> miner);
@@ -87,6 +95,9 @@ private:
 
     // Event queue of the simulator
     EventQueue queue;
+
+    // Network Parameter Handler which updtes network parameters
+    std::shared_ptr<NetworkParamHandler> net_param_handler;
 
     // Pools in the current simulation
     std::vector<std::shared_ptr<MiningPool>> pools;

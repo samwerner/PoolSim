@@ -24,4 +24,14 @@ void Network::set_current_time(uint64_t _current_time) { current_time = _current
 uint64_t Network::get_current_block() const { return current_block; }
 void Network::inc_current_block() { current_block++; }
 
+std::string Network::get_name() const { return name; }
+
+void Network::add_block() {
+    Block newBlock;
+    newBlock.number = current_block;
+    newBlock.timestamp = current_time;
+    newBlock.difficulty = difficulty;
+    blocks.push_back(newBlock);
+}
+
 }

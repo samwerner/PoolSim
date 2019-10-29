@@ -41,8 +41,11 @@ std::shared_ptr<Simulator> Simulator::from_config_file(const std::string& filepa
     return  std::shared_ptr<Simulator>(new Simulator(simulation));
 }
 
+void Simulator::initialize_network_simulation() {
 
-void Simulator::initialize() {
+}
+
+void Simulator::initialize_pool_simulation() {
     for (size_t i = 0; i < simulation.pools.size(); i++) {
         auto pool_config = simulation.pools[i];
 
@@ -90,23 +93,34 @@ void Simulator::initialize() {
 }
 
 void Simulator::run() {
-    initialize();
+    if (pool_simulation) {
+        initialize_pool_simulation();
+        spdlog::debug("loaded {} pools with a total of {} miners", pools.size(), miners.size());
 
-    spdlog::debug("loaded {} pools with a total of {} miners", pools.size(), miners.size());
+        if (pools.empty() || miners.empty()) {
+            throw InvalidSimulationException("simulation must have at least one miner and one pool");
+        }
 
-    if (pools.empty() || miners.empty()) {
-        throw InvalidSimulationException("simulation must have at least one miner and one pool");
+        schedule_all();
+    } else if (network_simulation) {
+
+    } else {
+        throw InvalidSimulationException("simulation must either be a Pool or Network simulation");
     }
-
-    schedule_all();
 
     spdlog::info("running {} blocks", simulation.blocks);
 
     auto start = std::chrono::high_resolution_clock::now();
 
+
+
     while (network->get_current_block() < simulation.blocks) {
         auto event = queue.pop();
-        process_event(event);
+        if () {
+            process_network_event(event)
+        } else {
+            process_event(event);
+        }
     }
     auto end = std::chrono::high_resolution_clock::now();
 
@@ -185,6 +199,27 @@ void Simulator::process_event(const Event& event) {
     Share share(share_flags);
     schedule_miner(miner);
     miner->process_share(share);
+}
+
+void Simulator::process_network_event(const Event& event) {
+    network->set_current_time(event.time);
+    network->inc_current_block();
+    network->add_block();
+    uint64_t current_block = network->get_current_block();
+    if (current_block % 10000 == 0) {
+        spdlog::info("progress: {} / {}", current_block, simulation.blocks);
+    } else if (current_block % 100 == 0) {
+        spdlog::debug("progress: {} / {}", current_block, simulation.blocks);
+    }
+    net_param_handler->update_params();
+    schedule_network();
+}
+
+void Simulator::schedule_network() {
+    double lambda = network->get_hash_rate() / network->get_difficulty();
+    double t = -log(random->drand48()) / lambda;
+    Event network_next_event(network->get_name(), network->get_current_time() + t);
+    queue.schedule(network_next_event);
 }
 
 void Simulator::schedule_miner(const std::shared_ptr<Miner> miner) {
